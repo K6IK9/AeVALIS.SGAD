@@ -1,0 +1,789 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios de Avaliações - IF SADD</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* Importação das fontes */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Vidaloka&display=swap');
+
+        /* Variáveis CSS comuns */
+        :root {
+            /* Cores principais */
+            --cor01: #f0f0f0;
+            --cor01-alt: #f1f1f1;
+            --cor02: #00fd94;
+            --cor03: #376f6c;
+            --cor04: #1e3231;
+            --cor05: #090909;
+            --cor06: #00cafd;
+            --cor07: #ffffff;
+            --cor08: #ff3c3c;
+
+            /* Fontes */
+            --font01: "Poppins", sans-serif;
+            --font02: "Vidaloka", serif;
+
+            /* Sombras */
+            --shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            --shadow-alt: 4px 2px 8px rgba(0, 0, 0, 0.2);
+
+            /* Bordas e raios */
+            --border-radius-small: 5px;
+            --border-radius-medium: 15px;
+            --border-radius-large: 25px;
+            --border-radius-xl: 35px;
+            --border-radius-circle: 50%;
+
+            /* Espaçamentos */
+            --spacing-xs: 5px;
+            --spacing-sm: 10px;
+            --spacing-md: 15px;
+            --spacing-lg: 20px;
+            --spacing-xl: 25px;
+            --spacing-2xl: 40px;
+            --spacing-3xl: 50px;
+
+            /* Transições */
+            --transition-fast: 0.2s;
+            --transition-medium: 0.3s;
+        }
+
+        /* Reset global */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font01);
+        }
+
+        body {
+            background: var(--cor01);
+        }
+
+        /* Layout base para páginas de gerenciamento */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: var(--cor03);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius-medium);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.2em;
+        }
+
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        /* Seções de formulário */
+        .form-section {
+            background: var(--cor07);
+            padding: 30px;
+            border-radius: var(--border-radius-medium);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            color: var(--cor03);
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+
+        /* Botão de voltar */
+        .back-button {
+            background: var(--cor03);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background: var(--cor04);
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Mensagens */
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .form-section {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.6em;
+            }
+
+            .back-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* Grid de avaliações */
+        .avaliacoes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .avaliacao-card {
+            background: var(--cor07);
+            padding: 25px;
+            border-radius: var(--border-radius-medium);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--cor02);
+        }
+
+        .avaliacao-card h3 {
+            color: var(--cor03);
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Botões customizados */
+        .btn {
+            background: var(--cor02);
+            color: var(--cor05);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            border: 2px solid transparent;
+        }
+
+        .btn:hover {
+            background: var(--cor06);
+            transform: translateY(-2px);
+            color: var(--cor05);
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            background: var(--cor03);
+            color: var(--cor07);
+        }
+
+        .btn-secondary:hover {
+            background: var(--cor04);
+            color: var(--cor07);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        /* Formulários */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--cor03);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            background: var(--cor07);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--cor02);
+            box-shadow: 0 0 0 3px rgba(0, 253, 148, 0.1);
+        }
+
+        /* Tabelas */
+        .data-table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--cor07);
+            border-radius: var(--border-radius-medium);
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-width: 800px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .data-table th {
+            background: var(--cor03);
+            color: var(--cor07);
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(0, 253, 148, 0.05);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.bg-success {
+            background: var(--cor02) !important;
+            color: var(--cor05);
+        }
+
+        .badge.bg-secondary {
+            background: var(--cor03) !important;
+            color: var(--cor07);
+        }
+
+        .badge.bg-info {
+            background: var(--cor06) !important;
+            color: var(--cor05);
+        }
+
+        .badge.bg-warning {
+            background: #ffc107 !important;
+            color: var(--cor05);
+        }
+
+        /* Cards de métricas */
+        .metric-card {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--cor02), var(--cor06));
+            color: var(--cor05);
+            border-radius: var(--border-radius-medium);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .metric-label {
+            font-size: 14px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Seção de comentários */
+        .comment-card {
+            background: var(--cor07);
+            padding: 20px;
+            border-radius: var(--border-radius-medium);
+            margin-bottom: 15px;
+            border-left: 4px solid var(--cor06);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .comment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: var(--cor03);
+        }
+
+        .comment-meta {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .comment-text {
+            line-height: 1.6;
+            color: var(--cor05);
+            white-space: pre-wrap;
+        }
+
+        /* Variáveis para tamanhos de fontes */
+        :root {
+            --font-size-xs: 0.75rem;  /* 12px */
+            --font-size-sm: 0.875rem; /* 14px */
+            --font-size-base: 1rem;   /* 16px */
+            --font-size-md: 1.125rem; /* 18px */
+            --font-size-lg: 1.25rem;  /* 20px */
+            --font-size-xl: 1.5rem;   /* 24px */
+        }
+
+        /* Responsividade específica */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .avaliacoes-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .avaliacao-card {
+                padding: 20px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 10px 8px;
+                font-size: var(--font-size-xs);
+            }
+
+            .btn {
+                font-size: var(--font-size-sm);
+                padding: 10px 16px;
+                width: 100%;
+            }
+            
+            .form-section {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .form-section h2 {
+                font-size: var(--font-size-md);
+                margin-bottom: 15px;
+            }
+            
+            /* Ajuste para botões no header de relatório */
+            .form-section > div:first-child {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .form-section > div:first-child > div {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: var(--font-size-lg);
+            }
+            
+            .header p {
+                font-size: var(--font-size-sm);
+            }
+            
+            .form-section {
+                padding: 15px;
+            }
+
+            .metric-value {
+                font-size: 2em;
+            }
+
+            .comment-header {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .back-button {
+                font-size: var(--font-size-sm);
+                padding: 8px 15px;
+                margin-bottom: 15px;
+            }
+            
+            .form-group label {
+                font-size: var(--font-size-sm);
+            }
+            
+            .form-control {
+                padding: 8px;
+                font-size: var(--font-size-sm);
+            }
+            
+            /* Ajustes para navegação no relatório */
+            .form-section > div:first-child h2 {
+                font-size: var(--font-size-base);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="container">
+            <a href="{% url 'inicio' %}" class="back-button">← Voltar</a>
+
+            <!-- Header da página -->
+            <div class="header">
+                <h1>Relatórios de Avaliações</h1>
+                <p>Visualize e analise os dados das avaliações</p>
+            </div>
+
+            <!-- Mensagens -->
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Conteúdo principal -->
+<div class="avaliacoes-grid">
+    <!-- Card de Filtros -->
+    <div class="avaliacao-card">
+        <h3>🔍 Filtros</h3>
+        <form method="get" id="form-filtros">
+            <div class="form-group">
+                <label for="ciclo">Ciclo</label>
+                <select name="ciclo" id="ciclo" class="form-control">
+                    <option value="">Todos os ciclos</option>
+                    {% for ciclo in ciclos %}
+                    <option value="{{ ciclo.id }}" 
+                            {% if ciclo_selecionado == ciclo.id|stringformat:'s' %}selected{% endif %}>
+                        {{ ciclo.nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="professor">Professor</label>
+                <select name="professor" id="professor" class="form-control">
+                    <option value="">Todos os professores</option>
+                    {% for prof in professores %}
+                    <option value="{{ prof.id }}" 
+                            {% if professor_selecionado == prof.id|stringformat:'s' %}selected{% endif %}>
+                        {{ prof.user.get_full_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="submit" class="btn">
+                    🔍 Filtrar
+                </button>
+                
+                <a href="{% url 'relatorio_avaliacoes' %}" class="btn btn-secondary">
+                    🔄 Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Card de Estatísticas -->
+    <div class="avaliacao-card">
+        <h3>📊 Estatísticas Gerais</h3>
+        <div class="metric-card" style="margin-bottom: 20px;">
+            <div class="metric-value">{{ total_avaliacoes }}</div>
+            <div class="metric-label">Total de Avaliações</div>
+        </div>
+        
+        <div class="metric-card" style="background: linear-gradient(135deg, #28a745, #20c997);">
+            <div class="metric-value">{{ media_geral|default:"--" }}</div>
+            <div class="metric-label">Média Geral</div>
+        </div>
+        
+        <hr style="margin: 20px 0; border-color: var(--cor01); opacity: 0.3;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="color: var(--cor03); font-weight: 600;">Ciclos Ativos:</span>
+            <span class="badge bg-success">{{ ciclos|length }}</span>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--cor03); font-weight: 600;">Professores:</span>
+            <span class="badge bg-secondary">{{ professores|length }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Seção de Relatórios -->
+<div class="form-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>📈 Relatório de Avaliações</h2>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary" onclick="exportarCSV()">
+                📊 Exportar CSV
+            </button>
+            <button class="btn btn-secondary" onclick="window.print()">
+                🖨️ Imprimir
+            </button>
+        </div>
+    </div>
+    
+    {% if avaliacoes %}
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Professor</th>
+                        <th>Disciplina</th>
+                        <th>Turma</th>
+                        <th>Ciclo</th>
+                        <th>Respostas</th>
+                        <th>Média</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for avaliacao in avaliacoes %}
+                    <tr>
+                        <td>
+                            <strong>{{ avaliacao.professor.user.get_full_name }}</strong>
+                        </td>
+                        <td>{{ avaliacao.disciplina.nome }}</td>
+                        <td>{{ avaliacao.turma.nome }}</td>
+                        <td>{{ avaliacao.ciclo.nome }}</td>
+                        <td>
+                            <span class="badge bg-info">{{ avaliacao.total_respostas }}</span>
+                        </td>
+                        <td>
+                            {% if avaliacao.media_notas %}
+                                <span style="color: {% if avaliacao.media_notas >= 4 %}#28a745{% elif avaliacao.media_notas >= 3 %}#ffc107{% else %}var(--cor08){% endif %}; font-weight: 600;">
+                                    {{ avaliacao.media_notas|floatformat:1 }}
+                                </span>
+                            {% else %}
+                                <span style="color: #666;">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ avaliacao.data_criacao|date:"d/m/Y" }}</td>
+                        <td>
+                            <a href="{% url 'visualizar_avaliacao' avaliacao.id %}" class="btn btn-sm">
+                                👁️ Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Gráficos e Análises -->
+        {% if medias_por_pergunta %}
+        <div style="margin-top: 40px;">
+            <h3 style="color: var(--cor03); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-graph-down"></i> Médias por Pergunta
+            </h3>
+            <div class="avaliacoes-grid">
+                {% for media in medias_por_pergunta %}
+                <div style="background: var(--cor07); padding: 20px; border-radius: var(--border-radius-medium); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-align: center; border-top: 4px solid {% if media.media >= 4 %}#28a745{% elif media.media >= 3 %}#ffc107{% else %}var(--cor08){% endif %};">
+                    <h6 style="margin-bottom: 15px; color: var(--cor03); font-weight: 600; line-height: 1.4; min-height: 40px; display: flex; align-items: center; justify-content: center;">
+                        {{ media.pergunta__enunciado|truncatechars:60 }}
+                    </h6>
+                    <div style="font-size: 2.2em; font-weight: 700; margin-bottom: 5px; color: {% if media.media >= 4 %}#28a745{% elif media.media >= 3 %}#ffc107{% else %}var(--cor08){% endif %};">
+                        {{ media.media|floatformat:1 }}
+                    </div>
+                    <small style="color: #666; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Média</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Comentários -->
+        {% if comentarios %}
+        <div style="margin-top: 40px;">
+            <h3 style="color: var(--cor03); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-chat-left-text"></i> Comentários Recentes
+            </h3>
+            {% for comentario in comentarios %}
+            <div class="comment-card">
+                <div class="comment-header">
+                    <div>
+                        <div class="comment-author">{{ comentario.avaliacao.professor.user.get_full_name }}</div>
+                        <div class="comment-meta">{{ comentario.avaliacao.disciplina.nome }} - {{ comentario.avaliacao.turma.nome }}</div>
+                    </div>
+                    <div class="comment-meta">{{ comentario.data_criacao|date:"d/m/Y H:i" }}</div>
+                </div>
+                <div class="comment-text">{{ comentario.comentario }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+    {% else %}
+        <div style="text-align: center; padding: 40px; color: #666;">
+            <div style="font-size: 4em; margin-bottom: 20px; color: var(--cor03);">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <h4 style="color: var(--cor03);">Nenhuma avaliação encontrada</h4>
+            <p>Tente ajustar os filtros ou aguarde a conclusão de avaliações pelos alunos.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function exportarCSV() {
+    // Criar URL com parâmetros atuais
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('formato', 'csv');
+    
+    // Redirecionar para download
+    window.location.href = '{% url "relatorio_avaliacoes" %}?' + urlParams.toString();
+}
+
+// Auto-submit do formulário quando filtros mudarem
+document.getElementById('ciclo').addEventListener('change', function() {
+    document.getElementById('form-filtros').submit();
+});
+
+document.getElementById('professor').addEventListener('change', function() {
+    document.getElementById('form-filtros').submit();
+});
+</script>
+
+<style>
+/* Estilos específicos para impressão */
+@media print {
+    .btn, button {
+        display: none !important;
+    }
+    
+    .avaliacoes-grid {
+        display: block !important;
+    }
+    
+    .avaliacao-card {
+        break-inside: avoid;
+        margin-bottom: 15px !important;
+    }
+}
+</style>
+
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
+
+{% include "perfil.html" %}

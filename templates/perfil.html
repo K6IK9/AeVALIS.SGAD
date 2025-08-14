@@ -1,0 +1,408 @@
+{% block content %}
+{% load static %}
+{% load user_tags %}
+
+<!-- Modal de Perfil -->
+<div id="modalPerfilOverlay" style="display:none;">
+    <div id="modalPerfil">
+        <button id="fecharPerfil" title="Fechar">&times;</button>
+        <section id="dados_modal">
+            <aside id="aside_perfil_modal">
+                <img src="{% static 'assets/perfil.svg' %}" alt="Perfil">
+                <div class="role-badge {{ user|get_user_role_class }}">
+                    {{ user|get_user_role }}
+                </div>
+            </aside>
+            
+            <div class="profile-header">
+                <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+                <span class="profile-type">{{ user|get_user_profile_type }}</span>
+            </div>
+
+            <div class="profile-info-grid">
+                <label class="infos_modal">
+                    <img src="{% static 'assets/perfil.svg' %}" alt="Nome Usuário">
+                    <p id="nome_usuario_modal">
+                        <span class="info-label">Nome:</span>
+                        <span class="info-value">{{ user.first_name }} {{ user.last_name }}</span>
+                    </p>
+                </label>
+                <label class="infos_modal">
+                    <img src="{% static 'assets/perfil.svg' %}" alt="Matrícula">
+                    <p id="matricula_usuario_modal">
+                        <span class="info-label">Matrícula:</span>
+                        <span class="info-value">{{ user.username }}</span>
+                    </p>
+                </label>
+                <label class="infos_modal">
+                    <img src="{% static 'assets/email.svg' %}" alt="Email">
+                    <p id="email_usuario_modal">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">{{ user.email|default:"Não informado" }}</span>
+                    </p>
+                </label>
+            </div>
+
+            <form method="post" action="/accounts/logout/?next=/accounts/login/">
+                {% csrf_token %}
+                <button type="submit" id="logout_modal">
+                    <span>🚪</span>
+                    Sair do Sistema
+                </button>
+            </form>
+        </section>
+    </div>
+</div>
+
+<style>
+    :root {
+        --cor01: #f1f1f1;
+        --cor02: #00fd94;
+        --cor03: #376f6c;
+        --cor04: #1e3231;
+        --cor05: #090909;
+        --cor06: #00cafd;
+        --cor07: #ffffff;
+        --cor08: #ff3c3c;
+        --shadow: 4px 2px 8px rgba(0, 0, 0, 0.2);
+        --gradient-primary: var(--cor03);
+        --gradient-secondary: var(--cor08);
+    }
+
+    #modalPerfilOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(3px);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: overlayFadeIn 0.2s ease-out;
+    }
+
+    @keyframes overlayFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    #modalPerfil {
+        background: var(--cor07);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(55, 111, 108, 0.15);
+        padding: 0;
+        width: 45%;
+        max-width: 800px;
+        min-width: 400px;
+        min-height: 480px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: modalShow 0.3s ease-out;
+        
+    }
+
+    @keyframes modalShow {
+        from {
+            transform: translateY(-30px) scale(0.95);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+    }
+
+    #fecharPerfil {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: var(--cor07);
+        border: 2px solid var(--cor08);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+        color: var(--cor08);
+        cursor: pointer;
+        z-index: 10;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #fecharPerfil:hover {
+        background: var(--cor08);
+        color: white;
+        transform: scale(1.05);
+    }
+
+    #dados_modal {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+        background: var(--cor03);
+        border-radius: 16px;
+        padding: 120px 40px 40px 40px;
+        position: relative;
+        min-height: 480px;
+    }
+
+    #aside_perfil_modal {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: var(--cor07);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        border: 3px solid var(--cor02);
+    }
+
+    #aside_perfil_modal img {
+        width: 60px;
+        filter: brightness(0) saturate(100%) invert(22%) sepia(25%) saturate(1088%) hue-rotate(151deg) brightness(94%) contrast(90%);
+    }
+
+    .role-badge {
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        border: 2px solid white;
+    }
+
+    .role-admin { background: var(--cor08); }
+    .role-coordenador { background: #6f42c1; }
+    .role-professor { background: #fd7e14; }
+    .role-aluno { background: #198754; }
+    .role-sem-role { background: #6c757d; }
+
+    .profile-header {
+        text-align: center;
+        margin-bottom: 20px;
+        color: white;
+    }
+
+    .profile-header h3 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-type {
+        background: rgba(255, 255, 255, 0.25);
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .profile-info-grid {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .infos_modal {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        position: relative;
+        cursor: default;
+    }
+
+    .infos_modal img {
+        width: 18px;
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        filter: brightness(0) saturate(100%) invert(22%) sepia(25%) saturate(1088%) hue-rotate(151deg) brightness(94%) contrast(90%);
+    }
+
+    .infos_modal p {
+        width: 100%;
+        padding: 16px 20px 16px 50px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(5px);
+        color: var(--cor03);
+        font-size: 0.95rem;
+        margin: 0;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .infos_modal:hover p {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        background: rgba(255, 255, 255, 1);
+    }
+
+    .info-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--cor04);
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--cor03);
+    }
+
+    #logout_modal {
+        width: 200px;
+        padding: 14px 24px;
+        border-radius: 12px;
+        border: none;
+        background: var(--cor08);
+        color: white;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(255, 60, 60, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    #logout_modal:hover {
+        background: #d63031;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(255, 60, 60, 0.3);
+    }
+
+    #logout_modal span {
+        font-size: 1.2rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        #modalPerfil {
+            width: 90%;
+            min-width: unset;
+            margin: 20px;
+        }
+
+        #dados_modal {
+            padding: 100px 25px 30px 25px;
+        }
+
+        #aside_perfil_modal {
+            width: 100px;
+            height: 100px;
+        }
+
+        #aside_perfil_modal img {
+            width: 50px;
+        }
+
+        .profile-header h3 {
+            font-size: 1.5rem;
+        }
+
+        #logout_modal {
+            width: 180px;
+            padding: 12px 20px;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        #modalPerfil {
+            width: 95%;
+            margin: 10px;
+        }
+
+        #dados_modal {
+            padding: 80px 20px 25px 20px;
+        }
+
+        #aside_perfil_modal {
+            width: 80px;
+            height: 80px;
+        }
+
+        #aside_perfil_modal img {
+            width: 40px;
+        }
+
+        .profile-header h3 {
+            font-size: 1.3rem;
+        }
+
+        .infos_modal p {
+            padding: 14px 16px 14px 45px;
+            font-size: 0.9rem;
+        }
+
+        .infos_modal img {
+            width: 16px;
+            left: 14px;
+        }
+
+        #logout_modal {
+            width: 160px;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+
+<script>
+    const perfilBtn = document.getElementById('perfil');
+    const modalPerfilOverlay = document.getElementById('modalPerfilOverlay');
+    const fecharPerfil = document.getElementById('fecharPerfil');
+    if (perfilBtn && modalPerfilOverlay && fecharPerfil) {
+        perfilBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            modalPerfilOverlay.style.display = 'flex';
+        });
+        fecharPerfil.addEventListener('click', function () {
+            modalPerfilOverlay.style.display = 'none';
+        });
+        modalPerfilOverlay.addEventListener('click', function (e) {
+            if (e.target === modalPerfilOverlay) modalPerfilOverlay.style.display = 'none';
+        });
+    }
+</script>
+{% endblock %}

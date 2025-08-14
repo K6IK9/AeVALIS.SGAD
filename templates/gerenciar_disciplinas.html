@@ -1,0 +1,673 @@
+{% load permission_tags %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IF SADD - Gerenciar Disciplinas</title>
+
+    <style>
+        /* Importação das fontes */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Vidaloka&display=swap');
+
+        /* Variáveis CSS comuns */
+        :root {
+            /* Cores principais */
+            --cor01: #f0f0f0;
+            --cor01-alt: #f1f1f1;
+            --cor02: #00fd94;
+            --cor03: #376f6c;
+            --cor04: #1e3231;
+            --cor05: #090909;
+            --cor06: #00cafd;
+            --cor07: #ffffff;
+            --cor08: #ff3c3c;
+
+            /* Fontes */
+            --font01: "Poppins", sans-serif;
+            --font02: "Vidaloka", serif;
+
+            /* Sombras */
+            --shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            --shadow-alt: 4px 2px 8px rgba(0, 0, 0, 0.2);
+
+            /* Bordas e raios */
+            --border-radius-small: 5px;
+            --border-radius-medium: 15px;
+            --border-radius-large: 25px;
+            --border-radius-xl: 35px;
+            --border-radius-circle: 50%;
+
+            /* Espaçamentos */
+            --spacing-xs: 5px;
+            --spacing-sm: 10px;
+            --spacing-md: 15px;
+            --spacing-lg: 20px;
+            --spacing-xl: 25px;
+            --spacing-2xl: 40px;
+            --spacing-3xl: 50px;
+
+            /* Transições */
+            --transition-fast: 0.2s;
+            --transition-medium: 0.3s;
+        }
+
+        /* Reset global */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font01);
+        }
+
+        body {
+            background: var(--cor01);
+        }
+
+        /* Layout base para páginas de gerenciamento */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: var(--cor03);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius-medium);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.2em;
+        }
+
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        /* Seções de formulário */
+        .form-section {
+            background: var(--cor07);
+            padding: 30px;
+            border-radius: var(--border-radius-medium);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            color: var(--cor03);
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+
+        /* Grupos de formulário */
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--cor03);
+        }
+
+        /* Controles de formulário */
+        .form-control,
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .form-control:focus,
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--cor02);
+        }
+
+        /* Botões */
+        .btn {
+            background: var(--cor02);
+            color: var(--cor05);
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: var(--cor06);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--cor03);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--cor04);
+        }
+
+        .btn-danger {
+            background: var(--cor08);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        /* Botão de voltar */
+        .back-button {
+            background: var(--cor03);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background: var(--cor04);
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Tabelas */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--cor07);
+            border-radius: var(--border-radius-medium);
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .data-table th {
+            background: var(--cor03);
+            color: white;
+            font-weight: 600;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Mensagens */
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        /* Informações adicionais */
+        .item-count {
+            font-size: 0.9em;
+            color: var(--cor03);
+            margin-top: 10px;
+        }
+
+        /* Estilos específicos para disciplinas */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .form-section {
+                padding: 20px;
+            }
+
+            .data-table {
+                font-size: 0.9em;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.6em;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .back-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* Botões de ação */
+        .btn-action {
+            padding: 6px 12px;
+            margin: 2px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-edit {
+            background: var(--cor06);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #0056b3;
+        }
+
+        .btn-delete {
+            background: var(--cor08);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        /* Modal de exclusão - padrão igual ao de cursos */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 15px;
+            padding: 0;
+            margin: 20px;
+            max-width: 500px;
+            width: 90%;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--cor08), #c82333);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .modal-content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="{% url 'admin_hub' %}" class="back-button">← Voltar ao Início</a>
+
+        <div class="header">
+            <h1>Gerenciamento de Disciplinas</h1>
+            <p>Crie e visualize as disciplinas do sistema</p>
+        </div>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="form-section">
+            <h2>{% if editing %}Editar Disciplina{% else %}Criar Nova Disciplina{% endif %}</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.disciplina_nome.id_for_label }}">{{ form.disciplina_nome.label }}</label>
+                        {{ form.disciplina_nome }}
+                        {% if form.disciplina_nome.errors %}
+                        <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px;">
+                            {% for error in form.disciplina_nome.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.disciplina_sigla.id_for_label }}">{{ form.disciplina_sigla.label }}</label>
+                        {{ form.disciplina_sigla }}
+                        {% if form.disciplina_sigla.errors %}
+                        <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px;">
+                            {% for error in form.disciplina_sigla.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.disciplina_tipo.id_for_label }}">{{ form.disciplina_tipo.label }}</label>
+                        {{ form.disciplina_tipo }}
+                        {% if form.disciplina_tipo.errors %}
+                        <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px;">
+                            {% for error in form.disciplina_tipo.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.curso.id_for_label }}">{{ form.curso.label }}</label>
+                        {{ form.curso }}
+                        {% if form.curso.errors %}
+                        <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px;">
+                            {% for error in form.curso.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.professor.id_for_label }}">{{ form.professor.label }}</label>
+                        {{ form.professor }}
+                        {% if form.professor.errors %}
+                        <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px;">
+                            {% for error in form.professor.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.periodo_letivo.id_for_label }}">{{ form.periodo_letivo.label }}</label>
+                        {{ form.periodo_letivo }}
+                        {% if form.periodo_letivo.errors %}
+                        <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px;">
+                            {% for error in form.periodo_letivo.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">{% if editing %}Atualizar Disciplina{% else %}Criar Disciplina{% endif %}</button>
+                {% if editing %}
+                <a href="{% url 'gerenciar_disciplinas' %}" class="btn btn-secondary">Cancelar</a>
+                {% endif %}
+            </form>
+        </div>
+
+        {% if not editing %}
+        <div class="form-section">
+            <h2>Disciplinas Cadastradas</h2>
+            <div class="disciplina-count">
+                Total de disciplinas: {{ disciplinas.count }}
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome da Disciplina</th>
+                        <th>Sigla</th>
+                        <th>Tipo</th>
+                        <th>Curso</th>
+                        <th>Professor</th>
+                        <th>Período Letivo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for disciplina in disciplinas %}
+                    <tr>
+                        <td>{{ disciplina.id }}</td>
+                        <td>{{ disciplina.disciplina_nome }}</td>
+                        <td>{{ disciplina.disciplina_sigla }}</td>
+                        <td>{{ disciplina.disciplina_tipo }}</td>
+                        <td>{{ disciplina.curso.curso_nome }}</td>
+                        <td>{{ disciplina.professor }}</td>
+                        <td>{{ disciplina.periodo_letivo }}</td>
+                        <td>
+                            <a href="{% url 'editar_disciplina' disciplina.id %}" class="btn-action btn-edit">✏️
+                                Editar</a>
+                            <button onclick="confirmarExclusao({{ disciplina.id }}, '{{ disciplina.disciplina_nome }}')"
+                                class="btn-action btn-delete">🗑️ Excluir</button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px;">
+                            Nenhuma disciplina encontrada.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Confirmar Exclusão</h3>
+            </div>
+            <div class="modal-content">
+                <p id="modal-message">Tem certeza que deseja excluir esta disciplina? Esta ação não poderá ser desfeita.</p>
+                <div class="modal-actions">
+                    <button onclick="fecharModal()" class="btn-action" style="background: #6c757d; color: white;">Cancelar</button>
+                    <button onclick="excluirItem()" class="btn-action btn-delete">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variável global para controle do modal de exclusão
+        let itemParaExcluir = null;
+
+        // Função para abrir modal de exclusão - padrão igual ao de cursos
+        function confirmarExclusao(id, nome) {
+            itemParaExcluir = id;
+            document.getElementById('modal-message').textContent =
+                `Tem certeza que deseja excluir a disciplina "${nome}"? Esta ação não poderá ser desfeita.`;
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        // Função para fechar modal de exclusão - padrão igual ao de cursos
+        function fecharModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+            itemParaExcluir = null;
+        }
+
+        // Função para confirmar exclusão - padrão igual ao de cursos
+        function excluirItem() {
+            if (!itemParaExcluir) return;
+
+            fetch(`/excluir-disciplina/${itemParaExcluir}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message || 'Disciplina excluída com sucesso!');
+                        location.reload();
+                    } else {
+                        alert(data.error || 'Erro ao excluir disciplina.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao excluir disciplina.');
+                })
+                .finally(() => {
+                    fecharModal();
+                });
+        }
+
+        // Fechar modal de exclusão ao clicar fora dele
+        document.getElementById('modal-overlay').addEventListener('click', function (e) {
+            if (e.target === this) {
+                fecharModal();
+            }
+        });
+
+        // Fechar modal com tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                fecharModal();
+            }
+        });
+    </script>
+</body>
+
+</html>

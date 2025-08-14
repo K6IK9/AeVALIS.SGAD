@@ -1,0 +1,42 @@
+# Arquivos e diretórios para ignorar no deploy Vercel
+
+# Ambiente virtual
+.venv/
+venv/
+env/
+
+# Arquivos de desenvolvimento
+db.sqlite3
+*.pyc
+__pycache__/
+.env
+.env.local
+
+# Arquivos de teste
+.coverage
+htmlcov/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentação local
+*.md
+!README.md
+
+# Logs
+*.log
+
+# Arquivos temporários
+*.tmp
+*.temp

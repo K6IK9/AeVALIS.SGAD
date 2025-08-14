@@ -1,0 +1,706 @@
+{% load permission_tags %}
+{% load user_tags %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhe do Ciclo - IF SADD</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        /* Importação das fontes */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Vidaloka&display=swap');
+
+        /* Variáveis CSS comuns */
+        :root {
+            /* Cores principais */
+            --cor01: #f0f0f0;
+            --cor01-alt: #f1f1f1;
+            --cor02: #00fd94;
+            --cor03: #376f6c;
+            --cor04: #1e3231;
+            --cor05: #090909;
+            --cor06: #00cafd;
+            --cor07: #ffffff;
+            --cor08: #ff3c3c;
+
+            /* Fontes */
+            --font01: "Poppins", sans-serif;
+            --font02: "Vidaloka", serif;
+
+            /* Sombras */
+            --shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            --shadow-alt: 4px 2px 8px rgba(0, 0, 0, 0.2);
+
+            /* Bordas e raios */
+            --border-radius-small: 5px;
+            --border-radius-medium: 15px;
+            --border-radius-large: 25px;
+            --border-radius-xl: 35px;
+            --border-radius-circle: 50%;
+
+            /* Espaçamentos */
+            --spacing-xs: 5px;
+            --spacing-sm: 10px;
+            --spacing-md: 15px;
+            --spacing-lg: 20px;
+            --spacing-xl: 25px;
+            --spacing-2xl: 40px;
+            --spacing-3xl: 50px;
+
+            /* Transições */
+            --transition-fast: 0.2s;
+            --transition-medium: 0.3s;
+        }
+
+        /* Reset global */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font01);
+        }
+
+        body {
+            background: var(--cor01);
+        }
+
+        /* Layout base para páginas de gerenciamento */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: var(--cor03);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius-medium);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.2em;
+        }
+
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        /* Botão de voltar */
+        .back-button {
+            background: var(--cor03);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background: var(--cor04);
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Mensagens */
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .message.success {
+            background: rgba(0, 253, 148, 0.1);
+            color: #155724;
+            border-left: 4px solid var(--cor02);
+        }
+
+        .message.error {
+            background: rgba(255, 60, 60, 0.1);
+            color: #721c24;
+            border-left: 4px solid var(--cor08);
+        }
+
+        .message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .message.info {
+            background: rgba(0, 202, 253, 0.1);
+            color: #0c5460;
+            border-left: 4px solid var(--cor06);
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.6em;
+            }
+
+            .back-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* Estilização dos cards customizados */
+        .card-custom {
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            background-color: var(--cor07);
+        }
+
+        .card-custom .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 0.75rem 1rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--cor03);
+        }
+
+        /* Botões customizados */
+        .btn-primary-custom {
+            background-color: var(--cor02);
+            border-color: var(--cor02);
+            color: var(--cor05);
+            font-weight: 600;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--cor06);
+            border-color: var(--cor06);
+            color: var(--cor05);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-secondary {
+            background-color: rgba(55, 111, 108, 0.15);
+            border-color: var(--cor03);
+            color: var(--cor03);
+            font-weight: 600;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--cor03);
+            border-color: var(--cor03);
+            color: var(--cor07);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-primary {
+            background-color: rgba(0, 253, 148, 0.15);
+            border-color: var(--cor02);
+            color: var(--cor02);
+            font-weight: 600;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--cor02);
+            border-color: var(--cor02);
+            color: var(--cor05);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-success {
+            background-color: rgba(0, 253, 148, 0.15);
+            border-color: var(--cor02);
+            color: var(--cor02);
+            font-weight: 600;
+        }
+
+        .btn-outline-success:hover {
+            background-color: var(--cor02);
+            border-color: var(--cor02);
+            color: var(--cor05);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-warning {
+            background-color: rgba(255, 193, 7, 0.15);
+            border-color: #ffc107;
+            color: #856404;
+            font-weight: 600;
+        }
+
+        .btn-outline-warning:hover {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: var(--cor05);
+            transform: translateY(-1px);
+        }
+
+        /* Botões de filtro - melhor visibilidade */
+        .btn-group .btn {
+            border-width: 1.5px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+            transition: all var(--transition-fast) ease;
+        }
+
+        .btn-group .btn:not(.active):hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-group .btn.active {
+            transform: none;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+            font-weight: 700;
+        }
+
+        .btn-group .btn-outline-secondary.active {
+            background-color: var(--cor03);
+            border-color: var(--cor03);
+            color: var(--cor07);
+        }
+
+        .btn-group .btn-outline-success.active {
+            background-color: var(--cor02);
+            border-color: var(--cor02);
+            color: var(--cor05);
+        }
+
+        .btn-group .btn-outline-warning.active {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: var(--cor05);
+        }
+
+        /* Botões de ação na tabela - melhor visibilidade */
+        .table .btn-group-sm .btn {
+            padding: 0.375rem 0.5rem;
+            font-size: 0.875rem;
+            border-width: 1.5px;
+            font-weight: 600;
+            min-width: 40px;
+            transition: all var(--transition-fast) ease;
+        }
+
+        .table .btn-outline-primary {
+            background-color: rgba(0, 253, 148, 0.15);
+            border-color: var(--cor02);
+            color: var(--cor02);
+        }
+
+        .table .btn-outline-primary:hover {
+            background-color: var(--cor02);
+            border-color: var(--cor02);
+            color: var(--cor05);
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 253, 148, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .table .btn-outline-success {
+            background-color: rgba(0, 253, 148, 0.15);
+            border-color: var(--cor02);
+            color: var(--cor02);
+        }
+
+        .table .btn-outline-success:hover {
+            background-color: var(--cor02);
+            border-color: var(--cor02);
+            color: var(--cor05);
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 253, 148, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Melhorar visibility dos ícones nos botões */
+        .btn i {
+            font-size: 1rem;
+        }
+
+        .table .btn i {
+            font-size: 0.875rem;
+        }
+
+        /* Badges customizados */
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.35rem 0.65rem;
+        }
+
+        .badge.bg-success {
+            background-color: var(--cor02) !important;
+            color: var(--cor05);
+        }
+
+        .badge.bg-secondary {
+            background-color: var(--cor03) !important;
+            color: var(--cor07);
+        }
+
+        .badge.bg-info {
+            background-color: var(--cor06) !important;
+            color: var(--cor05);
+        }
+
+        .badge.bg-warning {
+            background-color: #ffc107 !important;
+            color: var(--cor05);
+        }
+
+        /* Tabela customizada */
+        .table {
+            color: var(--cor05);
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--cor03);
+            border-bottom: 2px solid #dee2e6;
+            background-color: #f8f9fa;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 253, 148, 0.05);
+        }
+
+        /* Progress bar customizada */
+        .progress {
+            background-color: #e9ecef;
+        }
+
+        .progress-bar.bg-success {
+            background-color: var(--cor02) !important;
+        }
+
+        /* Texto customizado */
+        .text-primary {
+            color: var(--cor02) !important;
+        }
+
+        .text-success {
+            color: var(--cor02) !important;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="container">
+            <a href="{% url 'gerenciar_ciclos' %}" class="back-button">← Voltar</a>
+
+            <!-- Header da página -->
+            <div class="header">
+                <h1>Detalhe do Ciclo</h1>
+                <p>Visualize informações detalhadas do ciclo de avaliação</p>
+            </div>
+
+            <!-- Mensagens -->
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Conteúdo principal -->
+<div class="row">
+    <!-- Informações do Ciclo -->
+    <div class="col-md-4">
+        <div class="card card-custom">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-calendar-check"></i> Informações do Ciclo
+                </h6>
+            </div>
+            <div class="card-body">
+                <h5>{{ ciclo.nome }}</h5>
+                <p class="text-muted">{{ ciclo.descricao }}</p>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Status:</strong></span>
+                    {% if ciclo.ativo %}
+                        <span class="badge bg-success">Ativo</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inativo</span>
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Tipo:</strong></span>
+                    {% if ciclo.permite_avaliacao_anonima %}
+                        <span class="badge bg-info">Anônima</span>
+                    {% else %}
+                        <span class="badge bg-warning">Identificada</span>
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Início:</strong></span>
+                    <span>{{ ciclo.data_inicio|date:"d/m/Y" }}</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Fim:</strong></span>
+                    <span>{{ ciclo.data_fim|date:"d/m/Y" }}</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Período:</strong></span>
+                    <span>{{ ciclo.periodo_letivo.nome }}</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Questionário:</strong></span>
+                    <span>{{ ciclo.questionario.titulo }}</span>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Criado por:</strong></span>
+                    <span>{{ ciclo.criado_por.get_full_name|default:ciclo.criado_por.username }}</span>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Criado em:</strong></span>
+                    <small>{{ ciclo.data_criacao|date:"d/m/Y H:i" }}</small>
+                </div>
+                
+                <hr>
+                
+                <a href="{% url 'listar_avaliacoes' %}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-arrow-left"></i> Voltar para Lista
+                </a>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="card card-custom mt-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-graph-up"></i> Estatísticas
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h3 class="text-primary">{{ total_avaliacoes }}</h3>
+                            <small class="text-muted">Total de Avaliações</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="text-success">{{ avaliacoes_respondidas }}</h3>
+                        <small class="text-muted">Respondidas</small>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Progresso</span>
+                        <span>{{ percentual_respondidas|floatformat:1 }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ percentual_respondidas }}%" 
+                             aria-valuenow="{{ percentual_respondidas }}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+                
+                {% if user|has_role:"coordenador" or user|has_role:"admin" %}
+                <div class="mt-3">
+                    <a href="{% url 'relatorio_avaliacoes' %}?ciclo={{ ciclo.id }}" 
+                       class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-graph-up"></i> Ver Relatório Completo
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Avaliações -->
+    <div class="col-md-8">
+        <div class="card card-custom">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-list-check"></i> Avaliações do Ciclo
+                </h6>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary" onclick="filtrarAvaliacoes('todas')">
+                        Todas
+                    </button>
+                    <button class="btn btn-outline-success" onclick="filtrarAvaliacoes('respondidas')">
+                        Respondidas
+                    </button>
+                    <button class="btn btn-outline-warning" onclick="filtrarAvaliacoes('pendentes')">
+                        Pendentes
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if avaliacoes_docentes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Professor</th>
+                                    <th>Disciplina</th>
+                                    <th>Turma</th>
+                                    <th>Aluno</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="avaliacoes-tbody">
+                                {% for avaliacao in avaliacoes_docentes %}
+                                <tr class="avaliacao-row" 
+                                    data-status="{% if avaliacao.respostas.exists %}respondida{% else %}pendente{% endif %}">
+                                    <td>
+                                        <strong>{{ avaliacao.professor.user.get_full_name }}</strong>
+                                    </td>
+                                    <td>
+                                        {{ avaliacao.disciplina.disciplina_nome }}
+                                    </td>
+                                    <td>
+                                        {{ avaliacao.turma.codigo_turma }}
+                                    </td>
+                                    <td>
+                                        {% if not ciclo.permite_avaliacao_anonima %}
+                                            <span class="text-muted">Multiple Students</span>
+                                        {% else %}
+                                            <span class="text-muted">Anônima</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if avaliacao.respostas.exists %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Respondida
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-clock"></i> Pendente
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if avaliacao.respostas.exists %}
+                                                <a href="{% url 'visualizar_avaliacao' avaliacao.id %}" 
+                                                   class="btn btn-outline-primary" title="Visualizar">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            {% else %}
+                                                {% if user.perfil_aluno %}
+                                                    <a href="{% url 'responder_avaliacao' avaliacao.id %}" 
+                                                       class="btn btn-outline-success" title="Responder">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-clipboard-x" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="mt-3 text-muted">Nenhuma avaliação encontrada para este ciclo.</p>
+                        {% if user|has_role:"coordenador" or user|has_role:"admin" %}
+                        <p class="text-muted">
+                            As avaliações são criadas automaticamente quando alunos são matriculados em turmas 
+                            que têm professores atribuídos durante o período do ciclo.
+                        </p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+function filtrarAvaliacoes(status) {
+    const rows = document.querySelectorAll('.avaliacao-row');
+    const buttons = document.querySelectorAll('.btn-group .btn');
+    
+    // Remover classe ativa de todos os botões
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    rows.forEach(row => {
+        if (status === 'todas') {
+            row.style.display = '';
+        } else if (status === 'respondidas' && row.dataset.status === 'respondida') {
+            row.style.display = '';
+        } else if (status === 'pendentes' && row.dataset.status === 'pendente') {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Adicionar classe ativa ao botão clicado
+    event.target.classList.add('active');
+}
+
+// Definir filtro padrão
+document.addEventListener('DOMContentLoaded', function() {
+    const primeiroBtn = document.querySelector('.btn-group .btn');
+    if (primeiroBtn) {
+        primeiroBtn.classList.add('active');
+    }
+});
+</script>
+
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
+
+{% include "perfil.html" %}
