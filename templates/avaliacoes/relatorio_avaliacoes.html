@@ -721,6 +721,103 @@
 </div>
 
 <script>
+// ================= Gráficos por Ciclo =================
+const ciclosGraficos = JSON.parse('{{ ciclos_graficos_json|escapejs }}');
+
+function gerarCor(index, total){
+    const hue = Math.round((360/Math.max(total,1))*index);
+    return `hsl(${hue},65%,55%)`;
+}
+
+function montarContainerGraficos(){
+    if(!ciclosGraficos.length) return;
+    const wrapper = document.createElement('div');
+    wrapper.style.marginTop = '50px';
+    wrapper.innerHTML = `<h2 style="color: var(--cor03); margin-bottom:25px; display:flex; align-items:center; gap:10px;">📊 Gráficos por Ciclo</h2>`;
+
+    ciclosGraficos.forEach(ciclo => {
+        const cicloDiv = document.createElement('div');
+        cicloDiv.style.marginBottom = '40px';
+        cicloDiv.innerHTML = `<h4 style="color: var(--cor03); margin-bottom:15px;">🌀 ${ciclo.nome}</h4>`;
+
+        const grade = document.createElement('div');
+        grade.style.display = 'grid';
+        grade.style.gridTemplateColumns = 'repeat(auto-fit,minmax(320px,1fr))';
+        grade.style.gap = '25px';
+
+        ciclo.perguntas.forEach((p, idx) => {
+            const card = document.createElement('div');
+            card.style.background = 'var(--cor07)';
+            card.style.padding = '18px';
+            card.style.borderRadius = '15px';
+            card.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+            card.style.borderTop = '4px solid var(--cor02)';
+
+            const canvasId = `chart_c${ciclo.id}_p${p.id}`;
+            card.innerHTML = `
+                <div style="font-weight:600; font-size:0.9rem; color: var(--cor03); min-height:48px; margin-bottom:10px;">${p.enunciado}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <small style="color:#555; font-weight:600;">Tipo: ${p.tipo.toUpperCase()}</small>
+                    <small style="color:#222; font-weight:600;">Média: ${p.media}</small>
+                </div>
+                <canvas id="${canvasId}" height="180"></canvas>`;
+            grade.appendChild(card);
+            cicloDiv.appendChild(grade);
+
+            setTimeout(()=>criarGrafico(canvasId, p), 0);
+        });
+
+        wrapper.appendChild(cicloDiv);
+    });
+    document.querySelector('.form-section').appendChild(wrapper);
+}
+
+function criarGrafico(canvasId, pergunta){
+    const ctx = document.getElementById(canvasId);
+    if(!ctx) return;
+    const labels = Object.keys(pergunta.contagens).sort((a,b)=>Number(a)-Number(b));
+    const dados = labels.map(k => pergunta.contagens[k]);
+    const cores = labels.map((_,i)=>gerarCor(i, labels.length));
+    const tipoGrafico = pergunta.tipo === 'nps' ? 'line' : 'bar';
+    const datasetCfg = {
+        label: 'Qtd',
+        data: dados,
+        backgroundColor: tipoGrafico==='bar'? cores : 'rgba(0,253,148,0.4)',
+        borderColor: tipoGrafico==='bar'? cores : 'var(--cor02)',
+        borderWidth: 2,
+        tension: 0.3,
+        fill: pergunta.tipo === 'nps'
+    };
+    new Chart(ctx, {
+        type: tipoGrafico,
+        data: { labels: labels, datasets: [datasetCfg] },
+        options: {
+            responsive:true,
+            plugins:{
+                legend:{display:false},
+                tooltip:{
+                    callbacks:{
+                        label:(ctx)=>`Valor ${ctx.label}: ${ctx.parsed.y}`
+                    }
+                }
+            },
+            scales:{
+                x:{
+                    title:{display:true, text:'Valor'},
+                    ticks:{font:{size:11}}
+                },
+                y:{
+                    beginAtZero:true,
+                    title:{display:true, text:'Quantidade'},
+                    ticks:{precision:0}
+                }
+            }
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', montarContainerGraficos);
+
 function exportarCSV() {
     // Criar URL com parâmetros atuais
     const urlParams = new URLSearchParams(window.location.search);
@@ -739,6 +836,9 @@ document.getElementById('professor').addEventListener('change', function() {
     document.getElementById('form-filtros').submit();
 });
 </script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 <style>
 /* Estilos específicos para impressão */

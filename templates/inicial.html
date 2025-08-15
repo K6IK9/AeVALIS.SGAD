@@ -402,15 +402,11 @@
             <span id="alunoAtual" style="color: #ff3c3c;">Por favor, configure seu perfil</span>
             {% endif %}
         </h1>
-        <section id="opcoes">
-            <h2>Opções Disponíveis</h2>
-            <a href="{% url 'listar_avaliacoes' %}" class="opcao-link">
-                <button id="realizar_avaliacao">Ver Minhas Avaliações</button>
-            </a>
-            <a href="{% url 'relatorio_avaliacoes' %}" class="opcao-link">
-                <button id="relatorio_avaliacoes">Histórico de Avaliações</button>
-            </a>
-        </section>
+        <div class="aviso-perfil" style="max-width:650px;background:#ffffff;border:1px solid #e2e8e8;border-left:5px solid var(--cor03);padding:24px 28px;border-radius:18px;box-shadow:0 4px 14px -4px rgba(0,0,0,0.08);text-align:center;animation:fadeInUp .6s ease-out;">
+            <p style="margin:0 0 12px;font-size:1.05rem;color:var(--cor03);font-weight:600;">Nenhuma ação disponível para o perfil de Professor nesta etapa.</p>
+            <p style="margin:0 0 6px;font-size:.9rem;color:#555;">O acompanhamento das avaliações é realizado pela coordenação.</p>
+            <p style="margin:0;font-size:.85rem;color:#777;">Se você não se identifica com o perfil apresentado, entre em contato com a coordenação para ajuste do seu acesso.</p>
+        </div>
         {% elif user|has_role:'aluno' %}
         <h1>Seja bem-vindo(a) Aluno:
             {% if user.first_name and user.last_name %}

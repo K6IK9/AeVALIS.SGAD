@@ -253,18 +253,32 @@
                         <div class="ciclo-item">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="flex-grow-1">
-                                    <h6 class="ciclo-nome mb-1">{{ ciclo.nome }}</h6>
+                                    <h6 class="ciclo-nome mb-1">{{ ciclo.nome }} {% if not ciclo.ativo %}<span class="badge bg-secondary">Encerrado</span>{% endif %}</h6>
                                     <small class="text-muted d-block mb-1">
                                         <i class="bi bi-calendar-range"></i>
                                         {{ ciclo.data_inicio|date:"d/m/Y" }} - {{ ciclo.data_fim|date:"d/m/Y" }}
                                     </small>
                                 </div>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-outline-primary-custom" title="Visualizar" data-bs-toggle="tooltip"><i class="bi bi-eye"></i></a>
-                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-secondary-custom" title="Editar" data-bs-toggle="tooltip"><i class="bi bi-pencil"></i></a>
-                                    <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" onsubmit="return confirm('Excluir ciclo {{ ciclo.nome }}?');" style="display:inline;">
+                                <div class="d-flex flex-wrap gap-1 justify-content-end">
+                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-sm btn-outline-primary d-flex align-items-center" title="Visualizar ciclo" data-bs-toggle="tooltip">
+                                        <i class="bi bi-eye me-1"></i><span>Ver</span>
+                                    </a>
+                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-sm btn-warning text-dark d-flex align-items-center" title="Editar ciclo" data-bs-toggle="tooltip">
+                                        <i class="bi bi-pencil-square me-1"></i><span>Editar</span>
+                                    </a>
+                                    {% if ciclo.ativo %}
+                                    <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"? Alunos não poderão mais responder.');" style="display:inline;">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger-custom" title="Excluir" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center" title="Encerrar ciclo" data-bs-toggle="tooltip">
+                                            <i class="bi bi-stop-circle me-1"></i><span>Encerrar</span>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" onsubmit="return confirm('Tem certeza que deseja excluir o ciclo {{ ciclo.nome }}? Esta ação não pode ser desfeita.');" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger d-flex align-items-center" title="Excluir ciclo" data-bs-toggle="tooltip">
+                                            <i class="bi bi-trash me-1"></i><span>Excluir</span>
+                                        </button>
                                     </form>
                                 </div>
                             </div>
@@ -295,18 +309,32 @@
                         <div class="ciclo-item" style="opacity:.85;">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="flex-grow-1">
-                                    <h6 class="ciclo-nome mb-1">{{ ciclo.nome }}</h6>
+                                    <h6 class="ciclo-nome mb-1">{{ ciclo.nome }} {% if not ciclo.ativo %}<span class="badge bg-secondary">Encerrado</span>{% endif %}</h6>
                                     <small class="text-muted d-block mb-1">
                                         <i class="bi bi-calendar-range"></i>
                                         {{ ciclo.data_inicio|date:"d/m/Y" }} - {{ ciclo.data_fim|date:"d/m/Y" }}
                                     </small>
                                 </div>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-outline-primary-custom" title="Visualizar" data-bs-toggle="tooltip"><i class="bi bi-eye"></i></a>
-                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-secondary-custom" title="Editar" data-bs-toggle="tooltip"><i class="bi bi-pencil"></i></a>
-                                    <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" onsubmit="return confirm('Excluir ciclo {{ ciclo.nome }}?');" style="display:inline;">
+                                <div class="d-flex flex-wrap gap-1 justify-content-end">
+                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-sm btn-outline-primary d-flex align-items-center" title="Visualizar ciclo" data-bs-toggle="tooltip">
+                                        <i class="bi bi-eye me-1"></i><span>Ver</span>
+                                    </a>
+                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-sm btn-secondary d-flex align-items-center" title="Editar ciclo" data-bs-toggle="tooltip">
+                                        <i class="bi bi-pencil-square me-1"></i><span>Editar</span>
+                                    </a>
+                                    {% if ciclo.ativo %}
+                                    <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"?');" style="display:inline;">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger-custom" title="Excluir" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center" title="Encerrar ciclo" data-bs-toggle="tooltip">
+                                            <i class="bi bi-stop-circle me-1"></i><span>Encerrar</span>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" onsubmit="return confirm('Tem certeza que deseja excluir o ciclo {{ ciclo.nome }}? Esta ação não pode ser desfeita.');" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger d-flex align-items-center" title="Excluir ciclo" data-bs-toggle="tooltip">
+                                            <i class="bi bi-trash me-1"></i><span>Excluir</span>
+                                        </button>
                                     </form>
                                 </div>
                             </div>
@@ -375,11 +403,19 @@
                                         </span>
                                     </div>
                                 </div>
+                                {% if avaliacao.ciclo.ativo and avaliacao.status != 'finalizada' %}
                                 <div class="avaliacao-footer">
                                     <a href="{% url 'responder_avaliacao' avaliacao.id %}" class="btn btn-primary-custom w-100">
                                         <i class="bi bi-pencil-square"></i> Responder Avaliação
                                     </a>
                                 </div>
+                                {% else %}
+                                <div class="avaliacao-footer">
+                                    <button class="btn btn-secondary w-100" disabled>
+                                        <i class="bi bi-stop-circle"></i> Encerrada
+                                    </button>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                         {% endfor %}

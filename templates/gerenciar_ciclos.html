@@ -716,8 +716,9 @@
                             <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-sm btn-secondary" title="Editar" style="white-space: nowrap;">
                                 ✏️ Editar
                             </a>
-                            <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir o ciclo \"{{ ciclo.nome }}\"? Esta ação não pode ser desfeita.');">
+                            <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" style="display:inline;" class="form-excluir-ciclo" data-ciclo="{{ ciclo.nome }}">
                                 {% csrf_token %}
+                                <input type="hidden" name="confirm_cascade" value="0">
                                 <button type="submit" class="btn btn-sm btn-danger" title="Excluir" style="white-space: nowrap;">🗑️ Excluir</button>
                             </form>
                         </div>
@@ -735,6 +736,29 @@
     {% endif %}
 </div>
 {% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.form-excluir-ciclo').forEach(function(form){
+        form.addEventListener('submit', function(e){
+            const hidden = form.querySelector('input[name="confirm_cascade"]');
+            if(hidden.value === '0'){
+                const nome = form.getAttribute('data-ciclo');
+                const msg = `Você está prestes a excluir o ciclo "${nome}".\n\nSe ele possuir avaliações e respostas elas serão EXCLUÍDAS EM CASCATA.\n\nConfirme para continuar.`;
+                if(!confirm(msg)){
+                    e.preventDefault();
+                    return false;
+                }
+                // Primeira confirmação: marca para cascata se necessário.
+                hidden.value = '1';
+                // Permite envio; servidor validará se precisa da segunda etapa (warning prévio já tratado por messages).
+            } else {
+                // Segunda submissão já confirmada
+            }
+        });
+    });
+});
+</script>
 
 <div class="form-section" style="background: #f8f9fa; border-left: 4px solid var(--cor02);">
     <h2 style="color: var(--cor03); margin-bottom: 15px;">📅 Informações sobre Ciclos</h2>

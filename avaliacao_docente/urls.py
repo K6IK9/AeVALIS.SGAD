@@ -136,5 +136,15 @@ urlpatterns = [
         views.excluir_ciclo,
         name="excluir_ciclo",
     ),
+    path(
+        "encerrar-ciclo/<int:ciclo_id>/",
+        views.encerrar_ciclo,
+        name="encerrar_ciclo",
+    ),
+    path(
+        "encerrar-avaliacao/<int:avaliacao_id>/",
+        views.encerrar_avaliacao,
+        name="encerrar_avaliacao",
+    ),
     path("", IndexView.as_view(), name="inicio"),
 ]

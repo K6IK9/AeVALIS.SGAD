@@ -1112,29 +1112,28 @@ def listar_avaliacoes(request):
     if hasattr(request.user, "perfil_aluno"):
         # Para alunos: mostrar apenas avaliações das turmas em que estão matriculados
         from django.db.models import Q
+        from django.utils import timezone
 
-        # Buscar turmas em que o aluno está matriculado com status ativa
         turmas_aluno = request.user.perfil_aluno.matriculas.filter(
             status="ativa"
         ).values_list("turma_id", flat=True)
 
-        # Buscar avaliações em ciclos ativos das turmas do aluno
+        now = timezone.now()
         avaliacoes_disponiveis = (
             AvaliacaoDocente.objects.filter(
                 ciclo__ativo=True,
-                turma_id__in=turmas_aluno,  # Apenas das turmas em que o aluno está matriculado
+                ciclo__data_inicio__lte=now,
+                ciclo__data_fim__gte=now,
+                turma_id__in=turmas_aluno,
+                status__in=["pendente", "em_andamento"],
             )
-            .exclude(
-                # Excluir avaliações já respondidas pelo aluno
-                respostas__aluno=request.user.perfil_aluno
-            )
+            .exclude(respostas__aluno=request.user.perfil_aluno)
             .distinct()
             .order_by("-data_criacao")
         )
 
         avaliacoes = avaliacoes_disponiveis
         titulo = "Avaliações Disponíveis para Responder"
-        # Para alunos não precisamos dos ciclos
         ciclos = []
     else:
         # Para administradores e coordenadores: mostrar todas as avaliações ativas
@@ -1144,6 +1143,7 @@ def listar_avaliacoes(request):
         titulo = "Avaliações Docentes"
         # Ciclos ativos separados por status para facilitar exibição
         from django.utils import timezone
+
         now = timezone.now()
         ciclos_queryset = CicloAvaliacao.objects.filter(ativo=True)
         ciclos_em_andamento = []
@@ -1167,8 +1167,16 @@ def listar_avaliacoes(request):
         "avaliacoes": page_obj,
         "ciclos": ciclos,
         "titulo": titulo,
-        "ciclos_em_andamento": ciclos.get("em_andamento") if not hasattr(request.user, "perfil_aluno") else [],
-        "ciclos_finalizados": ciclos.get("finalizados") if not hasattr(request.user, "perfil_aluno") else [],
+        "ciclos_em_andamento": (
+            ciclos.get("em_andamento")
+            if not hasattr(request.user, "perfil_aluno")
+            else []
+        ),
+        "ciclos_finalizados": (
+            ciclos.get("finalizados")
+            if not hasattr(request.user, "perfil_aluno")
+            else []
+        ),
     }
     return render(request, "avaliacoes/listar_avaliacoes.html", context)
 
@@ -1411,9 +1419,18 @@ def responder_avaliacao(request, avaliacao_id):
         messages.warning(request, "Esta avaliação já foi respondida.")
         return redirect("visualizar_avaliacao", avaliacao_id=avaliacao.id)
 
-    # Verificar se o ciclo está ativo
-    if not avaliacao.ciclo.ativo:
-        messages.error(request, "Este ciclo de avaliação não está mais ativo.")
+    from django.utils import timezone
+
+    now = timezone.now()
+    # Verificar se o ciclo está ativo e dentro do período
+    if (
+        not avaliacao.ciclo.ativo
+        or avaliacao.ciclo.data_fim < now
+        or avaliacao.status not in ["pendente", "em_andamento"]
+    ):
+        messages.error(
+            request, "Esta avaliação está encerrada e não aceita novas respostas."
+        )
         return redirect("listar_avaliacoes")
 
     # Pegar perguntas do questionário
@@ -1537,6 +1554,12 @@ def relatorio_avaliacoes(request):
     View para gerar relatórios de avaliações
     Apenas coordenadores e admins podem acessar
     """
+    from django.db.models import (
+        Avg,
+        Count,
+    )  # Import no início para evitar UnboundLocalError
+    import json
+
     if not (check_user_permission(request.user, ["coordenador", "admin"])):
         messages.error(request, "Você não tem permissão para acessar relatórios.")
         return redirect("listar_avaliacoes")
@@ -1571,6 +1594,74 @@ def relatorio_avaliacoes(request):
                 respostas_numericas.aggregate(media=Avg("valor_numerico"))["media"] or 0
             )
 
+    # ================= Geração de dados para gráficos por ciclo =================
+
+    ciclos_para_graficos = []
+
+    # Ciclos considerados conforme filtros aplicados
+    if ciclo_selecionado:
+        ciclos_iter = ciclos.filter(id=ciclo_selecionado)
+    else:
+        # Apenas ciclos que aparecem nas avaliacoes filtradas
+        ciclos_iter = ciclos.filter(
+            id__in=avaliacoes.values_list("ciclo_id", flat=True).distinct()
+        )
+
+    for ciclo in ciclos_iter:
+        # Base de respostas numéricas (Likert / NPS) dentro do ciclo e filtros de professor se houver
+        respostas_base = RespostaAvaliacao.objects.filter(
+            avaliacao__ciclo=ciclo,
+            pergunta__tipo__in=["likert", "nps"],
+            valor_numerico__isnull=False,
+        )
+        if professor_selecionado:
+            respostas_base = respostas_base.filter(
+                avaliacao__professor_id=professor_selecionado
+            )
+
+        if not respostas_base.exists():
+            continue
+
+        # Contagens por pergunta e valor
+        contagens = respostas_base.values(
+            "pergunta_id",
+            "pergunta__enunciado",
+            "pergunta__tipo",
+            "valor_numerico",
+        ).annotate(qtd=Count("id"))
+
+        # Médias por pergunta
+        medias = respostas_base.values("pergunta_id").annotate(
+            media=Avg("valor_numerico")
+        )
+        medias_map = {m["pergunta_id"]: m["media"] for m in medias}
+
+        perguntas_data = {}
+        for item in contagens:
+            pid = item["pergunta_id"]
+            if pid not in perguntas_data:
+                # Inicializa estrutura conforme o tipo
+                if item["pergunta__tipo"] == "likert":
+                    escala_default = {str(i): 0 for i in range(1, 6)}
+                else:  # nps
+                    escala_default = {str(i): 0 for i in range(0, 11)}
+                perguntas_data[pid] = {
+                    "id": pid,
+                    "enunciado": item["pergunta__enunciado"],
+                    "tipo": item["pergunta__tipo"],
+                    "contagens": escala_default,
+                    "media": round(medias_map.get(pid) or 0, 2),
+                }
+            perguntas_data[pid]["contagens"][str(item["valor_numerico"])] = item["qtd"]
+
+        ciclos_para_graficos.append(
+            {
+                "id": ciclo.id,
+                "nome": ciclo.nome,
+                "perguntas": list(perguntas_data.values()),
+            }
+        )
+
     context = {
         "ciclos": ciclos,
         "professores": professores,
@@ -1580,6 +1671,7 @@ def relatorio_avaliacoes(request):
         "ciclo_selecionado": ciclo_selecionado,
         "professor_selecionado": professor_selecionado,
         "titulo": "Relatórios de Avaliação",
+        "ciclos_graficos_json": json.dumps(ciclos_para_graficos),
     }
     return render(request, "avaliacoes/relatorio_avaliacoes.html", context)
 
@@ -2000,30 +2092,97 @@ def excluir_ciclo(request, ciclo_id):
     ciclo = get_object_or_404(CicloAvaliacao, id=ciclo_id)
 
     if request.method == "POST":
-        avaliacoes = list(ciclo.avaliacoes.all())
-        total_avaliacoes = len(avaliacoes)
+        avaliacoes = ciclo.avaliacoes.all()
+        total_avaliacoes = avaliacoes.count()
+        total_respostas = 0
+        for a in avaliacoes:
+            total_respostas += a.respostas.count()
 
-        if total_avaliacoes > 0:
-            # Se todas as avaliações NÃO possuem respostas, podemos removê-las e excluir o ciclo
-            if all(not a.respostas.exists() for a in avaliacoes):
-                for a in avaliacoes:
-                    a.delete()
-                nome_ciclo = ciclo.nome
-                ciclo.delete()
-                messages.success(
-                    request,
-                    f"Ciclo '{nome_ciclo}' (com {total_avaliacoes} avaliação(ões) sem respostas) excluído com sucesso.",
-                )
-                return redirect("gerenciar_ciclos")
-            else:
-                # Há pelo menos uma avaliação com respostas
-                error_msg = f"Não é possível excluir o ciclo '{ciclo.nome}' pois ele possui avaliações com respostas registradas."
-                messages.error(request, error_msg)
-                return redirect("gerenciar_ciclos")
-        else:
-            nome_ciclo = ciclo.nome
-            ciclo.delete()
-            messages.success(request, f"Ciclo '{nome_ciclo}' excluído com sucesso!")
+        confirm_cascade = request.POST.get("confirm_cascade") == "1"
+
+        # Se há respostas e ainda não foi confirmada a exclusão em cascata, pedir confirmação extra
+        if total_respostas > 0 and not confirm_cascade:
+            messages.warning(
+                request,
+                (
+                    f"Confirma a exclusão em cascata? O ciclo '{ciclo.nome}' possui "
+                    f"{total_avaliacoes} avaliação(ões) e {total_respostas} resposta(s) que serão apagadas. "
+                    "Envie novamente confirmando para prosseguir."
+                ),
+            )
+            # Armazenar flag de confirmação solicitada
+            request.session["confirm_delete_ciclo_id"] = ciclo.id
             return redirect("gerenciar_ciclos")
 
+        # Verifica se a confirmação corresponde ao ciclo atual quando há respostas
+        if total_respostas > 0:
+            session_id = request.session.get("confirm_delete_ciclo_id")
+            if session_id != ciclo.id:
+                messages.error(
+                    request,
+                    "Confirmação inválida ou expirada para exclusão em cascata. Tente novamente.",
+                )
+                return redirect("gerenciar_ciclos")
+
+        nome_ciclo = ciclo.nome
+        ciclo.delete()  # on_delete CASCADE já remove avaliações e respostas
+        if total_respostas > 0:
+            messages.success(
+                request,
+                f"Ciclo '{nome_ciclo}' e todos os seus dados associados ("
+                f"{total_avaliacoes} avaliação(ões), {total_respostas} resposta(s)) foram excluídos.",
+            )
+        else:
+            messages.success(
+                request,
+                f"Ciclo '{nome_ciclo}' excluído (contenha {total_avaliacoes} avaliação(ões) sem respostas).",
+            )
+        # Limpa a sessão de confirmação
+        request.session.pop("confirm_delete_ciclo_id", None)
+        return redirect("gerenciar_ciclos")
+
     return redirect("gerenciar_ciclos")
+
+
+@login_required
+def encerrar_ciclo(request, ciclo_id):
+    """Encerra manualmente um ciclo (torna inativo) impedindo novas respostas."""
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(request, "Você não tem permissão para encerrar ciclos.")
+        return redirect("inicio")
+    ciclo = get_object_or_404(CicloAvaliacao, id=ciclo_id)
+    if request.method == "POST":
+        if not ciclo.ativo:
+            messages.info(request, f"Ciclo '{ciclo.nome}' já está encerrado.")
+        else:
+            ciclo.ativo = False
+            ciclo.save(update_fields=["ativo"])
+            messages.success(request, f"Ciclo '{ciclo.nome}' encerrado com sucesso.")
+        return redirect("detalhe_ciclo_avaliacao", ciclo_id=ciclo.id)
+    messages.error(request, "Método inválido.")
+    return redirect("detalhe_ciclo_avaliacao", ciclo_id=ciclo.id)
+
+
+@login_required
+def encerrar_avaliacao(request, avaliacao_id):
+    """Encerra manualmente uma avaliação (marca como finalizada)."""
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(request, "Você não tem permissão para encerrar avaliações.")
+        return redirect("inicio")
+    avaliacao = get_object_or_404(AvaliacaoDocente, id=avaliacao_id)
+    if request.method == "POST":
+        if avaliacao.status == "finalizada":
+            messages.info(
+                request,
+                f"Avaliação já finalizada: {avaliacao.disciplina.disciplina_nome}.",
+            )
+        else:
+            avaliacao.status = "finalizada"
+            avaliacao.save(update_fields=["status", "data_atualizacao"])
+            messages.success(
+                request,
+                f"Avaliação de {avaliacao.professor.user.get_full_name()} / {avaliacao.disciplina.disciplina_nome} finalizada.",
+            )
+        return redirect("listar_avaliacoes")
+    messages.error(request, "Método inválido.")
+    return redirect("listar_avaliacoes")
