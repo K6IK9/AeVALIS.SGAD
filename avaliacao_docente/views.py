@@ -1100,6 +1100,15 @@ def listar_avaliacoes(request):
     Para alunos: mostra apenas avaliações das turmas em que estão matriculados
     Para outros usuários: mostra todas as avaliações ativas
     """
+    # Bloquear acesso para professores (exceto se também forem coordenadores/admin)
+    if check_user_permission(request.user, ["professor"]) and not check_user_permission(
+        request.user, ["coordenador", "admin"]
+    ):
+        messages.error(
+            request,
+            "Professores não têm acesso direto à listagem geral de avaliações.",
+        )
+        return redirect("inicio")
     if hasattr(request.user, "perfil_aluno"):
         # Para alunos: mostrar apenas avaliações das turmas em que estão matriculados
         from django.db.models import Q
@@ -1128,13 +1137,26 @@ def listar_avaliacoes(request):
         # Para alunos não precisamos dos ciclos
         ciclos = []
     else:
-        # Para administradores, coordenadores e professores: mostrar todas as avaliações ativas
+        # Para administradores e coordenadores: mostrar todas as avaliações ativas
         avaliacoes = AvaliacaoDocente.objects.filter(ciclo__ativo=True).order_by(
             "-data_criacao"
         )
         titulo = "Avaliações Docentes"
-        # Para não-alunos, mostrar os ciclos ativos
-        ciclos = CicloAvaliacao.objects.filter(ativo=True).order_by("-data_inicio")
+        # Ciclos ativos separados por status para facilitar exibição
+        from django.utils import timezone
+        now = timezone.now()
+        ciclos_queryset = CicloAvaliacao.objects.filter(ativo=True)
+        ciclos_em_andamento = []
+        ciclos_finalizados = []
+        for c in ciclos_queryset:
+            if c.data_fim < now:
+                ciclos_finalizados.append(c)
+            else:
+                ciclos_em_andamento.append(c)
+        ciclos = {
+            "em_andamento": ciclos_em_andamento,
+            "finalizados": ciclos_finalizados,
+        }
 
     # Remover a linha duplicada de ciclos que estava fora do if/else    # Paginação
     paginator = Paginator(avaliacoes, 10)
@@ -1145,6 +1167,8 @@ def listar_avaliacoes(request):
         "avaliacoes": page_obj,
         "ciclos": ciclos,
         "titulo": titulo,
+        "ciclos_em_andamento": ciclos.get("em_andamento") if not hasattr(request.user, "perfil_aluno") else [],
+        "ciclos_finalizados": ciclos.get("finalizados") if not hasattr(request.user, "perfil_aluno") else [],
     }
     return render(request, "avaliacoes/listar_avaliacoes.html", context)
 
@@ -1976,19 +2000,30 @@ def excluir_ciclo(request, ciclo_id):
     ciclo = get_object_or_404(CicloAvaliacao, id=ciclo_id)
 
     if request.method == "POST":
-        # Verificar se o ciclo tem avaliações associadas
-        total_avaliacoes = ciclo.avaliacoes.count()
+        avaliacoes = list(ciclo.avaliacoes.all())
+        total_avaliacoes = len(avaliacoes)
 
         if total_avaliacoes > 0:
-            error_msg = f"Não é possível excluir o ciclo '{ciclo.nome}' pois ele possui {total_avaliacoes} avaliação(ões) associada(s)."
-            messages.error(request, error_msg)
+            # Se todas as avaliações NÃO possuem respostas, podemos removê-las e excluir o ciclo
+            if all(not a.respostas.exists() for a in avaliacoes):
+                for a in avaliacoes:
+                    a.delete()
+                nome_ciclo = ciclo.nome
+                ciclo.delete()
+                messages.success(
+                    request,
+                    f"Ciclo '{nome_ciclo}' (com {total_avaliacoes} avaliação(ões) sem respostas) excluído com sucesso.",
+                )
+                return redirect("gerenciar_ciclos")
+            else:
+                # Há pelo menos uma avaliação com respostas
+                error_msg = f"Não é possível excluir o ciclo '{ciclo.nome}' pois ele possui avaliações com respostas registradas."
+                messages.error(request, error_msg)
+                return redirect("gerenciar_ciclos")
+        else:
+            nome_ciclo = ciclo.nome
+            ciclo.delete()
+            messages.success(request, f"Ciclo '{nome_ciclo}' excluído com sucesso!")
             return redirect("gerenciar_ciclos")
-
-        nome_ciclo = ciclo.nome
-        ciclo.delete()
-
-        success_msg = f"Ciclo '{nome_ciclo}' excluído com sucesso!"
-        messages.success(request, success_msg)
-        return redirect("gerenciar_ciclos")
 
     return redirect("gerenciar_ciclos")

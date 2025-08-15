@@ -36,6 +36,20 @@ def criar_avaliacoes_automaticamente(sender, instance, action, pk_set, **kwargs)
             except Exception as e:
                 print(f"Erro ao criar avaliação para turma {turma_id}: {e}")
                 continue
+    elif action == "post_remove":
+        # Quando turmas são removidas do ciclo, remover avaliações sem respostas associadas
+        for turma_id in pk_set:
+            try:
+                avaliacoes = AvaliacaoDocente.objects.filter(
+                    ciclo=instance, turma_id=turma_id
+                )
+                for avaliacao in avaliacoes:
+                    if not avaliacao.respostas.exists():
+                        avaliacao.delete()
+            except Exception as e:
+                print(
+                    f"Erro ao remover avaliações da turma {turma_id} após remoção do ciclo: {e}"
+                )
 
 
 @receiver(post_save, sender=CicloAvaliacao)

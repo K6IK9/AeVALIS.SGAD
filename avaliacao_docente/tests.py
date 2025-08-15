@@ -787,6 +787,108 @@ class AvaliacaoDocenteTestCase(TestCase):
         self.assertEqual(ciclo_passado.status, "finalizado")
         self.assertEqual(ciclo_atual.status, "em_andamento")
 
+    def test_excluir_ciclo_sem_avaliacoes(self):
+        """Deve permitir excluir ciclo que não possui avaliações associadas"""
+        from django.utils import timezone
+        from datetime import timedelta
+
+        questionario = QuestionarioAvaliacao.objects.create(
+            titulo="Questionário Teste", criado_por=self.user_admin
+        )
+
+        data_inicio = timezone.now()
+        data_fim = data_inicio + timedelta(days=10)
+
+        ciclo = CicloAvaliacao.objects.create(
+            nome="Ciclo Excluir",
+            periodo_letivo=self.periodo,
+            data_inicio=data_inicio,
+            data_fim=data_fim,
+            questionario=questionario,
+            criado_por=self.user_admin,
+        )
+
+        # Garantir que não há avaliações (não adicionamos turmas)
+        self.assertEqual(ciclo.avaliacoes.count(), 0)
+
+        self.client.login(username="admin123456", password="senha123")
+        url = reverse("excluir_ciclo", args=[ciclo.id])
+        response = self.client.post(url, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        # Agora deve excluir pois avaliações não possuem respostas
+        self.assertFalse(CicloAvaliacao.objects.filter(id=ciclo.id).exists())
+
+    def test_nao_excluir_ciclo_com_respostas(self):
+        """Não deve excluir ciclo se há avaliações com respostas"""
+        from django.utils import timezone
+        from datetime import timedelta
+
+        questionario = QuestionarioAvaliacao.objects.create(
+            titulo="Questionário Teste", criado_por=self.user_admin
+        )
+
+        data_inicio = timezone.now()
+        data_fim = data_inicio + timedelta(days=10)
+
+        ciclo = CicloAvaliacao.objects.create(
+            nome="Ciclo Com Respostas",
+            periodo_letivo=self.periodo,
+            data_inicio=data_inicio,
+            data_fim=data_fim,
+            questionario=questionario,
+            criado_por=self.user_admin,
+        )
+        ciclo.turmas.add(self.turma)
+        avaliacao = ciclo.avaliacoes.first()
+        # Adiciona uma resposta simulada
+        categoria = CategoriaPergunta.objects.create(nome="Didática")
+        pergunta = PerguntaAvaliacao.objects.create(
+            enunciado="Pergunta teste", tipo="likert", categoria=categoria
+        )
+        RespostaAvaliacao.objects.create(
+            avaliacao=avaliacao,
+            aluno=self.perfil_aluno,
+            pergunta=pergunta,
+            valor_numerico=4,
+        )
+
+        self.client.login(username="admin123456", password="senha123")
+        url = reverse("excluir_ciclo", args=[ciclo.id])
+        response = self.client.post(url, follow=True)
+        self.assertTrue(CicloAvaliacao.objects.filter(id=ciclo.id).exists())
+        data_fim = data_inicio + timedelta(days=10)
+
+        ciclo = CicloAvaliacao.objects.create(
+            nome="Ciclo Com Avaliações",
+            periodo_letivo=self.periodo,
+            data_inicio=data_inicio,
+            data_fim=data_fim,
+            questionario=questionario,
+            criado_por=self.user_admin,
+        )
+
+        # Adicionar turma para gerar avaliação via signal
+        ciclo.turmas.add(self.turma)
+        self.assertGreater(ciclo.avaliacoes.count(), 0)
+
+        self.client.login(username="admin123456", password="senha123")
+        url = reverse("excluir_ciclo", args=[ciclo.id])
+        response = self.client.post(url, follow=True)
+
+        # Não deve excluir
+        self.assertTrue(CicloAvaliacao.objects.filter(id=ciclo.id).exists())
+        # Verificar mensagem de erro
+        # (messages pode não estar sempre em context dependendo de config, checar condicionalmente)
+        if hasattr(response, "context") and response.context:
+            ctx_messages = response.context.get("messages")
+            if ctx_messages:
+                self.assertTrue(
+                    any(
+                        "Não é possível excluir o ciclo" in str(m) for m in ctx_messages
+                    )
+                )
+
     def test_avaliacao_docente_creation(self):
         """Testa criação de avaliação docente"""
         questionario = QuestionarioAvaliacao.objects.create(

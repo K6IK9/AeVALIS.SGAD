@@ -235,46 +235,90 @@
 
 
 <div class="row g-4">
-    <!-- Card de Ciclos Ativos - Apenas para admins/coordenadores/professores -->
-    {% if not user|has_role:"aluno" %}
+    <!-- Card de Ciclos - Apenas para admins/coordenadores -->
+    {% if user|has_role:"coordenador" or user|has_role:"admin" %}
     <div class="col-12">
-        <div class="card card-custom">
-            <div class="card-header">
+        <div class="card card-custom mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h6 class="card-title mb-0">
-                    <i class="bi bi-calendar-check"></i> Ciclos Ativos
+                    <i class="bi bi-calendar-check"></i> Ciclos em Andamento
                 </h6>
+                <small class="text-muted">{{ ciclos_em_andamento|length }} ativo(s)</small>
             </div>
             <div class="card-body">
-                {% if ciclos %}
-                    <div class="row g-3">
-                        {% for ciclo in ciclos %}
-                        <div class="col-md-6 col-lg-4">
-                            <div class="ciclo-item">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div class="flex-grow-1">
-                                        <h6 class="ciclo-nome mb-1">{{ ciclo.nome }}</h6>
-                                        <small class="text-muted">
-                                            <i class="bi bi-calendar-range"></i>
-                                            {{ ciclo.data_inicio|date:"d/m/Y" }} - {{ ciclo.data_fim|date:"d/m/Y" }}
-                                        </small>
-                                    </div>
-                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" 
-                                       class="btn btn-outline-primary-custom btn-sm"
-                                       title="Visualizar Ciclo"
-                                       data-bs-toggle="tooltip">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
+                {% if ciclos_em_andamento %}
+                <div class="row g-3">
+                    {% for ciclo in ciclos_em_andamento %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="ciclo-item">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="flex-grow-1">
+                                    <h6 class="ciclo-nome mb-1">{{ ciclo.nome }}</h6>
+                                    <small class="text-muted d-block mb-1">
+                                        <i class="bi bi-calendar-range"></i>
+                                        {{ ciclo.data_inicio|date:"d/m/Y" }} - {{ ciclo.data_fim|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-outline-primary-custom" title="Visualizar" data-bs-toggle="tooltip"><i class="bi bi-eye"></i></a>
+                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-secondary-custom" title="Editar" data-bs-toggle="tooltip"><i class="bi bi-pencil"></i></a>
+                                    <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" onsubmit="return confirm('Excluir ciclo {{ ciclo.nome }}?');" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger-custom" title="Excluir" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-                        {% endfor %}
                     </div>
+                    {% endfor %}
+                </div>
                 {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-calendar-x" style="font-size: 3rem; color: #ccc;"></i>
-                        <p class="mt-3 text-muted"><strong>Nenhum ciclo ativo encontrado</strong></p>
-                        <p class="text-muted">Crie um novo ciclo para começar as avaliações.</p>
+                <div class="text-center py-4">
+                    <i class="bi bi-calendar-x" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="mt-3 text-muted"><strong>Nenhum ciclo em andamento</strong></p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card card-custom">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-archive"></i> Ciclos Finalizados
+                </h6>
+                <small class="text-muted">{{ ciclos_finalizados|length }} finalizado(s)</small>
+            </div>
+            <div class="card-body">
+                {% if ciclos_finalizados %}
+                <div class="row g-3">
+                    {% for ciclo in ciclos_finalizados %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="ciclo-item" style="opacity:.85;">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="flex-grow-1">
+                                    <h6 class="ciclo-nome mb-1">{{ ciclo.nome }}</h6>
+                                    <small class="text-muted d-block mb-1">
+                                        <i class="bi bi-calendar-range"></i>
+                                        {{ ciclo.data_inicio|date:"d/m/Y" }} - {{ ciclo.data_fim|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-outline-primary-custom" title="Visualizar" data-bs-toggle="tooltip"><i class="bi bi-eye"></i></a>
+                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-secondary-custom" title="Editar" data-bs-toggle="tooltip"><i class="bi bi-pencil"></i></a>
+                                    <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" onsubmit="return confirm('Excluir ciclo {{ ciclo.nome }}?');" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger-custom" title="Excluir" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-inboxes" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="mt-3 text-muted"><strong>Nenhum ciclo finalizado</strong></p>
+                </div>
                 {% endif %}
             </div>
         </div>

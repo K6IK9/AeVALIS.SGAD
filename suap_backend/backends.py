@@ -1,6 +1,8 @@
 # coding: utf-8
 
 from social_core.backends.oauth import BaseOAuth2
+import logging
+from django.conf import settings
 
 
 class SuapOAuth2(BaseOAuth2):
@@ -33,6 +35,15 @@ class SuapOAuth2(BaseOAuth2):
 
     def user_data(self, access_token, *args, **kwargs):
         """Busca dados do usuário no SUAP e filtra apenas os campos permitidos."""
+        # LOG TEMPORÁRIO: imprimir o token para fins de teste/debug.
+        # ATENÇÃO: Não deixe isto ativo em produção. O token é sensível.
+        if getattr(settings, "DEBUG", False):
+            # Usa logger de namespace principal para herdar config e nível INFO
+            logger = logging.getLogger("suap_backend")
+            logger.info("[TESTE][SUAP OAuth] Access Token obtido: %s", access_token)
+            # Print explícito para garantir visualização mesmo se logging estiver filtrando
+            print(f"[TESTE][SUAP OAuth] Access Token obtido: {access_token}")
+            
         raw = self.request(
             url=self.USER_DATA_URL,
             data={

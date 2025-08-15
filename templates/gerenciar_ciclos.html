@@ -716,10 +716,10 @@
                             <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-sm btn-secondary" title="Editar" style="white-space: nowrap;">
                                 ✏️ Editar
                             </a>
-                            <a href="{% url 'excluir_ciclo' ciclo.id %}" class="btn btn-sm btn-danger" title="Excluir" style="white-space: nowrap;"
-                               onclick="return confirm('Tem certeza que deseja excluir o ciclo \'{{ ciclo.nome }}\'? Esta ação não pode ser desfeita.')">
-                                🗑️ Excluir
-                            </a>
+                            <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir o ciclo \"{{ ciclo.nome }}\"? Esta ação não pode ser desfeita.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger" title="Excluir" style="white-space: nowrap;">🗑️ Excluir</button>
+                            </form>
                         </div>
                     </td>
                 </tr>
