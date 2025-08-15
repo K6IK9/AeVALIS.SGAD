@@ -19,7 +19,6 @@ from .models import (
     CicloAvaliacao,
     AvaliacaoDocente,
     RespostaAvaliacao,
-    ComentarioAvaliacao,
     # Modelos deprecated (manter compatibilidade)
     Avaliacao,
     Pergunta,
@@ -212,12 +211,6 @@ class RespostaAvaliacaoInline(admin.TabularInline):
     fields = ("pergunta", "aluno", "valor_display", "data_resposta")
 
 
-class ComentarioAvaliacaoInline(admin.StackedInline):
-    model = ComentarioAvaliacao
-    extra = 0
-    readonly_fields = ("data_comentario",)
-
-
 @admin.register(AvaliacaoDocente)
 class AvaliacaoDocenteAdmin(admin.ModelAdmin):
     list_display = (
@@ -244,7 +237,7 @@ class AvaliacaoDocenteAdmin(admin.ModelAdmin):
         "percentual_participacao_display",
         "media_geral_display",
     )
-    inlines = [RespostaAvaliacaoInline, ComentarioAvaliacaoInline]
+    inlines = [RespostaAvaliacaoInline]
 
     def percentual_participacao_display(self, obj):
         percentual = obj.percentual_participacao()
@@ -298,53 +291,6 @@ class RespostaAvaliacaoAdmin(admin.ModelAdmin):
         )
 
     pergunta_resumida.short_description = "Pergunta"
-
-
-@admin.register(ComentarioAvaliacao)
-class ComentarioAvaliacaoAdmin(admin.ModelAdmin):
-    list_display = (
-        "avaliacao",
-        "aluno_display",
-        "tem_elogios",
-        "tem_sugestoes",
-        "tem_criticas",
-        "data_comentario",
-    )
-    list_filter = ("anonimo", "data_comentario", "avaliacao__ciclo")
-    search_fields = (
-        "avaliacao__professor__user__first_name",
-        "avaliacao__professor__user__last_name",
-        "elogios",
-        "sugestoes",
-        "criticas_construtivas",
-    )
-    ordering = ("-data_comentario",)
-    readonly_fields = ("data_comentario",)
-
-    def aluno_display(self, obj):
-        if obj.anonimo:
-            return f"Anônimo ({obj.session_key[:8]})"
-        return obj.aluno
-
-    aluno_display.short_description = "Aluno"
-
-    def tem_elogios(self, obj):
-        return bool(obj.elogios.strip())
-
-    tem_elogios.boolean = True
-    tem_elogios.short_description = "Elogios"
-
-    def tem_sugestoes(self, obj):
-        return bool(obj.sugestoes.strip())
-
-    tem_sugestoes.boolean = True
-    tem_sugestoes.short_description = "Sugestões"
-
-    def tem_criticas(self, obj):
-        return bool(obj.criticas_construtivas.strip())
-
-    tem_criticas.boolean = True
-    tem_criticas.short_description = "Críticas"
 
 
 # ============ MODELOS BÁSICOS ============

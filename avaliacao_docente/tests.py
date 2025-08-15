@@ -18,7 +18,6 @@ from .models import (
     CicloAvaliacao,
     AvaliacaoDocente,
     RespostaAvaliacao,
-    ComentarioAvaliacao,
 )
 from .views import gerenciar_perfil_usuario
 import datetime
@@ -740,7 +739,7 @@ class AvaliacaoDocenteTestCase(TestCase):
         self.assertEqual(ciclo.nome, "Ciclo Teste 2024.1")
         self.assertEqual(ciclo.questionario, questionario)
         self.assertTrue(ciclo.ativo)
-        self.assertTrue(ciclo.permite_avaliacao_anonima)
+        # Ciclos agora são sempre tratados como anônimos; campo configurável removido do formulário
         self.assertEqual(str(ciclo), f"Ciclo Teste 2024.1 ({self.periodo})")
 
     def test_ciclo_avaliacao_status_property(self):
@@ -940,46 +939,6 @@ class AvaliacaoDocenteTestCase(TestCase):
             valor_boolean=True,
         )
         self.assertEqual(resposta_sim_nao.valor_display(), "Sim")
-
-    def test_comentario_avaliacao_creation(self):
-        """Testa criação de comentário de avaliação"""
-        questionario = QuestionarioAvaliacao.objects.create(
-            titulo="Questionário Teste", criado_por=self.user_admin
-        )
-
-        from django.utils import timezone
-        from datetime import timedelta
-
-        data_inicio = timezone.now()
-        data_fim = data_inicio + timedelta(days=30)
-
-        ciclo = CicloAvaliacao.objects.create(
-            nome="Ciclo Teste",
-            periodo_letivo=self.periodo,
-            data_inicio=data_inicio,
-            data_fim=data_fim,
-            questionario=questionario,
-            criado_por=self.user_admin,
-        )
-
-        avaliacao = AvaliacaoDocente.objects.create(
-            ciclo=ciclo,
-            turma=self.turma,
-            professor=self.perfil_professor,
-            disciplina=self.disciplina,
-        )
-
-        comentario = ComentarioAvaliacao.objects.create(
-            avaliacao=avaliacao,
-            aluno=self.perfil_aluno,
-            elogios="Excelente professor!",
-            sugestoes="Poderia usar mais exemplos práticos",
-        )
-
-        self.assertEqual(comentario.avaliacao, avaliacao)
-        self.assertEqual(comentario.aluno, self.perfil_aluno)
-        self.assertEqual(comentario.elogios, "Excelente professor!")
-        self.assertFalse(comentario.anonimo)
 
     def test_avaliacao_docente_calculos(self):
         """Testa métodos de cálculo da avaliação docente"""

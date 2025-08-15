@@ -463,11 +463,7 @@
                 
                 <div class="d-flex justify-content-between mb-2">
                     <span><strong>Tipo:</strong></span>
-                    {% if ciclo.permite_avaliacao_anonima %}
-                        <span class="badge bg-info">Anônima</span>
-                    {% else %}
-                        <span class="badge bg-warning">Identificada</span>
-                    {% endif %}
+                    <span class="badge bg-info">Anônima</span>
                 </div>
                 
                 <div class="d-flex justify-content-between mb-2">
@@ -603,13 +599,7 @@
                                     <td>
                                         {{ avaliacao.turma.codigo_turma }}
                                     </td>
-                                    <td>
-                                        {% if not ciclo.permite_avaliacao_anonima %}
-                                            <span class="text-muted">Multiple Students</span>
-                                        {% else %}
-                                            <span class="text-muted">Anônima</span>
-                                        {% endif %}
-                                    </td>
+                                    <td><span class="text-muted">Anônima</span></td>
                                     <td>
                                         {% if avaliacao.respostas.exists %}
                                             <span class="badge bg-success">

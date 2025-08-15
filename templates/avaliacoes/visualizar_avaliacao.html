@@ -396,6 +396,40 @@
             color: var(--cor05);
         }
 
+        /* Resposta binária (Sim/Não) com pill leve */
+        .resposta-binaria {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: 0.4px;
+            border: 2px solid transparent;
+            background: #f5f7f8;
+            color: #2d2d2d;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            margin: 12px auto 0 auto; /* centraliza horizontalmente */
+            min-width: 200px; /* mais largo */
+        }
+        .resposta-binaria.resposta-true {
+            border-color: #b4e6c3;
+            background: #f0fbf3;
+            color: #1e7a39;
+        }
+        .resposta-binaria.resposta-false {
+            border-color: #f3c2c7;
+            background: #fff5f6;
+            color: #a32330;
+        }
+        .resposta-binaria.resposta-indefinida {
+            border-color: #d0d0d0;
+            background: #fafafa;
+            color: #666;
+        }
+
         .resposta-valor {
             text-align: center;
             margin-top: 15px;
@@ -597,11 +631,9 @@
                         </div>
                     </div>
 
-                    {% if avaliacao.ciclo.permite_avaliacao_anonima %}
                     <div class="info-alert">
                         🔒 <strong>Avaliação Anônima:</strong> As respostas foram coletadas de forma anônima.
                     </div>
-                    {% endif %}
                 </div>
 
                 <!-- Respostas -->
@@ -658,7 +690,16 @@
                             </div>
                         </div>
 
-                        {% elif resposta.pergunta.tipo == 'multipla_escolha' or resposta.pergunta.tipo == 'sim_nao' %}
+                        {% elif resposta.pergunta.tipo == 'sim_nao' %}
+                        <div class="resposta-binaria {% if resposta.valor_boolean %}resposta-true{% elif resposta.valor_boolean is not None %}resposta-false{% else %}resposta-indefinida{% endif %}">
+                            {% if resposta.valor_boolean is not None %}
+                                {% if resposta.valor_boolean %}✓ Sim{% else %}✗ Não{% endif %}
+                            {% else %}
+                                {{ resposta.valor_texto|default:"-" }}
+                            {% endif %}
+                        </div>
+
+                        {% elif resposta.pergunta.tipo == 'multipla_escolha' %}
                         <div class="resposta-destaque">
                             {{ resposta.valor_texto }}
                         </div>

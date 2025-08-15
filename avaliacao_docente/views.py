@@ -6,36 +6,24 @@ from django.views.generic import TemplateView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import login
 from django.db.models import Q
-from .forms import (
-    RegistroForm,
-    GerenciarRoleForm,
-    GerenciarUsuarioForm,
-    CursoForm,
-    DisciplinaForm,
-    PeriodoLetivoForm,
-    TurmaForm,
-    QuestionarioAvaliacaoForm,
-    PerguntaAvaliacaoForm,
-    CicloAvaliacaoForm,
-    CategoriaPerguntaForm,
+from .models import (
+    PerfilAluno,
+    PerfilProfessor,
+    Disciplina,
+    Curso,
+    PeriodoLetivo,
+    Turma,
+    PerguntaAvaliacao,
+    AvaliacaoDocente,
+    RespostaAvaliacao,
+    CicloAvaliacao,
 )
 from .models import (
     Avaliacao,
-    PerfilAluno,
-    PerfilProfessor,
-    Curso,
-    Disciplina,
-    PeriodoLetivo,
-    Turma,
     MatriculaTurma,
     QuestionarioAvaliacao,
     CategoriaPergunta,
-    PerguntaAvaliacao,
     QuestionarioPergunta,
-    CicloAvaliacao,
-    AvaliacaoDocente,
-    RespostaAvaliacao,
-    ComentarioAvaliacao,
 )
 from django.contrib.auth.models import User
 
@@ -47,6 +35,18 @@ from rolepermissions.checkers import has_role
 from .utils import check_user_permission, get_user_role_name
 from django.contrib import messages
 from django.core.paginator import Paginator
+from .forms import (
+    GerenciarRoleForm,
+    GerenciarUsuarioForm,
+    CursoForm,
+    DisciplinaForm,
+    PeriodoLetivoForm,
+    TurmaForm,
+    CicloAvaliacaoForm,
+    PerguntaAvaliacaoForm,
+    QuestionarioAvaliacaoForm,
+    CategoriaPerguntaForm,
+)
 
 
 @login_required
@@ -1418,7 +1418,8 @@ def responder_avaliacao(request, avaliacao_id):
                     "avaliacao": avaliacao,
                     "aluno": request.user.perfil_aluno,
                     "pergunta": qp.pergunta,
-                    "anonima": avaliacao.ciclo.permite_avaliacao_anonima,
+                    # Agora sempre anônima conforme nova regra
+                    "anonima": True,
                 }
 
                 if qp.pergunta.tipo in ["likert", "nps"]:
@@ -1429,16 +1430,6 @@ def responder_avaliacao(request, avaliacao_id):
                     resposta_data["valor_texto"] = valor_resposta
 
                 RespostaAvaliacao.objects.create(**resposta_data)
-
-        # Processar comentário geral se houver
-        comentario_geral = request.POST.get("comentario_geral", "").strip()
-        if comentario_geral:
-            ComentarioAvaliacao.objects.create(
-                avaliacao=avaliacao,
-                aluno=request.user.perfil_aluno,
-                elogios=comentario_geral,
-                anonimo=avaliacao.ciclo.permite_avaliacao_anonima,
-            )
 
         if respostas_validas:
             messages.success(request, "Avaliação respondida com sucesso!")
@@ -1487,16 +1478,30 @@ def visualizar_avaliacao(request, avaliacao_id):
         )
         return redirect("listar_avaliacoes")
 
-    # Pegar respostas ordenadas pela ordem das perguntas no questionário
-    respostas = RespostaAvaliacao.objects.filter(avaliacao=avaliacao).select_related(
-        "pergunta"
-    )
-    comentarios = ComentarioAvaliacao.objects.filter(avaliacao=avaliacao)
-
+    # Pegar respostas
+    # Ajuste: alunos só podem visualizar as PRÓPRIAS respostas; demais perfis (professor da avaliação,
+    # coordenador, admin) continuam podendo ver o conjunto completo.
+    if hasattr(request.user, "perfil_aluno"):
+        respostas = (
+            RespostaAvaliacao.objects.filter(
+                avaliacao=avaliacao, aluno=request.user.perfil_aluno
+            )
+            .select_related("pergunta")
+            .filter(pergunta__questionarios__questionario=avaliacao.ciclo.questionario)
+            .order_by("pergunta__questionarios__ordem_no_questionario")
+            .distinct()
+        )
+    else:
+        respostas = (
+            RespostaAvaliacao.objects.filter(avaliacao=avaliacao)
+            .select_related("pergunta")
+            .filter(pergunta__questionarios__questionario=avaliacao.ciclo.questionario)
+            .order_by("pergunta__questionarios__ordem_no_questionario")
+            .distinct()
+        )
     context = {
         "avaliacao": avaliacao,
         "respostas": respostas,
-        "comentarios": comentarios,
         "titulo": f"Avaliação - {avaliacao.professor.user.get_full_name()}",
     }
     return render(request, "avaliacoes/visualizar_avaliacao.html", context)

@@ -707,26 +707,7 @@
         </div>
         {% endif %}
         
-        <!-- Comentários -->
-        {% if comentarios %}
-        <div style="margin-top: 40px;">
-            <h3 style="color: var(--cor03); margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
-                <i class="bi bi-chat-left-text"></i> Comentários Recentes
-            </h3>
-            {% for comentario in comentarios %}
-            <div class="comment-card">
-                <div class="comment-header">
-                    <div>
-                        <div class="comment-author">{{ comentario.avaliacao.professor.user.get_full_name }}</div>
-                        <div class="comment-meta">{{ comentario.avaliacao.disciplina.nome }} - {{ comentario.avaliacao.turma.nome }}</div>
-                    </div>
-                    <div class="comment-meta">{{ comentario.data_criacao|date:"d/m/Y H:i" }}</div>
-                </div>
-                <div class="comment-text">{{ comentario.comentario }}</div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
+        
         
     {% else %}
         <div style="text-align: center; padding: 40px; color: #666;">

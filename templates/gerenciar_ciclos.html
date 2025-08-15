@@ -447,40 +447,8 @@
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
-            <div class="form-group">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    {{ form.permite_avaliacao_anonima }}
-                    <label for="{{ form.permite_avaliacao_anonima.id_for_label }}">
-                        {{ form.permite_avaliacao_anonima.label }}
-                    </label>
-                </div>
-                {% if form.permite_avaliacao_anonima.errors %}
-                <div style="color: var(--cor08); margin-top: 5px;">
-                    {% for error in form.permite_avaliacao_anonima.errors %}
-                    <small>{{ error }}</small>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    {{ form.permite_multiplas_respostas }}
-                    <label for="{{ form.permite_multiplas_respostas.id_for_label }}">
-                        {{ form.permite_multiplas_respostas.label }}
-                    </label>
-                </div>
-                {% if form.permite_multiplas_respostas.errors %}
-                <div style="color: var(--cor08); margin-top: 5px;">
-                    {% for error in form.permite_multiplas_respostas.errors %}
-                    <small>{{ error }}</small>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
+        <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+            <div class="form-group" style="max-width:300px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     {{ form.enviar_lembrete_email }}
                     <label for="{{ form.enviar_lembrete_email.id_for_label }}">
@@ -626,40 +594,8 @@
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
-            <div class="form-group">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    {{ form.permite_avaliacao_anonima }}
-                    <label for="{{ form.permite_avaliacao_anonima.id_for_label }}">
-                        {{ form.permite_avaliacao_anonima.label }}
-                    </label>
-                </div>
-                {% if form.permite_avaliacao_anonima.errors %}
-                <div style="color: var(--cor08); margin-top: 5px;">
-                    {% for error in form.permite_avaliacao_anonima.errors %}
-                    <small>{{ error }}</small>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    {{ form.permite_multiplas_respostas }}
-                    <label for="{{ form.permite_multiplas_respostas.id_for_label }}">
-                        {{ form.permite_multiplas_respostas.label }}
-                    </label>
-                </div>
-                {% if form.permite_multiplas_respostas.errors %}
-                <div style="color: var(--cor08); margin-top: 5px;">
-                    {% for error in form.permite_multiplas_respostas.errors %}
-                    <small>{{ error }}</small>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
+        <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+            <div class="form-group" style="max-width:300px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     {{ form.enviar_lembrete_email }}
                     <label for="{{ form.enviar_lembrete_email.id_for_label }}">
@@ -816,7 +752,7 @@
                 <li><strong>Período:</strong> Define quando as avaliações estarão disponíveis</li>
                 <li><strong>Questionário:</strong> Deve estar ativo e ter perguntas cadastradas</li>
                 <li><strong>Turmas:</strong> Selecione as turmas que devem participar desta avaliação</li>
-                <li><strong>Anônimo:</strong> Quando ativado, oculta a identidade dos respondentes</li>
+                <li><strong>Anônimo:</strong> Todas as avaliações agora são sempre anônimas para proteger a identidade dos alunos</li>
             </ul>
         </div>
         

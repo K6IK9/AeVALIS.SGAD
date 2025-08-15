@@ -16,7 +16,6 @@ from .models import (
     QuestionarioPergunta,
     CicloAvaliacao,
     RespostaAvaliacao,
-    ComentarioAvaliacao,
 )
 
 
@@ -447,8 +446,6 @@ class CicloAvaliacaoForm(forms.ModelForm):
             "data_inicio",
             "data_fim",
             "turmas",
-            "permite_avaliacao_anonima",
-            "permite_multiplas_respostas",
             "enviar_lembrete_email",
         ]
         widgets = {
@@ -465,12 +462,6 @@ class CicloAvaliacaoForm(forms.ModelForm):
             ),
             "data_fim": forms.DateTimeInput(
                 attrs={"class": "form-control", "type": "datetime-local"}
-            ),
-            "permite_avaliacao_anonima": forms.CheckboxInput(
-                attrs={"class": "form-check-input"}
-            ),
-            "permite_multiplas_respostas": forms.CheckboxInput(
-                attrs={"class": "form-check-input"}
             ),
             "enviar_lembrete_email": forms.CheckboxInput(
                 attrs={"class": "form-check-input"}
@@ -813,51 +804,6 @@ class RespostaAvaliacaoForm(forms.Form):
                 respostas_salvas.append(resposta)
 
         return respostas_salvas
-
-
-class ComentarioAvaliacaoForm(forms.ModelForm):
-    """
-    Formulário para comentários adicionais na avaliação
-    """
-
-    class Meta:
-        model = ComentarioAvaliacao
-        fields = ["elogios", "sugestoes", "criticas_construtivas"]
-        widgets = {
-            "elogios": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "rows": 3,
-                    "placeholder": "Deixe seus elogios e pontos positivos...",
-                }
-            ),
-            "sugestoes": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "rows": 3,
-                    "placeholder": "Deixe suas sugestões de melhoria...",
-                }
-            ),
-            "criticas_construtivas": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "rows": 3,
-                    "placeholder": "Deixe críticas construtivas...",
-                }
-            ),
-        }
-
-    def save(self, avaliacao, aluno=None, session_key=None, anonimo=False, commit=True):
-        comentario = super().save(commit=False)
-        comentario.avaliacao = avaliacao
-        comentario.anonimo = anonimo
-        comentario.session_key = session_key or ""
-
-        if not anonimo and aluno:
-            comentario.aluno = aluno
-
-        if commit:
-            comentario.save()
 
         return comentario
 

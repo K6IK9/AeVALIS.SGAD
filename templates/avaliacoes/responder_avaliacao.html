@@ -255,22 +255,24 @@
             {% if qp.pergunta.tipo == 'likert' %}
                 <!-- Escala Likert -->
                 <div class="likert-scale">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <small style="color: #666;">Discordo Totalmente</small>
-                        <small style="color: #666;">Concordo Totalmente</small>
+                    <div class="likert-labels">
+                        <small>Discordo Totalmente</small>
+                        <small>Concordo Totalmente</small>
                     </div>
-                    {% for i in "12345"|make_list %}
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" 
-                               name="pergunta_{{ qp.pergunta.id }}" 
-                               id="likert_{{ qp.pergunta.id }}_{{ i }}" 
-                               value="{{ i }}"
-                               {% if qp.pergunta.obrigatoria %}required{% endif %}>
-                        <label class="form-check-label" for="likert_{{ qp.pergunta.id }}_{{ i }}">
-                            {{ i }}
-                        </label>
+                    <div class="likert-options">
+                        {% for i in "12345"|make_list %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" 
+                                   name="pergunta_{{ qp.pergunta.id }}" 
+                                   id="likert_{{ qp.pergunta.id }}_{{ i }}" 
+                                   value="{{ i }}"
+                                   {% if qp.pergunta.obrigatoria %}required{% endif %}>
+                            <label class="form-check-label" for="likert_{{ qp.pergunta.id }}_{{ i }}">
+                                {{ i }}
+                            </label>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             
             {% elif qp.pergunta.tipo == 'nps' %}
@@ -353,15 +355,6 @@
         </div>
         {% endfor %}
 
-        <!-- Comentário Geral -->
-        <div class="pergunta-card">
-            <h6>💬 Comentário Adicional (opcional)</h6>
-            <textarea class="form-control" 
-                      name="comentario_geral" 
-                      id="comentario_geral" 
-                      rows="4" 
-                      placeholder="Deixe aqui suas considerações adicionais sobre a disciplina, professor ou processo de ensino-aprendizagem..."></textarea>
-        </div>
 
         <!-- Navegação e Envio -->
         <div class="pergunta-navegacao">
@@ -461,19 +454,27 @@
     display: none;
 }
 
-.likert-scale {
+.likert-scale { margin: 20px 0; }
+.likert-labels {
     display: flex;
     justify-content: space-between;
-    margin: 20px 0;
+    margin-bottom: 10px;
+    width: 100%;
+    font-size: var(--font-size-xs);
+    color: #666;
+    gap: 8px; /* garante espaço mínimo caso o container fique muito estreito */
 }
-
-.likert-scale .form-check {
+.likert-options {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+.likert-options .form-check {
     flex: 1;
     text-align: center;
-    margin: 0 5px;
+    margin: 0;
 }
-
-.likert-scale .form-check-input + .form-check-label {
+.likert-options .form-check-input + .form-check-label {
     cursor: pointer;
     padding: 10px;
     border: 2px solid var(--cor01);
@@ -481,18 +482,15 @@
     display: block;
     transition: all var(--transition-fast);
 }
-
-.likert-scale .form-check-input + .form-check-label:hover {
+.likert-options .form-check-input + .form-check-label:hover {
     transform: translateY(-1px);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
 }
-
-.likert-scale .form-check-input:focus + .form-check-label {
+.likert-options .form-check-input:focus + .form-check-label {
     outline: 3px solid rgba(0, 202, 253, 0.25);
     outline-offset: 2px;
 }
-
-.likert-scale .form-check-input:checked + .form-check-label {
+.likert-options .form-check-input:checked + .form-check-label {
     background: var(--cor02);
     color: var(--cor05);
     border-color: var(--cor02);
@@ -524,6 +522,16 @@
 
 .rating-option input[type="radio"] + label {
     cursor: pointer;
+}
+
+/* Esconde o círculo nativo do radio na escala NPS mantendo foco acessível */
+.rating-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+    pointer-events: none;
 }
 
 .rating-option input[type="radio"] + label .rating-value:hover {
@@ -711,16 +719,13 @@
         margin-bottom: 20px;
     }
     
-    .likert-scale {
+    .likert-options { /* mobile: grid para caber melhor */
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         gap: 5px;
-        margin: 15px 0;
+        margin: 15px 0 0 0;
     }
-    
-    .likert-scale .form-check {
-        margin: 0;
-    }
+    .likert-labels { font-size: 0.65rem; }
     
     .sim-nao {
         flex-direction: column;

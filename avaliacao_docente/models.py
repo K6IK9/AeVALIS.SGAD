@@ -663,46 +663,6 @@ class RespostaAvaliacao(models.Model):
             return self.valor_texto or "Sem resposta"
 
 
-class ComentarioAvaliacao(models.Model):
-    """
-    Comentários adicionais dos alunos sobre a avaliação
-    """
-
-    avaliacao = models.ForeignKey(
-        AvaliacaoDocente, on_delete=models.CASCADE, related_name="comentarios"
-    )
-    aluno = models.ForeignKey(
-        PerfilAluno,
-        on_delete=models.CASCADE,
-        related_name="comentarios_avaliacoes",
-        null=True,
-        blank=True,
-    )
-
-    # Tipos de comentário
-    elogios = models.TextField(blank=True, verbose_name="Elogios")
-    sugestoes = models.TextField(blank=True, verbose_name="Sugestões")
-    criticas_construtivas = models.TextField(
-        blank=True, verbose_name="Críticas Construtivas"
-    )
-
-    data_comentario = models.DateTimeField(auto_now_add=True)
-    anonimo = models.BooleanField(default=False)
-    session_key = models.CharField(max_length=40, blank=True)
-
-    class Meta:
-        unique_together = ["avaliacao", "aluno", "session_key"]
-        ordering = ["data_comentario"]
-        verbose_name = "Comentário de Avaliação"
-        verbose_name_plural = "Comentários de Avaliação"
-
-    def __str__(self):
-        identificacao = (
-            f"Anônimo ({self.session_key[:8]})" if self.anonimo else str(self.aluno)
-        )
-        return f"Comentário de {identificacao} para {self.avaliacao.professor}"
-
-
 # ============ MODELOS DEPRECATED (MANTER COMPATIBILIDADE) ============
 
 
