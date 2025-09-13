@@ -1,408 +1,233 @@
-{% block content %}
-{% load static %}
-{% load user_tags %}
+{% load user_tags %} {% load static %}
 
-<!-- Modal de Perfil -->
-<div id="modalPerfilOverlay" style="display:none;">
-    <div id="modalPerfil">
-        <button id="fecharPerfil" title="Fechar">&times;</button>
-        <section id="dados_modal">
-            <aside id="aside_perfil_modal">
-                <img src="{% static 'assets/perfil.svg' %}" alt="Perfil">
-                <div class="role-badge {{ user|get_user_role_class }}">
-                    {{ user|get_user_role }}
-                </div>
-            </aside>
-            
-            <div class="profile-header">
-                <h3>{{ user.first_name }} {{ user.last_name }}</h3>
-                <span class="profile-type">{{ user|get_user_profile_type }}</span>
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IF SADD - Perfil do Usuário</title>
+    <meta
+      name="description"
+      content="Perfil do usuário - Sistema de Avaliação Docente"
+    />
+
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="{% static 'css/global.css' %}" />
+    <!-- CSS Específico do Perfil -->
+    <link rel="stylesheet" href="{% static 'css/perfil.css' %}" />
+
+    <!-- Ícones Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <!-- Conteúdo Principal -->
+    <main class="profile-main">
+      <div class="profile-container">
+        <!-- Seção do Avatar e Header -->
+        <section class="profile-hero">
+          <!-- Navegação integrada -->
+          <div class="profile-nav">
+            <a
+              href="{% url 'inicio' %}"
+              class="nav-btn"
+              title="Voltar ao Início"
+            >
+              <i class="fas fa-home"></i>
+              <span>Início</span>
+            </a>
+            <div class="nav-logo">
+              <img src="{% static 'assets/saad_logo.svg' %}" alt="IF SADD" />
+            </div>
+          </div>
+
+          <div class="profile-content-hero">
+            <div class="profile-avatar">
+              <div class="avatar-circle">
+                <i class="fas fa-user-circle"></i>
+              </div>
+              <div class="role-badge {{ user|get_user_role_class }}">
+                <i class="fas fa-shield-alt"></i>
+                {{ user|get_user_role }}
+              </div>
             </div>
 
-            <div class="profile-info-grid">
-                <label class="infos_modal">
-                    <img src="{% static 'assets/perfil.svg' %}" alt="Nome Usuário">
-                    <p id="nome_usuario_modal">
-                        <span class="info-label">Nome:</span>
-                        <span class="info-value">{{ user.first_name }} {{ user.last_name }}</span>
-                    </p>
-                </label>
-                <label class="infos_modal">
-                    <img src="{% static 'assets/perfil.svg' %}" alt="Matrícula">
-                    <p id="matricula_usuario_modal">
-                        <span class="info-label">Matrícula:</span>
-                        <span class="info-value">{{ user.username }}</span>
-                    </p>
-                </label>
-                <label class="infos_modal">
-                    <img src="{% static 'assets/email.svg' %}" alt="Email">
-                    <p id="email_usuario_modal">
-                        <span class="info-label">Email:</span>
-                        <span class="info-value">{{ user.email|default:"Não informado" }}</span>
-                    </p>
-                </label>
+            <div class="profile-intro">
+              <h1 class="profile-name">
+                {{ user.first_name }} {{ user.last_name }}
+              </h1>
+              <p class="profile-type">{{ user|get_user_profile_type }}</p>
+              <div class="profile-status">
+                <span class="status-indicator active"></span>
+                <span>Usuário Ativo</span>
+              </div>
             </div>
-
-            <form method="post" action="/accounts/logout/?next=/accounts/login/">
-                {% csrf_token %}
-                <button type="submit" id="logout_modal">
-                    <span>🚪</span>
-                    Sair do Sistema
-                </button>
-            </form>
+          </div>
         </section>
-    </div>
-</div>
 
-<style>
-    :root {
-        --cor01: #f1f1f1;
-        --cor02: #00fd94;
-        --cor03: #376f6c;
-        --cor04: #1e3231;
-        --cor05: #090909;
-        --cor06: #00cafd;
-        --cor07: #ffffff;
-        --cor08: #ff3c3c;
-        --shadow: 4px 2px 8px rgba(0, 0, 0, 0.2);
-        --gradient-primary: var(--cor03);
-        --gradient-secondary: var(--cor08);
-    }
+        <!-- Grid de Informações -->
+        <section class="profile-content">
+          <!-- Informações Pessoais -->
+          <div class="info-card">
+            <div class="card-header">
+              <h2><i class="fas fa-user"></i> Informações Pessoais</h2>
+            </div>
+            <div class="card-body">
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-icon">
+                    <i class="fas fa-id-card"></i>
+                  </div>
+                  <div class="info-details">
+                    <label>Nome Completo</label>
+                    <span>{{ user.first_name }} {{ user.last_name }}</span>
+                  </div>
+                </div>
 
-    #modalPerfilOverlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(3px);
-        z-index: 2000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: overlayFadeIn 0.2s ease-out;
-    }
+                <div class="info-item">
+                  <div class="info-icon">
+                    <i class="fas fa-hashtag"></i>
+                  </div>
+                  <div class="info-details">
+                    <label>Matrícula/Username</label>
+                    <span>{{ user.username }}</span>
+                  </div>
+                </div>
 
-    @keyframes overlayFadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
+                <div class="info-item">
+                  <div class="info-icon">
+                    <i class="fas fa-envelope"></i>
+                  </div>
+                  <div class="info-details">
+                    <label>E-mail</label>
+                    <span>{{ user.email|default:"Não informado" }}</span>
+                  </div>
+                </div>
 
-    #modalPerfil {
-        background: var(--cor07);
-        border-radius: 16px;
-        box-shadow: 0 8px 32px rgba(55, 111, 108, 0.15);
-        padding: 0;
-        width: 45%;
-        max-width: 800px;
-        min-width: 400px;
-        min-height: 480px;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        animation: modalShow 0.3s ease-out;
-        
-    }
+                <div class="info-item">
+                  <div class="info-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                  </div>
+                  <div class="info-details">
+                    <label>Membro desde</label>
+                    <span>{{ user.date_joined|date:"d/m/Y" }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-    @keyframes modalShow {
-        from {
-            transform: translateY(-30px) scale(0.95);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-        }
-    }
+          <!-- Informações do Sistema -->
+          <div class="info-card">
+            <div class="card-header">
+              <h2><i class="fas fa-cogs"></i> Sistema & Permissões</h2>
+            </div>
+            <div class="card-body">
+              <div class="system-info">
+                <div class="permission-item">
+                  <div class="permission-icon {{ user|get_user_role_class }}">
+                    <i class="fas fa-user-tag"></i>
+                  </div>
+                  <div class="permission-details">
+                    <label>Função no Sistema</label>
+                    <span>{{ user|get_user_role }}</span>
+                  </div>
+                </div>
 
-    #fecharPerfil {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: var(--cor07);
-        border: 2px solid var(--cor08);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        font-size: 1.5rem;
-        color: var(--cor08);
-        cursor: pointer;
-        z-index: 10;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
+                <div class="permission-item">
+                  <div class="permission-icon">
+                    <i class="fas fa-clock"></i>
+                  </div>
+                  <div class="permission-details">
+                    <label>Último Acesso</label>
+                    <span>
+                      {{ user.last_login|date:"d/m/Y H:i"|default:"Nunca" }}
+                    </span>
+                  </div>
+                </div>
 
-    #fecharPerfil:hover {
-        background: var(--cor08);
-        color: white;
-        transform: scale(1.05);
-    }
+                {% if user|is_admin %}
+                <div class="permission-item highlighted">
+                  <div class="permission-icon admin">
+                    <i class="fas fa-crown"></i>
+                  </div>
+                  <div class="permission-details">
+                    <label>Privilégios Administrativos</label>
+                    <span>Acesso total ao sistema</span>
+                  </div>
+                </div>
+                {% endif %} {% if user|is_coordenador %}
+                <div class="permission-item highlighted">
+                  <div class="permission-icon coordenador">
+                    <i class="fas fa-users-cog"></i>
+                  </div>
+                  <div class="permission-details">
+                    <label>Coordenação</label>
+                    <span>Gestão de avaliações e relatórios</span>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </section>
 
-    #dados_modal {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        align-items: center;
-        background: var(--cor03);
-        border-radius: 16px;
-        padding: 120px 40px 40px 40px;
-        position: relative;
-        min-height: 480px;
-    }
+        <!-- Ações do Perfil -->
+        <section class="profile-actions">
+          <div class="actions-grid">
+            {% if user|can_access_admin %}
+            <a href="{% url 'admin_hub' %}" class="action-btn secondary">
+              <i class="fas fa-tools"></i>
+              <span>Área Administrativa</span>
+            </a>
+            {% endif %}
 
-    #aside_perfil_modal {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        background: var(--cor07);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-        border: 3px solid var(--cor02);
-    }
+            <form
+              method="post"
+              action="/accounts/logout/?next=/accounts/login/"
+              class="logout-form"
+            >
+              {% csrf_token %}
+              <button
+                type="submit"
+                class="action-btn danger"
+                onclick="return confirm('Tem certeza que deseja sair do sistema?');"
+              >
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Sair do Sistema</span>
+              </button>
+            </form>
+          </div>
+        </section>
+      </div>
+    </main>
 
-    #aside_perfil_modal img {
-        width: 60px;
-        filter: brightness(0) saturate(100%) invert(22%) sepia(25%) saturate(1088%) hue-rotate(151deg) brightness(94%) contrast(90%);
-    }
+    <!-- Scripts -->
+    <script>
+      // Adicionar interatividade básica
+      document.addEventListener("DOMContentLoaded", function () {
+        // Efeito de hover nos cards
+        const cards = document.querySelectorAll(".info-card");
+        cards.forEach((card) => {
+          card.addEventListener("mouseenter", function () {
+            this.style.transform = "translateY(-5px)";
+          });
 
-    .role-badge {
-        position: absolute;
-        bottom: -8px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        border: 2px solid white;
-    }
-
-    .role-admin { background: var(--cor08); }
-    .role-coordenador { background: #6f42c1; }
-    .role-professor { background: #fd7e14; }
-    .role-aluno { background: #198754; }
-    .role-sem-role { background: #6c757d; }
-
-    .profile-header {
-        text-align: center;
-        margin-bottom: 20px;
-        color: white;
-    }
-
-    .profile-header h3 {
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin: 0 0 8px 0;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    }
-
-    .profile-type {
-        background: rgba(255, 255, 255, 0.25);
-        padding: 6px 16px;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .profile-info-grid {
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-
-    .infos_modal {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        position: relative;
-        cursor: default;
-    }
-
-    .infos_modal img {
-        width: 18px;
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        filter: brightness(0) saturate(100%) invert(22%) sepia(25%) saturate(1088%) hue-rotate(151deg) brightness(94%) contrast(90%);
-    }
-
-    .infos_modal p {
-        width: 100%;
-        padding: 16px 20px 16px 50px;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(5px);
-        color: var(--cor03);
-        font-size: 0.95rem;
-        margin: 0;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .infos_modal:hover p {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        background: rgba(255, 255, 255, 1);
-    }
-
-    .info-label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--cor04);
-        opacity: 0.8;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .info-value {
-        font-size: 1rem;
-        font-weight: 500;
-        color: var(--cor03);
-    }
-
-    #logout_modal {
-        width: 200px;
-        padding: 14px 24px;
-        border-radius: 12px;
-        border: none;
-        background: var(--cor08);
-        color: white;
-        font-weight: 700;
-        font-size: 1rem;
-        cursor: pointer;
-        margin-top: 20px;
-        transition: all 0.2s ease;
-        box-shadow: 0 4px 12px rgba(255, 60, 60, 0.25);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
-
-    #logout_modal:hover {
-        background: #d63031;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(255, 60, 60, 0.3);
-    }
-
-    #logout_modal span {
-        font-size: 1.2rem;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        #modalPerfil {
-            width: 90%;
-            min-width: unset;
-            margin: 20px;
-        }
-
-        #dados_modal {
-            padding: 100px 25px 30px 25px;
-        }
-
-        #aside_perfil_modal {
-            width: 100px;
-            height: 100px;
-        }
-
-        #aside_perfil_modal img {
-            width: 50px;
-        }
-
-        .profile-header h3 {
-            font-size: 1.5rem;
-        }
-
-        #logout_modal {
-            width: 180px;
-            padding: 12px 20px;
-            font-size: 0.9rem;
-        }
-    }
-
-    @media (max-width: 480px) {
-        #modalPerfil {
-            width: 95%;
-            margin: 10px;
-        }
-
-        #dados_modal {
-            padding: 80px 20px 25px 20px;
-        }
-
-        #aside_perfil_modal {
-            width: 80px;
-            height: 80px;
-        }
-
-        #aside_perfil_modal img {
-            width: 40px;
-        }
-
-        .profile-header h3 {
-            font-size: 1.3rem;
-        }
-
-        .infos_modal p {
-            padding: 14px 16px 14px 45px;
-            font-size: 0.9rem;
-        }
-
-        .infos_modal img {
-            width: 16px;
-            left: 14px;
-        }
-
-        #logout_modal {
-            width: 160px;
-            padding: 10px 16px;
-            font-size: 0.85rem;
-        }
-    }
-</style>
-
-<script>
-    const perfilBtn = document.getElementById('perfil');
-    const modalPerfilOverlay = document.getElementById('modalPerfilOverlay');
-    const fecharPerfil = document.getElementById('fecharPerfil');
-    if (perfilBtn && modalPerfilOverlay && fecharPerfil) {
-        perfilBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            modalPerfilOverlay.style.display = 'flex';
+          card.addEventListener("mouseleave", function () {
+            this.style.transform = "translateY(0)";
+          });
         });
-        fecharPerfil.addEventListener('click', function () {
-            modalPerfilOverlay.style.display = 'none';
+
+        // Animação de entrada
+        const elements = document.querySelectorAll(".info-card, .profile-hero");
+        elements.forEach((el, index) => {
+          el.style.animationDelay = `${index * 0.1}s`;
+          el.classList.add("fade-in-up");
         });
-        modalPerfilOverlay.addEventListener('click', function (e) {
-            if (e.target === modalPerfilOverlay) modalPerfilOverlay.style.display = 'none';
-        });
-    }
-</script>
-{% endblock %}
+      });
+    </script>
+  </body>
+</html>

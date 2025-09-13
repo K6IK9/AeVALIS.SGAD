@@ -1,597 +1,202 @@
-{% load permission_tags %}
-{% load static %}
+{% load user_tags %} {% load static %}
 
 <!DOCTYPE html>
 <html lang="pt-br">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IF SADD - Gerenciar Categorias</title>
 
-    <style>
-        /* Importação das fontes */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Vidaloka&display=swap');
-
-        /* Variáveis CSS comuns */
-        :root {
-            /* Cores principais */
-            --cor01: #f0f0f0;
-            --cor01-alt: #f1f1f1;
-            --cor02: #00fd94;
-            --cor03: #376f6c;
-            --cor04: #1e3231;
-            --cor05: #090909;
-            --cor06: #00cafd;
-            --cor07: #ffffff;
-            --cor08: #ff3c3c;
-
-            /* Fontes */
-            --font01: "Poppins", sans-serif;
-            --font02: "Vidaloka", serif;
-
-            /* Sombras */
-            --shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-            --shadow-alt: 4px 2px 8px rgba(0, 0, 0, 0.2);
-
-            /* Bordas e raios */
-            --border-radius-small: 5px;
-            --border-radius-medium: 15px;
-            --border-radius-large: 25px;
-            --border-radius-xl: 35px;
-            --border-radius-circle: 50%;
-
-            /* Espaçamentos */
-            --spacing-xs: 5px;
-            --spacing-sm: 10px;
-            --spacing-md: 15px;
-            --spacing-lg: 20px;
-            --spacing-xl: 25px;
-            --spacing-2xl: 40px;
-            --spacing-3xl: 50px;
-
-            /* Transições */
-            --transition-fast: 0.2s;
-            --transition-medium: 0.3s;
-        }
-
-        /* Reset global */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: var(--font01);
-        }
-
-        body {
-            background: var(--cor01);
-        }
-
-        /* Layout base para páginas de gerenciamento */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: var(--cor03);
-            color: white;
-            padding: 20px;
-            border-radius: var(--border-radius-medium);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0 0 10px 0;
-            font-size: 2.2em;
-        }
-
-        .header p {
-            margin: 0;
-            opacity: 0.9;
-        }
-
-        /* Seções de formulário */
-        .form-section {
-            background: var(--cor07);
-            padding: 30px;
-            border-radius: var(--border-radius-medium);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .form-section h2 {
-            color: var(--cor03);
-            margin-bottom: 20px;
-            font-size: 1.4em;
-        }
-
-        /* Grupos de formulário */
-        .form-group {
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--cor03);
-        }
-
-        /* Controles de formulário */
-        .form-control,
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-        }
-
-        .form-control:focus,
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--cor02);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        /* Checkbox */
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            width: auto;
-            margin: 0;
-        }
-
-        /* Layout de formulário em colunas */
-        .form-row {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .form-row .form-group.small {
-            flex: 0 0 150px;
-        }
-
-        /* Botões */
-        .btn {
-            background: var(--cor02);
-            color: var(--cor05);
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn:hover {
-            background: var(--cor06);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: var(--cor03);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: var(--cor04);
-        }
-
-        .btn-danger {
-            background: var(--cor08);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-        /* Botão de voltar */
-        .back-button {
-            background: var(--cor03);
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            display: inline-block;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-        }
-
-        .back-button:hover {
-            background: var(--cor04);
-            transform: translateY(-2px);
-            color: white;
-            text-decoration: none;
-        }
-
-        /* Tabelas */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: var(--cor07);
-            border-radius: var(--border-radius-medium);
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .data-table th {
-            background: var(--cor03);
-            color: white;
-            font-weight: 600;
-        }
-
-        .data-table tbody tr:hover {
-            background: #f8f9fa;
-        }
-
-        .data-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Mensagens */
-        .messages {
-            margin-bottom: 20px;
-        }
-
-        .message {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-        }
-
-        .message.warning {
-            background: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-
-        .message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border-left: 4px solid #17a2b8;
-        }
-
-        /* Informações adicionais */
-        .item-count {
-            font-size: 0.9em;
-            color: var(--cor03);
-            margin-top: 10px;
-        }
-
-        /* Estados e badges */
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            font-weight: 600;
-        }
-
-        .status-ativa {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-inativa {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        /* Estilos para botões de ação */
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-        }
-
-        .btn-action {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85em;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            transition: all 0.2s ease;
-            min-width: 70px;
-            justify-content: center;
-        }
-
-        .btn-edit {
-            background: var(--cor06);
-            color: white;
-        }
-
-        .btn-edit:hover {
-            background: #0099cc;
-            transform: translateY(-1px);
-        }
-
-        .btn-delete {
-            background: var(--cor08);
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #c82333;
-            transform: translateY(-1px);
-        }
-
-        /* Estilos de erro */
-        .error-message {
-            color: #dc3545;
-            font-size: 0.875em;
-            margin-top: 5px;
-        }
-
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
-            .form-section {
-                padding: 20px;
-            }
-
-            .data-table {
-                font-size: 0.9em;
-            }
-
-            .data-table th,
-            .data-table td {
-                padding: 10px;
-            }
-
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .form-row {
-                flex-direction: column;
-            }
-
-            .form-row .form-group.small {
-                flex: 1;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 1.6em;
-            }
-
-            .btn {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-
-            .back-button {
-                width: 100%;
-                text-align: center;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-            }
-        }
-    </style>
-</head>
-
-<body>
+    <!-- CSS personalizado -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'css/global.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'css/gerenciar.css' %}"
+    />
+  </head>
+
+  <body>
     <div class="container">
-        <a href="{% url 'listar_avaliacoes' %}" class="back-button">← Voltar ao Início</a>
+      <div class="header">
+        <h1>📂 Gerenciamento de Categorias</h1>
+        <p>Crie e organize as categorias de perguntas para avaliações</p>
+      </div>
 
-        <div class="header">
-            <h1>📂 Gerenciamento de Categorias</h1>
-            <p>Crie e organize as categorias de perguntas para avaliações</p>
-        </div>
+      <!-- Navegação Breadcrumb -->
+      <div class="nav-breadcrumb">
+        <a href="{% url 'inicio' %}">🏠 Início</a>
+        <span>→</span>
+        <a href="{% url 'admin_hub' %}">⚙️ Administração</a>
+        <span>→</span>
+        <span>📂 Categorias</span>
+      </div>
 
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="message {{ message.tags }}">
-                {{ message }}
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="form-section">
+        <h2>
+          {% if editing %}✏️ Editar Categoria{% else %}📝 Criar Nova Categoria{%
+          endif %}
+        </h2>
+        <form method="post">
+          {% csrf_token %}
+          <div class="form-row">
+            <div class="form-group">
+              <label for="{{ form.nome.id_for_label }}"
+                >{{ form.nome.label }}</label
+              >
+              {{ form.nome }} {% if form.nome.errors %}
+              <div class="error-message">
+                {% for error in form.nome.errors %} {{ error }} {% endfor %}
+              </div>
+              {% endif %}
             </div>
+
+            <div class="form-group small">
+              <label for="{{ form.ordem.id_for_label }}"
+                >{{ form.ordem.label }}</label
+              >
+              {{ form.ordem }} {% if form.ordem.errors %}
+              <div class="error-message">
+                {% for error in form.ordem.errors %} {{ error }} {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.descricao.id_for_label }}"
+              >{{ form.descricao.label }}</label
+            >
+            {{ form.descricao }} {% if form.descricao.errors %}
+            <div class="error-message">
+              {% for error in form.descricao.errors %} {{ error }} {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              {{ form.ativa }}
+              <label for="{{ form.ativa.id_for_label }}"
+                >{{ form.ativa.label }}</label
+              >
+            </div>
+            {% if form.ativa.errors %}
+            <div class="error-message">
+              {% for error in form.ativa.errors %} {{ error }} {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+
+          {% if form.non_field_errors %}
+          <div class="error-message">
+            {% for error in form.non_field_errors %} {{ error }} {% endfor %}
+          </div>
+          {% endif %}
+
+          <button type="submit" class="btn">
+            {% if editing %}💾 Atualizar Categoria{% else %}➕ Criar Categoria{%
+            endif %}
+          </button>
+          {% if editing %}
+          <a href="{% url 'gerenciar_categorias' %}" class="btn btn-secondary"
+            >Cancelar</a
+          >
+          {% endif %}
+        </form>
+      </div>
+
+      {% if not editing %}
+      <div class="form-section">
+        <h2>📋 Categorias Cadastradas</h2>
+        <div class="item-count">
+          Total de categorias: {{ categorias.count }}
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Descrição</th>
+              <th>Ordem</th>
+              <th>Status</th>
+              <th>Perguntas</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for categoria in categorias %}
+            <tr>
+              <td><strong>{{ categoria.nome }}</strong></td>
+              <td>{{ categoria.descricao|default:"-" }}</td>
+              <td>{{ categoria.ordem }}</td>
+              <td>
+                <span
+                  class="status-badge {% if categoria.ativa %}status-ativa{% else %}status-inativa{% endif %}"
+                >
+                  {% if categoria.ativa %} ✅ Ativa {% else %} ❌ Inativa {%
+                  endif %}
+                </span>
+              </td>
+              <td>
+                {{ categoria.perguntas.count }} pergunta{{
+                categoria.perguntas.count|pluralize }}
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <a
+                    href="{% url 'editar_categoria_simples' categoria.id %}"
+                    class="btn-action btn-edit"
+                  >
+                    ✏️ Editar
+                  </a>
+                  {% if categoria.perguntas.count == 0 %}
+                  <form
+                    method="post"
+                    action="{% url 'excluir_categoria' categoria.id %}"
+                    style="display: inline"
+                    onsubmit="return confirm('Tem certeza que deseja excluir a categoria \'{{ categoria.nome }}\'? Esta ação não pode ser desfeita.')"
+                  >
+                    {% csrf_token %}
+                    <button type="submit" class="btn-action btn-delete">
+                      🗑️ Excluir
+                    </button>
+                  </form>
+                  {% else %}
+                  <button
+                    type="button"
+                    class="btn-action btn-delete"
+                    onclick="alert('Não é possível excluir esta categoria pois ela possui {{ categoria.perguntas.count }} pergunta(s) associada(s).')"
+                    style="opacity: 0.5; cursor: not-allowed"
+                  >
+                    🗑️ Excluir
+                  </button>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 40px">
+                Nenhuma categoria encontrada.
+              </td>
+            </tr>
             {% endfor %}
-        </div>
-        {% endif %}
-
-        <div class="form-section">
-            <h2>{% if editing %}✏️ Editar Categoria{% else %}📝 Criar Nova Categoria{% endif %}</h2>
-            <form method="post">
-                {% csrf_token %}
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>
-                        {{ form.nome }}
-                        {% if form.nome.errors %}
-                        <div class="error-message">
-                            {% for error in form.nome.errors %}
-                            {{ error }}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-group small">
-                        <label for="{{ form.ordem.id_for_label }}">{{ form.ordem.label }}</label>
-                        {{ form.ordem }}
-                        {% if form.ordem.errors %}
-                        <div class="error-message">
-                            {% for error in form.ordem.errors %}
-                            {{ error }}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="{{ form.descricao.id_for_label }}">{{ form.descricao.label }}</label>
-                    {{ form.descricao }}
-                    {% if form.descricao.errors %}
-                    <div class="error-message">
-                        {% for error in form.descricao.errors %}
-                        {{ error }}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-
-                <div class="form-group">
-                    <div class="checkbox-group">
-                        {{ form.ativa }}
-                        <label for="{{ form.ativa.id_for_label }}">{{ form.ativa.label }}</label>
-                    </div>
-                    {% if form.ativa.errors %}
-                    <div class="error-message">
-                        {% for error in form.ativa.errors %}
-                        {{ error }}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-
-                {% if form.non_field_errors %}
-                <div class="error-message">
-                    {% for error in form.non_field_errors %}
-                    {{ error }}
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                <button type="submit" class="btn">
-                    {% if editing %}💾 Atualizar Categoria{% else %}➕ Criar Categoria{% endif %}
-                </button>
-                {% if editing %}
-                <a href="{% url 'gerenciar_categorias' %}" class="btn btn-secondary">Cancelar</a>
-                {% endif %}
-            </form>
-        </div>
-
-        {% if not editing %}
-        <div class="form-section">
-            <h2>📋 Categorias Cadastradas</h2>
-            <div class="item-count">
-                Total de categorias: {{ categorias.count }}
-            </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Descrição</th>
-                        <th>Ordem</th>
-                        <th>Status</th>
-                        <th>Perguntas</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for categoria in categorias %}
-                    <tr>
-                        <td><strong>{{ categoria.nome }}</strong></td>
-                        <td>{{ categoria.descricao|default:"-" }}</td>
-                        <td>{{ categoria.ordem }}</td>
-                        <td>
-                            <span class="status-badge {% if categoria.ativa %}status-ativa{% else %}status-inativa{% endif %}">
-                                {% if categoria.ativa %}
-                                ✅ Ativa
-                                {% else %}
-                                ❌ Inativa
-                                {% endif %}
-                            </span>
-                        </td>
-                        <td>
-                            {{ categoria.perguntas.count }} pergunta{{ categoria.perguntas.count|pluralize }}
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="{% url 'editar_categoria_simples' categoria.id %}" class="btn-action btn-edit">
-                                    ✏️ Editar
-                                </a>
-                                {% if categoria.perguntas.count == 0 %}
-                                <form method="post" action="{% url 'excluir_categoria' categoria.id %}" 
-                                      style="display: inline;" 
-                                      onsubmit="return confirm('Tem certeza que deseja excluir a categoria \'{{ categoria.nome }}\'? Esta ação não pode ser desfeita.')">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn-action btn-delete">
-                                        🗑️ Excluir
-                                    </button>
-                                </form>
-                                {% else %}
-                                <button type="button" class="btn-action btn-delete" 
-                                        onclick="alert('Não é possível excluir esta categoria pois ela possui {{ categoria.perguntas.count }} pergunta(s) associada(s).')" 
-                                        style="opacity: 0.5; cursor: not-allowed;">
-                                    🗑️ Excluir
-                                </button>
-                                {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 40px;">
-                            Nenhuma categoria encontrada.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
     </div>
-</body>
-
+  </body>
 </html>

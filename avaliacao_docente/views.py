@@ -164,11 +164,11 @@ def gerenciar_usuarios(request):
         form = GerenciarUsuarioForm()
 
     # Obter parâmetros de filtro da URL
-    busca = request.GET.get("busca", "").strip()
+    busca = request.GET.get("search", "").strip()
     filtro_status = request.GET.get("status", "")
     filtro_role = request.GET.get("role", "")
 
-    # Iniciar com todos os usuários
+    # Iniciar with todos os usuários
     usuarios_queryset = User.objects.all()
 
     # Aplicar filtro de busca por nome ou matrícula
@@ -216,12 +216,24 @@ def gerenciar_usuarios(request):
             }
         )
 
+    # Estatísticas para o template
+    total_usuarios = User.objects.count()
+    usuarios_ativos = User.objects.filter(is_active=True).count()
+    professores_count = User.objects.filter(groups__name="professor").count()
+    alunos_count = User.objects.filter(groups__name="aluno").count()
+
     context = {
         "form": form,
         "usuarios_detalhados": usuarios_detalhados,
+        "usuarios": usuarios_queryset,  # Para compatibilidade com template
         "filtro_busca": busca,
         "filtro_status": filtro_status,
         "filtro_role": filtro_role,
+        "total_usuarios": total_usuarios,
+        "usuarios_ativos": usuarios_ativos,
+        "professores_count": professores_count,
+        "alunos_count": alunos_count,
+        "available_roles": [],  # Para o modal de criação
     }
 
     return render(request, "gerenciar_usuarios.html", context)
@@ -230,7 +242,7 @@ def gerenciar_usuarios(request):
 @login_required
 def editar_usuario(request, usuario_id):
     """
-    View para editar um usuário existente
+    View para editar um usuário específico
     """
     if not check_user_permission(request.user, ["coordenador", "admin"]):
         messages.error(request, "Você não tem permissão para editar usuários.")
@@ -239,21 +251,47 @@ def editar_usuario(request, usuario_id):
     usuario = get_object_or_404(User, id=usuario_id)
 
     if request.method == "POST":
-        form = GerenciarUsuarioForm(request.POST, instance=usuario)
-        if form.is_valid():
-            form.save()
+        try:
+            # Atualizar campos básicos
+            usuario.username = request.POST.get("username", usuario.username)
+            usuario.email = request.POST.get("email", usuario.email)
+            usuario.first_name = request.POST.get("first_name", usuario.first_name)
+            usuario.last_name = request.POST.get("last_name", usuario.last_name)
+            usuario.is_active = request.POST.get("is_active") == "on"
+
+            # Atualizar senha se fornecida
+            password = request.POST.get("password")
+            if password:
+                usuario.set_password(password)
+
+            usuario.save()
+
+            # Atualizar matrícula no perfil se fornecida
+            matricula = request.POST.get("matricula", "")
+            if matricula:
+                if hasattr(usuario, "perfilaluno") and usuario.perfilaluno:
+                    usuario.perfilaluno.matricula = matricula
+                    usuario.perfilaluno.save()
+                elif hasattr(usuario, "perfilprofessor") and usuario.perfilprofessor:
+                    usuario.perfilprofessor.matricula = matricula
+                    usuario.perfilprofessor.save()
+
             messages.success(
                 request, f"Usuário '{usuario.username}' atualizado com sucesso!"
             )
             return redirect("gerenciar_usuarios")
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"Erro no campo {field}: {error}")
-    else:
-        form = GerenciarUsuarioForm(instance=usuario)
 
-    context = {"form": form, "usuario": usuario, "editing": True}
+        except Exception as e:
+            messages.error(request, f"Erro ao atualizar usuário: {str(e)}")
+
+    # Buscar matrícula do perfil
+    matricula = ""
+    if hasattr(usuario, "perfilaluno") and usuario.perfilaluno:
+        matricula = usuario.perfilaluno.matricula or ""
+    elif hasattr(usuario, "perfilprofessor") and usuario.perfilprofessor:
+        matricula = usuario.perfilprofessor.matricula or ""
+
+    context = {"usuario": usuario, "matricula": matricula, "editing": True}
     return render(request, "gerenciar_usuarios.html", context)
 
 
@@ -263,7 +301,8 @@ def excluir_usuario(request, usuario_id):
     View para excluir um usuário
     """
     if not check_user_permission(request.user, ["coordenador", "admin"]):
-        return JsonResponse({"error": "Permissão negada"}, status=403)
+        messages.error(request, "Permissão negada")
+        return redirect("gerenciar_usuarios")
 
     if request.method == "POST":
         try:
@@ -271,31 +310,28 @@ def excluir_usuario(request, usuario_id):
 
             # Não permite excluir o próprio usuário
             if usuario == request.user:
-                return JsonResponse(
-                    {"error": "Não é possível excluir seu próprio usuário"}, status=400
-                )
+                messages.error(request, "Não é possível excluir seu próprio usuário")
+                return redirect("gerenciar_usuarios")
 
             # Não permite excluir usuários admin se não for admin
             if has_role(usuario, "admin") and not has_role(request.user, "admin"):
-                return JsonResponse(
-                    {
-                        "error": "Apenas administradores podem excluir outros administradores"
-                    },
-                    status=403,
+                messages.error(
+                    request,
+                    "Apenas administradores podem excluir outros administradores",
                 )
+                return redirect("gerenciar_usuarios")
 
             nome_usuario = usuario.username
             usuario.delete()
 
-            return JsonResponse(
-                {"success": f"Usuário '{nome_usuario}' excluído com sucesso!"}
-            )
-        except Exception as e:
-            return JsonResponse(
-                {"error": f"Erro ao excluir usuário: {str(e)}"}, status=500
-            )
+            messages.success(request, f"Usuário '{nome_usuario}' excluído com sucesso!")
+            return redirect("gerenciar_usuarios")
 
-    return JsonResponse({"error": "Método não permitido"}, status=405)
+        except Exception as e:
+            messages.error(request, f"Erro ao excluir usuário: {str(e)}")
+            return redirect("gerenciar_usuarios")
+
+    return redirect("gerenciar_usuarios")
 
 
 @login_required
@@ -658,6 +694,98 @@ def excluir_periodo(request, periodo_id):
 
 
 @login_required
+def gerenciar_alunos_turma(request, turma_id):
+    """
+    View para gerenciar alunos de uma turma específica sem JavaScript
+    """
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(request, "Você não tem permissão para acessar esta página.")
+        return redirect("inicio")
+
+    turma = get_object_or_404(Turma, id=turma_id)
+    busca_aluno = request.GET.get("busca_aluno", "")
+
+    # Processar ações POST
+    if request.method == "POST":
+        acao = request.POST.get("acao")
+        alunos_selecionados = request.POST.getlist("alunos_selecionados")
+
+        if acao and alunos_selecionados:
+            try:
+                usuarios = User.objects.filter(id__in=alunos_selecionados)
+                alunos = PerfilAluno.objects.filter(user__in=usuarios)
+
+                sucesso_count = 0
+                for aluno in alunos:
+                    if acao == "matricular":
+                        matricula, created = MatriculaTurma.objects.get_or_create(
+                            aluno=aluno, turma=turma, defaults={"status": "ativa"}
+                        )
+                        if created:
+                            sucesso_count += 1
+                    elif acao == "desmatricular":
+                        MatriculaTurma.objects.filter(aluno=aluno, turma=turma).delete()
+                        sucesso_count += 1
+
+                if acao == "matricular":
+                    messages.success(
+                        request, f"{sucesso_count} aluno(s) matriculado(s) com sucesso!"
+                    )
+                else:
+                    messages.success(
+                        request,
+                        f"{sucesso_count} aluno(s) desmatriculado(s) com sucesso!",
+                    )
+
+            except Exception as e:
+                messages.error(request, f"Erro ao processar ação: {str(e)}")
+
+        return redirect("gerenciar_alunos_turma", turma_id=turma_id)
+
+    # Buscar todos os alunos
+    alunos_query = PerfilAluno.objects.select_related("user").all()
+
+    # Aplicar filtro de busca
+    if busca_aluno:
+        alunos_query = alunos_query.filter(
+            Q(user__first_name__icontains=busca_aluno)
+            | Q(user__last_name__icontains=busca_aluno)
+            | Q(user__username__icontains=busca_aluno)
+            | Q(user__email__icontains=busca_aluno)
+        )
+
+    # Verificar quais alunos estão matriculados na turma
+    matriculas_ativas = MatriculaTurma.objects.filter(
+        turma=turma, status="ativa"
+    ).values_list("aluno_id", flat=True)
+
+    # Preparar dados dos alunos
+    alunos_data = []
+    for aluno in alunos_query.order_by("user__first_name", "user__last_name"):
+        alunos_data.append(
+            {
+                "id": aluno.user.id,
+                "perfil_id": aluno.id,
+                "nome": aluno.user.get_full_name() or aluno.user.username,
+                "username": aluno.user.username,
+                "email": aluno.user.email or "Não informado",
+                "matriculado": aluno.id in matriculas_ativas,
+            }
+        )
+
+    context = {
+        "turma": turma,
+        "alunos": alunos_data,
+        "busca_aluno": busca_aluno,
+        "total_alunos": len(alunos_data),
+        "alunos_matriculados": len([a for a in alunos_data if a["matriculado"]]),
+        "alunos_disponiveis": len([a for a in alunos_data if not a["matriculado"]]),
+    }
+
+    return render(request, "gerenciar_alunos_turma.html", context)
+
+
+@login_required
 def gerenciar_turmas(request):
     """
     View para gerenciar turmas com filtros
@@ -712,10 +840,18 @@ def gerenciar_turmas(request):
     # Períodos disponíveis para o filtro
     periodos_disponiveis = PeriodoLetivo.objects.all().order_by("-ano", "-semestre")
 
+    # Disciplinas e professores para os filtros
+    disciplinas = Disciplina.objects.all().order_by("disciplina_nome")
+    professores = PerfilProfessor.objects.select_related("user").order_by(
+        "user__first_name", "user__last_name"
+    )
+
     context = {
         "form": form,
         "turmas": turmas,
         "periodos_disponiveis": periodos_disponiveis,
+        "disciplinas": disciplinas,
+        "professores": professores,
         "filtro_turno": filtro_turno,
         "filtro_periodo": filtro_periodo,
         "filtro_status": filtro_status,
@@ -847,6 +983,17 @@ class IndexView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+
+# Tela de Perfil separada
+@login_required
+def perfil_usuario(request):
+    """
+    View para a tela de perfil do usuário
+    Página separada com informações completas do perfil
+    """
+    context = {"usuario": request.user, "titulo": "Meu Perfil"}
+    return render(request, "perfil.html", context)
 
 
 # Tela para registros de usuarios - Redirecionada para login SUAP

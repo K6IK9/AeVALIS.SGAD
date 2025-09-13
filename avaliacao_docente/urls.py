@@ -41,6 +41,11 @@ urlpatterns = [
     path("gerenciar-turmas/", views.gerenciar_turmas, name="gerenciar_turmas"),
     path("editar-turma/<int:turma_id>/", views.editar_turma, name="editar_turma"),
     path("excluir-turma/<int:turma_id>/", views.excluir_turma, name="excluir_turma"),
+    path(
+        "gerenciar-alunos-turma/<int:turma_id>/",
+        views.gerenciar_alunos_turma,
+        name="gerenciar_alunos_turma",
+    ),
     path("buscar-alunos-turma/", views.buscar_alunos_turma, name="buscar_alunos_turma"),
     path(
         "matricular-alunos-massa/",
@@ -147,4 +152,5 @@ urlpatterns = [
         name="encerrar_avaliacao",
     ),
     path("", IndexView.as_view(), name="inicio"),
+    path("perfil/", views.perfil_usuario, name="perfil_usuario"),
 ]

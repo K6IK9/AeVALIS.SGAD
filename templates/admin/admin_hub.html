@@ -1,605 +1,179 @@
-{% load permission_tags %}
-{% load static %}
+{% load user_tags %} {% load static %}
 
 <!DOCTYPE html>
 <html lang="pt-br">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IF SADD - Central de Administração</title>
 
-    <style>
-        /* Importação das fontes */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Vidaloka&display=swap');
-
-        /* Variáveis CSS comuns */
-        :root {
-            /* Cores principais */
-            --cor01: #f0f0f0;
-            --cor01-alt: #f1f1f1;
-            --cor02: #00fd94;
-            --cor03: #376f6c;
-            --cor04: #1e3231;
-            --cor05: #090909;
-            --cor06: #00cafd;
-            --cor07: #ffffff;
-            --cor08: #ff3c3c;
-
-            /* Fontes */
-            --font01: "Poppins", sans-serif;
-            --font02: "Vidaloka", serif;
-
-            /* Sombras */
-            --shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-            --shadow-alt: 4px 2px 8px rgba(0, 0, 0, 0.2);
-
-            /* Bordas e raios */
-            --border-radius-small: 5px;
-            --border-radius-medium: 15px;
-            --border-radius-large: 25px;
-            --border-radius-xl: 35px;
-            --border-radius-circle: 50%;
-
-            /* Espaçamentos */
-            --spacing-xs: 5px;
-            --spacing-sm: 10px;
-            --spacing-md: 15px;
-            --spacing-lg: 20px;
-            --spacing-xl: 25px;
-            --spacing-2xl: 40px;
-            --spacing-3xl: 50px;
-
-            /* Transições */
-            --transition-fast: 0.2s;
-            --transition-medium: 0.3s;
-        }
-
-        /* Reset global */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: var(--font01);
-        }
-
-        /* Layout base para páginas de gerenciamento */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: var(--cor03);
-            color: white;
-            padding: 20px;
-            border-radius: var(--border-radius-medium);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0 0 10px 0;
-            font-size: 2.2em;
-        }
-
-        .header p {
-            margin: 0;
-            opacity: 0.9;
-        }
-
-        /* Seções de formulário */
-        .form-section {
-            background: var(--cor07);
-            padding: 30px;
-            border-radius: var(--border-radius-medium);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .form-section h2 {
-            color: var(--cor03);
-            margin-bottom: 20px;
-            font-size: 1.4em;
-        }
-
-        /* Grupos de formulário */
-        .form-group {
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--cor03);
-        }
-
-        /* Controles de formulário */
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-            box-sizing: border-box;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--cor02);
-        }
-
-        /* Botões */
-        .btn {
-            background: var(--cor02);
-            color: var(--cor05);
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn:hover {
-            background: var(--cor06);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: var(--cor03);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: var(--cor04);
-        }
-
-        .btn-danger {
-            background: var(--cor08);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-        /* Botão de voltar */
-        .back-button {
-            background: var(--cor03);
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            display: inline-block;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-        }
-
-        .back-button:hover {
-            background: var(--cor04);
-            transform: translateY(-2px);
-            color: white;
-            text-decoration: none;
-        }
-
-        /* Tabelas */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: var(--cor07);
-            border-radius: var(--border-radius-medium);
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .data-table th {
-            background: var(--cor03);
-            color: white;
-            font-weight: 600;
-        }
-
-        .data-table tbody tr:hover {
-            background: #f8f9fa;
-        }
-
-        .data-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Mensagens */
-        .messages {
-            margin-bottom: 20px;
-        }
-
-        .message {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-        }
-
-        .message.warning {
-            background: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-
-        .message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border-left: 4px solid #17a2b8;
-        }
-
-        /* Informações adicionais */
-        .item-count {
-            font-size: 0.9em;
-            color: var(--cor03);
-            margin-top: 10px;
-        }
-
-        /* Estados e badges */
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            font-weight: 600;
-        }
-
-        .status-ativa {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-finalizada {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-pendente {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        /* Estilos específicos do admin hub */
-        body {
-            margin: 0;
-            padding: 0;
-            background: var(--cor01);
-        }
-
-        .admin-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .admin-card {
-            background: var(--cor07);
-            padding: 25px;
-            border-radius: var(--border-radius-medium);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-            transition: all var(--transition-medium);
-            border-top: 5px solid var(--cor02);
-            height: 400px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-sizing: border-box;
-        }
-
-        .admin-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .admin-card h3 {
-            color: var(--cor03);
-            margin-bottom: 12px;
-            font-size: 1.3em;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .admin-card p {
-            color: #666;
-            margin-bottom: auto;
-            line-height: 1.5;
-            font-size: 0.9em;
-            flex: 1;
-        }
-
-        .card-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 15px;
-            flex-shrink: 0;
-            align-items: center;
-            width: 100%;
-        }
-
-        .card-actions .btn {
-            width: 90%;
-            text-align: center;
-            font-size: 0.9em;
-            padding: 10px;
-        }
-
-        .icon {
-            font-size: 1.5em;
-        }
-
-        .stats-section {
-            background: var(--cor07);
-            padding: 30px;
-            border-radius: var(--border-radius-medium);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .stats-section h2 {
-            margin: 0 0 20px 0;
-            color: var(--cor03);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 15px;
-            background: var(--cor01);
-            border-radius: var(--border-radius-small);
-            border-left: 4px solid var(--cor02);
-            transition: all 0.3s;
-        }
-
-        .stat-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: var(--cor03);
-            display: block;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
-            .admin-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .admin-card {
-                height: auto;
-                min-height: 200px;
-                padding: 20px;
-            }
-
-            .form-section {
-                padding: 20px;
-            }
-
-            .data-table {
-                font-size: 0.9em;
-            }
-
-            .data-table th,
-            .data-table td {
-                padding: 10px;
-            }
-
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .card-actions .btn {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .btn {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-
-            .back-button {
-                width: 100%;
-                text-align: center;
-            }
-        }
-    </style>
-</head>
-
-<body>
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="{% static 'css/global.css' %}" />
+    <!-- CSS Administrativo -->
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}"
+  </head>
+
+  <body>
     <div class="container">
-        <a href="{% url 'inicio' %}" class="back-button">← Voltar ao Início</a>
+      <a href="{% url 'inicio' %}" class="back-button">← Voltar ao Início</a>
 
-        <div class="header">
-            <h1>🏛️ Central de Administração</h1>
-            <p>Gerencie todos os cadastros e configurações do sistema</p>
+      <div class="header">
+        <h1>🏛️ Central de Administração</h1>
+        <p>Gerencie todos os cadastros e configurações do sistema</p>
+      </div>
+
+      <div class="stats-section">
+        <h2>Estatísticas do Sistema</h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-number">{{ total_usuarios|default:"0" }}</span>
+            <span class="stat-label">Usuários Cadastrados</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ total_cursos|default:"0" }}</span>
+            <span class="stat-label">Cursos Ativos</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ total_disciplinas|default:"0" }}</span>
+            <span class="stat-label">Disciplinas</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ total_turmas|default:"0" }}</span>
+            <span class="stat-label">Turmas Ativas</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ total_professores|default:"0" }}</span>
+            <span class="stat-label">Professores</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ total_alunos|default:"0" }}</span>
+            <span class="stat-label">Alunos</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ total_periodos|default:"0" }}</span>
+            <span class="stat-label">Períodos Letivos</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ total_avaliacoes|default:"0" }}</span>
+            <span class="stat-label">Avaliações Realizadas</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-grid">
+        <!-- Gestão de Usuários -->
+        <div class="admin-card">
+          <div class="card-content">
+            <h3>
+              <span class="icon">👥</span> Gestão de Usuários (100% configurado)
+            </h3>
+            <p>
+              Gerencie usuários, permissões e roles do sistema. Cadastre novos
+              usuários e altere permissões existentes.
+            </p>
+          </div>
+          <div class="card-actions">
+            <a href="{% url 'gerenciar_roles' %}" class="btn"
+              >Gerenciar permissões (OK)</a
+            >
+            <a href="{% url 'gerenciar_usuarios' %}" class="btn"
+              >Gerenciar Usuários (OK)</a
+            >
+          </div>
         </div>
 
-        <div class="stats-section">
-            <h2>Estatísticas do Sistema</h2>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-number">{{ total_usuarios|default:"0" }}</span>
-                    <span class="stat-label">Usuários Cadastrados</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">{{ total_cursos|default:"0" }}</span>
-                    <span class="stat-label">Cursos Ativos</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">{{ total_disciplinas|default:"0" }}</span>
-                    <span class="stat-label">Disciplinas</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">{{ total_turmas|default:"0" }}</span>
-                    <span class="stat-label">Turmas Ativas</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">{{ total_professores|default:"0" }}</span>
-                    <span class="stat-label">Professores</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">{{ total_alunos|default:"0" }}</span>
-                    <span class="stat-label">Alunos</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">{{ total_periodos|default:"0" }}</span>
-                    <span class="stat-label">Períodos Letivos</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">{{ total_avaliacoes|default:"0" }}</span>
-                    <span class="stat-label">Avaliações Realizadas</span>
-                </div>
-            </div>
+        <!-- Gestão de Cursos -->
+        <div class="admin-card">
+          <div class="card-content">
+            <h3>
+              <span class="icon">🎓</span> Gestão de Cursos (80% configurado)
+            </h3>
+            <p>
+              Cadastre e gerencie cursos oferecidos pela instituição. Configure
+              informações, coordenadores e status.
+            </p>
+          </div>
+          <div class="card-actions">
+            <a href="{% url 'gerenciar_cursos' %}" class="btn"
+              >Gerenciar Curso (OK)</a
+            >
+            <a href="#" class="btn btn-secondary"
+              >Relatórios (não implementado)</a
+            >
+          </div>
         </div>
 
-        <div class="admin-grid">
-            <!-- Gestão de Usuários -->
-            <div class="admin-card">
-                <div class="card-content">
-                    <h3><span class="icon">👥</span> Gestão de Usuários (100% configurado)</h3>
-                    <p>Gerencie usuários, permissões e roles do sistema. Cadastre novos usuários e altere permissões
-                        existentes.</p>
-                </div>
-                <div class="card-actions">
-                    <a href="{% url 'gerenciar_roles' %}" class="btn">Gerenciar permissões (OK)</a>
-                    <a href="{% url 'gerenciar_usuarios' %}" class="btn">Gerenciar Usuários (OK)</a>
-                </div>
-            </div>
-
-            <!-- Gestão de Cursos -->
-            {% comment %}
-            detalhes
-            Gestão de Coordenadores de Curso:
-            Modelo Principal: CoordenadorCurso
-            Operações:
-            Criar (Atribuir): Vincular um usuário com perfil de professor (PerfilProfessor) como coordenador de um
-            curso.
-            Ler: Visualizar quem é o coordenador de cada curso.
-            Excluir (Desvincular): Remover a atribuição de um coordenador de um curso.
-            {% endcomment %}
-            <div class="admin-card">
-                <div class="card-content">
-                    <h3><span class="icon">🎓</span> Gestão de Cursos (80% configurado)</h3>
-                    <p>Cadastre e gerencie cursos oferecidos pela instituição. Configure informações, coordenadores e
-                        status.</p>
-                </div>
-                <div class="card-actions">
-                    <a href="{% url 'gerenciar_cursos' %}" class="btn">Gerenciar Curso (OK)</a>
-                    <a href="#" class="btn btn-secondary">Relatórios (não implementado)</a>
-                </div>
-            </div>
-
-            <!-- Gestão de Disciplinas -->
-            <div class="admin-card">
-                <div class="card-content">
-                    <h3><span class="icon">📚</span> Gestão de Disciplinas (50% configurado)</h3>
-                    <p>Administre disciplinas, vincule professores e defina cargas horárias e pré-requisitos.</p>
-                </div>
-                <div class="card-actions">
-                    <a href="{% url 'gerenciar_disciplinas' %}" class="btn">Gerenciar Disciplinas (OK)</a>
-                    <a href="#" class="btn btn-secondary">Relatórios (não implementado)</a>
-                </div>
-            </div>
-
-            <!-- Gestão de Períodos Letivos -->
-            <div class="admin-card">
-                <div class="card-content">
-                    <h3><span class="icon">📅</span> Gestão de Períodos (50% configurado)</h3>
-                    <p>Configure períodos letivos, calendário acadêmico e organize semestres de 1º ao 10º.</p>
-                </div>
-                <div class="card-actions">
-                    <a href="{% url 'gerenciar_periodos' %}" class="btn">Gerenciar Períodos (OK)</a>
-                    <a href="#" class="btn btn-secondary">Calendário (não implementado)</a>
-                </div>
-            </div>
-
-            <!-- Gestão de Turmas -->
-            <div class="admin-card">
-                <div class="card-content">
-                    <h3><span class="icon">🏫</span> Gestão de Turmas (70% configurado)</h3>
-                    <p>Crie e gerencie turmas, matrículas de alunos e alocação de professores por período letivo.</p>
-                </div>
-                <div class="card-actions">
-                    <a href="{% url 'gerenciar_turmas' %}" class="btn">Gerenciar Turmas (OK)</a>
-                    <a href="#" class="btn btn-secondary">Relatórios (não implementado)</a>
-                </div>
-            </div>
-
-            <!-- Configurações do Sistema -->
-            <div class="admin-card">
-                <div class="card-content">
-                    <h3><span class="icon">⚙️</span> Configurações (Não configurado)</h3>
-                    <p>Configure parâmetros gerais do sistema, backup, logs e manutenção preventiva.</p>
-                </div>
-                <div class="card-actions">
-                    <a href="#" class="btn btn-secondary">Parâmetros</a>
-                    <a href="#" class="btn btn-secondary">Backup</a>
-                    <a href="#" class="btn btn-danger">Logs do Sistema</a>
-                </div>
-            </div>
-
+        <!-- Gestão de Disciplinas -->
+        <div class="admin-card">
+          <div class="card-content">
+            <h3>
+              <span class="icon">📚</span> Gestão de Disciplinas (50% configurado)
+            </h3>
+            <p>
+              Administre disciplinas, vincule professores e defina cargas
+              horárias e pré-requisitos.
+            </p>
+          </div>
+          <div class="card-actions">
+            <a href="{% url 'gerenciar_disciplinas' %}" class="btn">Gerenciar Disciplinas (OK)</a>
+            <a href="#" class="btn btn-secondary">Relatórios (não implementado)</a>
+          </div>
         </div>
+
+        <!-- Gestão de Períodos Letivos -->
+        <div class="admin-card">
+          <div class="card-content">
+            <h3>
+              <span class="icon">📅</span> Gestão de Períodos (50% configurado)
+            </h3>
+            <p>
+              Configure períodos letivos, calendário acadêmico e organize
+              semestres de 1º ao 10º.
+            </p>
+          </div>
+          <div class="card-actions">
+            <a href="{% url 'gerenciar_periodos' %}" class="btn">Gerenciar Períodos (OK)</a>
+            <a href="#" class="btn btn-secondary">Calendário (não implementado)</a>
+          </div>
+        </div>
+
+        <!-- Gestão de Turmas -->
+        <div class="admin-card">
+          <div class="card-content">
+            <h3>
+              <span class="icon">🏫</span> Gestão de Turmas (70% configurado)
+            </h3>
+            <p>
+              Crie e gerencie turmas, matrículas de alunos e alocação de
+              professores por período letivo.
+            </p>
+          </div>
+          <div class="card-actions">
+            <a href="{% url 'gerenciar_turmas' %}" class="btn"
+              >Gerenciar Turmas (OK)</a
+            >
+            <a href="#" class="btn btn-secondary">Relatórios (não implementado)</a>
+          </div>
+        </div>
+
+        <!-- Configurações do Sistema -->
+        <div class="admin-card">
+          <div class="card-content">
+            <h3>
+              <span class="icon">⚙️</span> Configurações (Não configurado)
+            </h3>
+            <p>
+              Configure parâmetros gerais do sistema, backup, logs e manutenção
+              preventiva.
+            </p>
+          </div>
+          <div class="card-actions">
+            <a href="#" class="btn btn-secondary">Parâmetros</a>
+            <a href="#" class="btn btn-secondary">Backup</a>
+            <a href="#" class="btn btn-danger">Logs do Sistema</a>
+          </div>
+        </div>
+      </div>
     </div>
-</body>
-
+  </body>
 </html>

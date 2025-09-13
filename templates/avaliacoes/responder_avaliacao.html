@@ -1,810 +1,286 @@
-{% load static %}
-{% load user_tags %}
+{% load static %} {% load user_tags %}
 
 <!DOCTYPE html>
 <html lang="pt-br">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Responder Avaliação - IF SADD</title>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
 
-    <style>
-        /* Importação das fontes */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Vidaloka&display=swap');
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Vidaloka&display=swap"
+      rel="stylesheet"
+    />
 
-        /* Variáveis CSS comuns */
-        :root {
-            /* Cores principais */
-            --cor01: #f0f0f0;
-            --cor01-alt: #f1f1f1;
-            --cor02: #00fd94;
-            --cor03: #376f6c;
-            --cor04: #1e3231;
-            --cor05: #090909;
-            --cor06: #00cafd;
-            --cor07: #ffffff;
-            --cor08: #ff3c3c;
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="{% static 'css/global.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/responder_avaliacao.css' %}" />
+  </head>
 
-            /* Fontes */
-            --font01: "Poppins", sans-serif;
-            --font02: "Vidaloka", serif;
-
-            /* Sombras */
-            --shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-            --shadow-alt: 4px 2px 8px rgba(0, 0, 0, 0.2);
-
-            /* Bordas e raios */
-            --border-radius-small: 5px;
-            --border-radius-medium: 15px;
-            --border-radius-large: 25px;
-            --border-radius-xl: 35px;
-            --border-radius-circle: 50%;
-
-            /* Espaçamentos */
-            --spacing-xs: 5px;
-            --spacing-sm: 10px;
-            --spacing-md: 15px;
-            --spacing-lg: 20px;
-            --spacing-xl: 25px;
-            --spacing-2xl: 40px;
-            --spacing-3xl: 50px;
-
-            /* Transições */
-            --transition-fast: 0.2s;
-            --transition-medium: 0.3s;
-        }
-
-        /* Reset global */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: var(--font01);
-        }
-
-        body {
-            background: var(--cor01);
-        }
-
-        /* Layout base para páginas de gerenciamento */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: var(--cor03);
-            color: white;
-            padding: 20px;
-            border-radius: var(--border-radius-medium);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0 0 10px 0;
-            font-size: 2.2em;
-        }
-
-        .header p {
-            margin: 0;
-            opacity: 0.9;
-        }
-
-        /* Seções de formulário */
-        .form-section {
-            background: var(--cor07);
-            padding: 30px;
-            border-radius: var(--border-radius-medium);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .form-section h2 {
-            color: var(--cor03);
-            margin-bottom: 20px;
-            font-size: 1.4em;
-        }
-
-        /* Botão de voltar */
-        .back-button {
-            background: var(--cor03);
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            display: inline-block;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-        }
-
-        .back-button:hover {
-            background: var(--cor04);
-            transform: translateY(-2px);
-            color: white;
-            text-decoration: none;
-        }
-
-        /* Mensagens */
-        .messages {
-            margin-bottom: 20px;
-        }
-
-        .message {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-        }
-
-        .message.warning {
-            background: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-
-        .message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border-left: 4px solid #17a2b8;
-        }
-
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
-            .form-section {
-                padding: 20px;
-            }
-
-            .header h1 {
-                font-size: 1.8em;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 1.6em;
-            }
-
-            .back-button {
-                width: 100%;
-                text-align: center;
-            }
-        }
-    </style>
-</head>
-
-<body>
+  <body>
     <main>
-        <div class="container">
-            <a href="{% url 'inicio' %}" class="back-button">← Voltar</a>
+      <div class="container">
+        <a href="{% url 'inicio' %}" class="back-button">← Voltar</a>
 
-            <!-- Header da página -->
-            <div class="header">
-                <h1>Responder Avaliação</h1>
-                <p>{{ avaliacao.disciplina.nome }} - {{ avaliacao.turma.nome }}</p>
-            </div>
-
-            <!-- Mensagens -->
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="message {{ message.tags }}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <!-- Conteúdo principal -->
-<div class="form-section">
-    <!-- Informações da Avaliação -->
-    <div class="avaliacao-card">
-        <div style="text-align: center;">
-            <h3>{{ titulo }}</h3>
-            <p style="color: #666; margin: 10px 0;">{{ avaliacao.disciplina.nome }} - {{ avaliacao.turma.nome }}</p>
-            <p style="color: #666;">{{ avaliacao.ciclo.nome }}</p>
-            
-            {% if avaliacao.ciclo.anonimo %}
-                <div class="message info">
-                    🔒 <strong>Avaliação Anônima:</strong> Suas respostas serão mantidas em sigilo.
-                </div>
-            {% endif %}
+        <!-- Header da página -->
+        <div class="header">
+          <h1>Responder Avaliação</h1>
+          <p>{{ avaliacao.disciplina.disciplina_nome }} - {{ avaliacao.turma.codigo_turma }}</p>
         </div>
-    </div>
 
-    <!-- Formulário de Avaliação -->
-    <form method="post" id="form-avaliacao">
-        {% csrf_token %}
-        
-        {% for qp in perguntas_questionario %}
-        <div class="pergunta-card">
-            <div class="pergunta-header">
+        <!-- Mensagens -->
+        {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+          <div class="message {{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Conteúdo principal -->
+        <div class="form-section">
+          <!-- Informações da Avaliação -->
+          <div class="avaliacao-card">
+            <div style="text-align: center">
+              <h3>{{ titulo }}</h3>
+              <p style="color: #666; margin: 10px 0">
+                {{ avaliacao.disciplina.disciplina_nome }} - {{ avaliacao.turma.codigo_turma }}
+              </p>
+              <p style="color: #666">{{ avaliacao.ciclo.nome }}</p>
+
+              {% if avaliacao.ciclo.anonimo %}
+              <div class="message info">
+                🔒 <strong>Avaliação Anônima:</strong> Suas respostas serão
+                mantidas em sigilo.
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Formulário de Avaliação -->
+          <form method="post" id="form-avaliacao">
+            {% csrf_token %} {% for qp in perguntas_questionario %}
+            <div class="pergunta-card">
+              <div class="pergunta-header">
                 <h6 class="pergunta-numero">
-                    Pergunta {{ qp.ordem }}
-                    {% if qp.pergunta.obrigatoria %}
-                        <span class="obrigatorio">*</span>
-                    {% endif %}
+                  Pergunta {{ qp.ordem }} {% if qp.pergunta.obrigatoria %}
+                  <span class="obrigatorio">*</span>
+                  {% endif %}
                 </h6>
                 {% if qp.pergunta.categoria %}
-                    <span class="badge bg-secondary">{{ qp.pergunta.categoria.nome }}</span>
+                <span class="badge bg-secondary"
+                  >{{ qp.pergunta.categoria.nome }}</span
+                >
                 {% endif %}
+              </div>
+
+              <p class="pergunta-titulo">{{ qp.pergunta.enunciado }}</p>
+
+              {% if qp.pergunta.tipo == 'likert' %}
+              <!-- Escala Likert -->
+              <div class="likert-scale">
+                <div class="likert-labels">
+                  <small>Discordo Totalmente</small>
+                  <small>Concordo Totalmente</small>
+                </div>
+                <div class="likert-options">
+                  {% for i in "12345"|make_list %}
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="pergunta_{{ qp.pergunta.id }}"
+                      id="likert_{{ qp.pergunta.id }}_{{ i }}"
+                      value="{{ i }}"
+                      {%
+                      if
+                      qp.pergunta.obrigatoria
+                      %}required{%
+                      endif
+                      %}
+                    />
+                    <label
+                      class="form-check-label"
+                      for="likert_{{ qp.pergunta.id }}_{{ i }}"
+                    >
+                      {{ i }}
+                    </label>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              {% elif qp.pergunta.tipo == 'nps' %}
+              <!-- Net Promoter Score -->
+              <div class="rating-container">
+                <div
+                  style="
+                    width: 100%;
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 10px;
+                  "
+                >
+                  <small style="color: #666">0 - Nunca recomendaria</small>
+                  <small style="color: #666"
+                    >10 - Certamente recomendaria</small
+                  >
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: center;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                  "
+                >
+                  {% nps_scale as escala %} {% for i in escala %}
+                  <div class="rating-option">
+                    <input
+                      type="radio"
+                      name="pergunta_{{ qp.pergunta.id }}"
+                      id="nps_{{ qp.pergunta.id }}_{{ i }}"
+                      value="{{ i }}"
+                      {%
+                      if
+                      qp.pergunta.obrigatoria
+                      %}required{%
+                      endif
+                      %}
+                    />
+                    <label for="nps_{{ qp.pergunta.id }}_{{ i }}">
+                      <div class="rating-value">{{ i }}</div>
+                    </label>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              {% elif qp.pergunta.tipo == 'multipla_escolha' %}
+              <!-- Múltipla Escolha -->
+              <div class="multipla-escolha">
+                {% for opcao in qp.pergunta.opcoes_multipla_escolha %}
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="pergunta_{{ qp.pergunta.id }}"
+                    id="multipla_{{ qp.pergunta.id }}_{{ forloop.counter }}"
+                    value="{{ opcao }}"
+                    {%
+                    if
+                    qp.pergunta.obrigatoria
+                    %}required{%
+                    endif
+                    %}
+                  />
+                  <label
+                    class="form-check-label"
+                    for="multipla_{{ qp.pergunta.id }}_{{ forloop.counter }}"
+                  >
+                    {{ opcao }}
+                  </label>
+                </div>
+                {% endfor %}
+              </div>
+
+              {% elif qp.pergunta.tipo == 'sim_nao' %}
+              <!-- Sim/Não -->
+              <div class="sim-nao">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="pergunta_{{ qp.pergunta.id }}"
+                    id="sim_{{ qp.pergunta.id }}"
+                    value="Sim"
+                    {%
+                    if
+                    qp.pergunta.obrigatoria
+                    %}required{%
+                    endif
+                    %}
+                  />
+                  <label
+                    class="form-check-label option-yes"
+                    for="sim_{{ qp.pergunta.id }}"
+                  >
+                    ✅ Sim
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="pergunta_{{ qp.pergunta.id }}"
+                    id="nao_{{ qp.pergunta.id }}"
+                    value="Não"
+                    {%
+                    if
+                    qp.pergunta.obrigatoria
+                    %}required{%
+                    endif
+                    %}
+                  />
+                  <label
+                    class="form-check-label option-no"
+                    for="nao_{{ qp.pergunta.id }}"
+                  >
+                    ❌ Não
+                  </label>
+                </div>
+              </div>
+
+              {% elif qp.pergunta.tipo == 'texto_livre' %}
+              <!-- Texto Livre -->
+              <div class="texto-livre">
+                <textarea
+                  class="form-control"
+                  name="pergunta_{{ qp.pergunta.id }}"
+                  id="texto_{{ qp.pergunta.id }}"
+                  rows="4"
+                  placeholder="Digite sua resposta..."
+                  {%
+                  if
+                  qp.pergunta.obrigatoria
+                  %}required{%
+                  endif
+                  %}
+                ></textarea>
+              </div>
+              {% endif %}
             </div>
-            
-            <p class="pergunta-titulo">{{ qp.pergunta.enunciado }}</p>
-            
-            {% if qp.pergunta.tipo == 'likert' %}
-                <!-- Escala Likert -->
-                <div class="likert-scale">
-                    <div class="likert-labels">
-                        <small>Discordo Totalmente</small>
-                        <small>Concordo Totalmente</small>
-                    </div>
-                    <div class="likert-options">
-                        {% for i in "12345"|make_list %}
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" 
-                                   name="pergunta_{{ qp.pergunta.id }}" 
-                                   id="likert_{{ qp.pergunta.id }}_{{ i }}" 
-                                   value="{{ i }}"
-                                   {% if qp.pergunta.obrigatoria %}required{% endif %}>
-                            <label class="form-check-label" for="likert_{{ qp.pergunta.id }}_{{ i }}">
-                                {{ i }}
-                            </label>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            
-            {% elif qp.pergunta.tipo == 'nps' %}
-                <!-- Net Promoter Score -->
-                <div class="rating-container">
-                    <div style="width: 100%; display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <small style="color: #666;">0 - Nunca recomendaria</small>
-                        <small style="color: #666;">10 - Certamente recomendaria</small>
-                    </div>
-                    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
-                        {% nps_scale as escala %}
-                        {% for i in escala %}
-                            <div class="rating-option">
-                                <input type="radio" 
-                                       name="pergunta_{{ qp.pergunta.id }}" 
-                                       id="nps_{{ qp.pergunta.id }}_{{ i }}" 
-                                       value="{{ i }}"
-                                       {% if qp.pergunta.obrigatoria %}required{% endif %}>
-                                <label for="nps_{{ qp.pergunta.id }}_{{ i }}">
-                                    <div class="rating-value">{{ i }}</div>
-                                </label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            
-            {% elif qp.pergunta.tipo == 'multipla_escolha' %}
-                <!-- Múltipla Escolha -->
-                <div class="multipla-escolha">
-                    {% for opcao in qp.pergunta.opcoes_multipla_escolha %}
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" 
-                               name="pergunta_{{ qp.pergunta.id }}" 
-                               id="multipla_{{ qp.pergunta.id }}_{{ forloop.counter }}" 
-                               value="{{ opcao }}"
-                               {% if qp.pergunta.obrigatoria %}required{% endif %}>
-                        <label class="form-check-label" for="multipla_{{ qp.pergunta.id }}_{{ forloop.counter }}">
-                            {{ opcao }}
-                        </label>
-                    </div>
-                    {% endfor %}
-                </div>
-            
-            {% elif qp.pergunta.tipo == 'sim_nao' %}
-                <!-- Sim/Não -->
-                <div class="sim-nao">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" 
-                               name="pergunta_{{ qp.pergunta.id }}" 
-                               id="sim_{{ qp.pergunta.id }}" 
-                               value="Sim"
-                               {% if qp.pergunta.obrigatoria %}required{% endif %}>
-                        <label class="form-check-label option-yes" for="sim_{{ qp.pergunta.id }}">
-                            ✅ Sim
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" 
-                               name="pergunta_{{ qp.pergunta.id }}" 
-                               id="nao_{{ qp.pergunta.id }}" 
-                               value="Não"
-                               {% if qp.pergunta.obrigatoria %}required{% endif %}>
-                        <label class="form-check-label option-no" for="nao_{{ qp.pergunta.id }}">
-                            ❌ Não
-                        </label>
-                    </div>
-                </div>
-            
-            {% elif qp.pergunta.tipo == 'texto_livre' %}
-                <!-- Texto Livre -->
-                <div class="texto-livre">
-                    <textarea class="form-control" 
-                              name="pergunta_{{ qp.pergunta.id }}" 
-                              id="texto_{{ qp.pergunta.id }}" 
-                              rows="4" 
-                              placeholder="Digite sua resposta..."
-                              {% if qp.pergunta.obrigatoria %}required{% endif %}></textarea>
-                </div>
-            {% endif %}
-        </div>
-        {% endfor %}
+            {% endfor %}
 
-
-        <!-- Navegação e Envio -->
-        <div class="pergunta-navegacao">
-            <a href="{% url 'listar_avaliacoes' %}" class="btn btn-secondary">
+            <!-- Navegação e Envio -->
+            <div class="pergunta-navegacao">
+              <a href="{% url 'listar_avaliacoes' %}" class="btn btn-secondary">
                 ← Voltar
-            </a>
-            
-            <div class="pergunta-numero">
-                {{ perguntas_questionario|length }} pergunta{{ perguntas_questionario|length|pluralize }}
-            </div>
-            
-            <button type="submit" class="btn" onclick="return confirm('Tem certeza que deseja enviar sua avaliação? Após o envio não será possível alterar as respostas.')">
+              </a>
+
+              <div class="pergunta-numero">
+                {{ perguntas_questionario|length }} pergunta{{
+                perguntas_questionario|length|pluralize }}
+              </div>
+
+              <button
+                type="submit"
+                class="btn"
+                onclick="return confirm('Tem certeza que deseja enviar sua avaliação? Após o envio não será possível alterar as respostas.')"
+              >
                 Enviar Avaliação ✓
-            </button>
+              </button>
+            </div>
+          </form>
         </div>
-    </form>
-</div>
-
-<style>
-/* Variáveis para tamanhos de fontes */
-:root {
-    --font-size-xs: 0.75rem;  /* 12px */
-    --font-size-sm: 0.875rem; /* 14px */
-    --font-size-base: 1rem;   /* 16px */
-    --font-size-md: 1.125rem; /* 18px */
-    --font-size-lg: 1.25rem;  /* 20px */
-    --font-size-xl: 1.5rem;   /* 24px */
-}
-
-.pergunta-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.pergunta-numero {
-    margin: 0;
-    font-size: var(--font-size-base);
-    font-weight: 600;
-    color: var(--cor03);
-}
-
-.obrigatorio {
-    color: var(--cor08);
-    margin-left: 3px;
-}
-
-/* Estilos específicos para o formulário de avaliação */
-.avaliacao-card {
-    padding: 20px;
-    background-color: rgba(55, 111, 108, 0.05);
-    border-radius: var(--border-radius-medium);
-    margin-bottom: 30px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.pergunta-card {
-    background: var(--cor07);
-    border: 1px solid #eee;
-    border-radius: var(--border-radius-medium);
-    padding: 20px;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
-}
-
-.pergunta-titulo {
-    font-size: var(--font-size-md);
-    margin-bottom: 20px;
-    font-weight: 500;
-    color: var(--cor04);
-}
-
-.pergunta-navegacao {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 30px;
-}
-
-.pergunta-numero {
-    font-size: var(--font-size-sm);
-    color: #666;
-    background: var(--cor01);
-    padding: 8px 15px;
-    border-radius: var(--border-radius-medium);
-}
-
-.badge {
-    padding: 5px 10px;
-    border-radius: var(--border-radius-small);
-    font-weight: 500;
-    font-size: var(--font-size-xs);
-}
-
-.form-check-input[type="radio"] {
-    display: none;
-}
-
-.likert-scale { margin: 20px 0; }
-.likert-labels {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    width: 100%;
-    font-size: var(--font-size-xs);
-    color: #666;
-    gap: 8px; /* garante espaço mínimo caso o container fique muito estreito */
-}
-.likert-options {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-}
-.likert-options .form-check {
-    flex: 1;
-    text-align: center;
-    margin: 0;
-}
-.likert-options .form-check-input + .form-check-label {
-    cursor: pointer;
-    padding: 10px;
-    border: 2px solid var(--cor01);
-    border-radius: var(--border-radius-small);
-    display: block;
-    transition: all var(--transition-fast);
-}
-.likert-options .form-check-input + .form-check-label:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
-}
-.likert-options .form-check-input:focus + .form-check-label {
-    outline: 3px solid rgba(0, 202, 253, 0.25);
-    outline-offset: 2px;
-}
-.likert-options .form-check-input:checked + .form-check-label {
-    background: var(--cor02);
-    color: var(--cor05);
-    border-color: var(--cor02);
-    font-weight: 600;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 253, 148, 0.2);
-}
-
-.rating-container {
-    margin: 20px 0;
-}
-
-.rating-option {
-    display: inline-block;
-}
-
-.rating-value {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--border-radius-circle);
-    border: 2px solid var(--cor01);
-    margin: 5px;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.rating-option input[type="radio"] + label {
-    cursor: pointer;
-}
-
-/* Esconde o círculo nativo do radio na escala NPS mantendo foco acessível */
-.rating-option input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-    margin: 0;
-    pointer-events: none;
-}
-
-.rating-option input[type="radio"] + label .rating-value:hover {
-    border-color: var(--cor06);
-    box-shadow: 0 3px 8px rgba(0, 202, 253, 0.15);
-    transform: translateY(-1px);
-}
-
-.rating-option input[type="radio"]:focus + label .rating-value {
-    outline: 3px solid rgba(0, 202, 253, 0.25);
-    outline-offset: 2px;
-}
-
-.rating-option input[type="radio"]:checked + label .rating-value {
-    background: var(--cor02);
-    color: var(--cor05);
-    border-color: var(--cor02);
-    font-weight: 600;
-    transform: scale(1.1);
-    box-shadow: 0 4px 8px rgba(0, 253, 148, 0.2);
-}
-
-.multipla-escolha {
-    margin: 15px 0;
-}
-
-.multipla-escolha .form-check {
-    margin-bottom: 10px;
-}
-
-.multipla-escolha .form-check-input + .form-check-label {
-    cursor: pointer;
-    padding: 12px;
-    border: 2px solid var(--cor01);
-    border-radius: var(--border-radius-small);
-    display: block;
-    transition: all var(--transition-fast);
-}
-
-.multipla-escolha .form-check-input + .form-check-label:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
-}
-
-.multipla-escolha .form-check-input:focus + .form-check-label {
-    outline: 3px solid rgba(0, 202, 253, 0.25);
-    outline-offset: 2px;
-}
-
-.multipla-escolha .form-check-input:checked + .form-check-label {
-    background: var(--cor02);
-    color: var(--cor05);
-    border-color: var(--cor02);
-    font-weight: 600;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 253, 148, 0.2);
-}
-
-.sim-nao {
-    display: flex;
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.sim-nao .form-check {
-    flex: 1;
-}
-
-.sim-nao .form-check-input + .form-check-label {
-    cursor: pointer;
-    padding: 14px 16px;
-    border: 2px solid var(--cor01);
-    border-radius: 999px; /* pill */
-    display: block;
-    transition: all var(--transition-fast);
-    text-align: center;
-    font-weight: 600;
-}
-
-/* Estado base (tints) */
-.sim-nao .form-check-input + .form-check-label.option-yes {
-    border-color: #bfe7cc;
-    background: rgba(40, 167, 69, 0.06);
-    color: #216c39;
-}
-
-.sim-nao .form-check-input + .form-check-label.option-no {
-    border-color: #f3c2c7;
-    background: rgba(220, 53, 69, 0.06);
-    color: #842029;
-}
-
-/* Hover */
-.sim-nao .form-check-input + .form-check-label:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-}
-
-/* Focus (acessibilidade) */
-.sim-nao .form-check-input:focus + .form-check-label {
-    outline: 3px solid rgba(0, 202, 253, 0.25);
-    outline-offset: 2px;
-}
-
-/* Checked */
-.sim-nao .form-check-input:checked + .form-check-label.option-yes {
-    background: #28a745;
-    color: #ffffff;
-    border-color: #28a745;
-    box-shadow: 0 6px 14px rgba(40, 167, 69, 0.25);
-    transform: translateY(-2px);
-}
-
-.sim-nao .form-check-input:checked + .form-check-label.option-no {
-    background: #dc3545;
-    color: #ffffff;
-    border-color: #dc3545;
-    box-shadow: 0 6px 14px rgba(220, 53, 69, 0.25);
-    transform: translateY(-2px);
-}
-
-.texto-livre textarea {
-    border: 2px solid var(--cor01);
-    border-radius: var(--border-radius-small);
-    padding: 15px;
-    transition: all var(--transition-fast);
-}
-
-.texto-livre textarea:focus {
-    border-color: var(--cor02);
-    box-shadow: 0 0 0 0.2rem rgba(0, 253, 148, 0.25);
-}
-
-.btn {
-    padding: 10px 20px;
-    border-radius: var(--border-radius-medium);
-    font-weight: 600;
-    transition: all var(--transition-fast);
-    background-color: var(--cor02);
-    border-color: var(--cor02);
-    color: var(--cor05);
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    background-color: var(--cor06);
-    border-color: var(--cor06);
-}
-
-.btn-secondary {
-    background-color: var(--cor03);
-    border-color: var(--cor03);
-    color: var(--cor07);
-}
-
-.btn-secondary:hover {
-    background-color: var(--cor04);
-    border-color: var(--cor04);
-    color: var(--cor07);
-}
-
-/* Media queries para responsividade em dispositivos móveis */
-@media (max-width: 768px) {
-    .container {
-        padding: 15px;
-    }
-    
-    .header {
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .header h1 {
-        font-size: var(--font-size-xl);
-    }
-    
-    .avaliacao-card {
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .pergunta-card {
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .likert-options { /* mobile: grid para caber melhor */
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 5px;
-        margin: 15px 0 0 0;
-    }
-    .likert-labels { font-size: 0.65rem; }
-    
-    .sim-nao {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .sim-nao .form-check-input + .form-check-label {
-        padding: 10px;
-    }
-    
-    .pergunta-navegacao {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .pergunta-navegacao .btn,
-    .pergunta-navegacao a {
-        width: 100%;
-        text-align: center;
-    }
-    
-    .pergunta-numero {
-        order: -1;
-        width: 100%;
-        text-align: center;
-        margin-bottom: 15px;
-    }
-}
-
-@media (max-width: 480px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .header p {
-        font-size: var(--font-size-sm);
-    }
-    
-    .pergunta-titulo {
-        font-size: var(--font-size-base);
-    }
-    
-    .likert-scale .form-check-input + .form-check-label {
-        padding: 8px 5px;
-        font-size: var(--font-size-xs);
-    }
-    
-    .rating-value {
-        width: 30px;
-        height: 30px;
-        font-size: var(--font-size-xs);
-    }
-    
-    .multipla-escolha .form-check-input + .form-check-label {
-        padding: 10px;
-        font-size: var(--font-size-sm);
-    }
-    
-    .btn {
-        padding: 8px 15px;
-        font-size: var(--font-size-sm);
-    }
-    
-    .back-button {
-        font-size: var(--font-size-sm);
-        padding: 8px 15px;
-    }
-}
-
-        </div>
+      </div>
     </main>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-
+  </body>
 </html>
-

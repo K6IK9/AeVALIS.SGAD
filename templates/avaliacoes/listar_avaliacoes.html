@@ -9,188 +9,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Avaliações - IF SADD</title>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        /* Importação das fontes */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Vidaloka&display=swap');
-
-        /* Variáveis CSS comuns */
-        :root {
-            /* Cores principais */
-            --cor01: #f0f0f0;
-            --cor01-alt: #f1f1f1;
-            --cor02: #00fd94;
-            --cor03: #376f6c;
-            --cor04: #1e3231;
-            --cor05: #090909;
-            --cor06: #00cafd;
-            --cor07: #ffffff;
-            --cor08: #ff3c3c;
-
-            /* Fontes */
-            --font01: "Poppins", sans-serif;
-            --font02: "Vidaloka", serif;
-
-            /* Sombras */
-            --shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-            --shadow-alt: 4px 2px 8px rgba(0, 0, 0, 0.2);
-
-            /* Bordas e raios */
-            --border-radius-small: 5px;
-            --border-radius-medium: 15px;
-            --border-radius-large: 25px;
-            --border-radius-xl: 35px;
-            --border-radius-circle: 50%;
-
-            /* Espaçamentos */
-            --spacing-xs: 5px;
-            --spacing-sm: 10px;
-            --spacing-md: 15px;
-            --spacing-lg: 20px;
-            --spacing-xl: 25px;
-            --spacing-2xl: 40px;
-            --spacing-3xl: 50px;
-
-            /* Transições */
-            --transition-fast: 0.2s;
-            --transition-medium: 0.3s;
-        }
-
-        /* Reset global */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: var(--font01);
-        }
-
-        body {
-            background: var(--cor01);
-        }
-
-        /* Layout base para páginas de gerenciamento */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: var(--cor03);
-            color: white;
-            padding: 20px;
-            border-radius: var(--border-radius-medium);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0 0 10px 0;
-            font-size: 2.2em;
-        }
-
-        .header p {
-            margin: 0;
-            opacity: 0.9;
-        }
-
-        /* Seções de formulário */
-        .form-section {
-            background: var(--cor07);
-            padding: 30px;
-            border-radius: var(--border-radius-medium);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .form-section h2 {
-            color: var(--cor03);
-            margin-bottom: 20px;
-            font-size: 1.4em;
-        }
-
-        /* Botão de voltar */
-        .back-button {
-            background: var(--cor03);
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            display: inline-block;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-        }
-
-        .back-button:hover {
-            background: var(--cor04);
-            transform: translateY(-2px);
-            color: white;
-            text-decoration: none;
-        }
-
-        /* Mensagens */
-        .messages {
-            margin-bottom: 20px;
-        }
-
-        .message {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-        }
-
-        .message.warning {
-            background: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-
-        .message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border-left: 4px solid #17a2b8;
-        }
-
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
-            .form-section {
-                padding: 20px;
-            }
-
-            .header h1 {
-                font-size: 1.8em;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 1.6em;
-            }
-
-            .back-button {
-                width: 100%;
-                text-align: center;
-            }
-        }
-    </style>
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    <!-- CSS de Avaliações -->
+    <link rel="stylesheet" href="{% static 'css/avaliacoes.css' %}">
 </head>
 
 <body>
@@ -260,23 +82,23 @@
                                     </small>
                                 </div>
                                 <div class="d-flex flex-wrap gap-1 justify-content-end">
-                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-sm btn-outline-primary d-flex align-items-center" title="Visualizar ciclo" data-bs-toggle="tooltip">
+                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-sm btn-outline-primary d-flex align-items-center" title="Visualizar ciclo">
                                         <i class="bi bi-eye me-1"></i><span>Ver</span>
                                     </a>
-                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-sm btn-warning text-dark d-flex align-items-center" title="Editar ciclo" data-bs-toggle="tooltip">
+                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-sm btn-warning text-dark d-flex align-items-center" title="Editar ciclo">
                                         <i class="bi bi-pencil-square me-1"></i><span>Editar</span>
                                     </a>
                                     {% if ciclo.ativo %}
-                                    <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"? Alunos não poderão mais responder.');" style="display:inline;">
+                                    <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"? Alunos não poderão mais responder.');" class="form-inline">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center" title="Encerrar ciclo" data-bs-toggle="tooltip">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center" title="Encerrar ciclo">
                                             <i class="bi bi-stop-circle me-1"></i><span>Encerrar</span>
                                         </button>
                                     </form>
                                     {% endif %}
-                                    <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" onsubmit="return confirm('Tem certeza que deseja excluir o ciclo {{ ciclo.nome }}? Esta ação não pode ser desfeita.');" style="display:inline;">
+                                    <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" onsubmit="return confirm('Tem certeza que deseja excluir o ciclo {{ ciclo.nome }}? Esta ação não pode ser desfeita.');" class="form-inline">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-danger d-flex align-items-center" title="Excluir ciclo" data-bs-toggle="tooltip">
+                                        <button type="submit" class="btn btn-sm btn-danger d-flex align-items-center" title="Excluir ciclo">
                                             <i class="bi bi-trash me-1"></i><span>Excluir</span>
                                         </button>
                                     </form>
@@ -288,7 +110,7 @@
                 </div>
                 {% else %}
                 <div class="text-center py-4">
-                    <i class="bi bi-calendar-x" style="font-size: 3rem; color: #ccc;"></i>
+                    <i class="bi bi-calendar-x empty-icon"></i>
                     <p class="mt-3 text-muted"><strong>Nenhum ciclo em andamento</strong></p>
                 </div>
                 {% endif %}
@@ -306,7 +128,7 @@
                 <div class="row g-3">
                     {% for ciclo in ciclos_finalizados %}
                     <div class="col-md-6 col-lg-4">
-                        <div class="ciclo-item" style="opacity:.85;">
+                        <div class="ciclo-item finalizado">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="flex-grow-1">
                                     <h6 class="ciclo-nome mb-1">{{ ciclo.nome }} {% if not ciclo.ativo %}<span class="badge bg-secondary">Encerrado</span>{% endif %}</h6>
@@ -316,23 +138,23 @@
                                     </small>
                                 </div>
                                 <div class="d-flex flex-wrap gap-1 justify-content-end">
-                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-sm btn-outline-primary d-flex align-items-center" title="Visualizar ciclo" data-bs-toggle="tooltip">
+                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-sm btn-outline-primary d-flex align-items-center" title="Visualizar ciclo">
                                         <i class="bi bi-eye me-1"></i><span>Ver</span>
                                     </a>
-                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-sm btn-secondary d-flex align-items-center" title="Editar ciclo" data-bs-toggle="tooltip">
+                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-sm btn-secondary d-flex align-items-center" title="Editar ciclo">
                                         <i class="bi bi-pencil-square me-1"></i><span>Editar</span>
                                     </a>
                                     {% if ciclo.ativo %}
-                                    <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"?');" style="display:inline;">
+                                    <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"?');" class="form-inline">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center" title="Encerrar ciclo" data-bs-toggle="tooltip">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center" title="Encerrar ciclo">
                                             <i class="bi bi-stop-circle me-1"></i><span>Encerrar</span>
                                         </button>
                                     </form>
                                     {% endif %}
-                                    <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" onsubmit="return confirm('Tem certeza que deseja excluir o ciclo {{ ciclo.nome }}? Esta ação não pode ser desfeita.');" style="display:inline;">
+                                    <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" onsubmit="return confirm('Tem certeza que deseja excluir o ciclo {{ ciclo.nome }}? Esta ação não pode ser desfeita.');" class="form-inline">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-danger d-flex align-items-center" title="Excluir ciclo" data-bs-toggle="tooltip">
+                                        <button type="submit" class="btn btn-sm btn-danger d-flex align-items-center" title="Excluir ciclo">
                                             <i class="bi bi-trash me-1"></i><span>Excluir</span>
                                         </button>
                                     </form>
@@ -344,7 +166,7 @@
                 </div>
                 {% else %}
                 <div class="text-center py-4">
-                    <i class="bi bi-inboxes" style="font-size: 3rem; color: #ccc;"></i>
+                    <i class="bi bi-inboxes empty-icon"></i>
                     <p class="mt-3 text-muted"><strong>Nenhum ciclo finalizado</strong></p>
                 </div>
                 {% endif %}
@@ -476,7 +298,7 @@
                                         <a href="{% url 'visualizar_avaliacao' avaliacao.id %}" 
                                            class="btn btn-outline-primary-custom btn-sm" 
                                            title="Visualizar Avaliação"
-                                           data-bs-toggle="tooltip">
+                                          >
                                             <i class="bi bi-eye"></i> Ver
                                         </a>
                                     </td>
@@ -488,7 +310,7 @@
                     {% endif %}
                 {% else %}
                     <div class="text-center py-4">
-                        <i class="bi bi-clipboard-x" style="font-size: 3rem; color: #ccc;"></i>
+                        <i class="bi bi-clipboard-x empty-icon"></i>
                         {% if user|has_role:"aluno" %}
                             <p class="mt-3 text-muted"><strong>Nenhuma avaliação disponível</strong></p>
                             <p class="text-muted">Não há avaliações para responder no momento.</p>
@@ -503,431 +325,9 @@
     </div>
 </div>
 
-
-
-<style>
-    /* Variáveis CSS do sistema */
-    :root {
-        --cor01: #f0f0f0;
-        --cor02: #00fd94;
-        --cor03: #376f6c;
-        --cor04: #1e3231;
-        --cor05: #090909;
-        --cor06: #00cafd;
-        --cor07: #ffffff;
-        --cor08: #ff3c3c;
-    }
-
-    .card-custom {
-        border: 1px solid #dee2e6;
-        border-radius: 0.5rem;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
-
-    .card-custom .card-header {
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #dee2e6;
-        padding: 0.75rem 1rem;
-    }
-
-    .card-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--cor03);
-    }
-
-    /* Estilização dos ciclos ativos */
-    .ciclo-item {
-        padding: 1rem;
-        border: 1px solid #e9ecef;
-        border-radius: 0.375rem;
-        background-color: #f8f9fa;
-        transition: all 0.2s ease;
-    }
-
-    .ciclo-item:hover {
-        background-color: #e9ecef;
-        border-color: var(--cor03);
-        transform: translateY(-1px);
-    }
-
-    .ciclo-nome {
-        font-weight: 600;
-        color: var(--cor03);
-        margin-bottom: 0.25rem;
-    }
-
-    /* Estilização dos cards de avaliação para alunos */
-    .avaliacao-item {
-        border: 1px solid #dee2e6;
-        border-radius: 0.5rem;
-        background-color: var(--cor07);
-        transition: all 0.2s ease;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .avaliacao-item:hover {
-        border-color: var(--cor02);
-        box-shadow: 0 0.5rem 1rem rgba(0, 253, 148, 0.15);
-        transform: translateY(-2px);
-    }
-
-    .avaliacao-header {
-        padding: 1rem 1rem 0.5rem;
-        border-bottom: 1px solid #f8f9fa;
-    }
-
-    .avaliacao-titulo {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--cor03);
-        margin-bottom: 0;
-    }
-
-    .avaliacao-body {
-        padding: 0.5rem 1rem;
-        flex-grow: 1;
-    }
-
-    .avaliacao-footer {
-        padding: 0.5rem 1rem 1rem;
-        margin-top: auto;
-    }
-
-    .info-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5rem;
-        padding: 0.25rem 0;
-    }
-
-    .info-label {
-        font-size: 0.875rem;
-        color: #6c757d;
-        font-weight: 500;
-        flex-shrink: 0;
-        margin-right: 0.5rem;
-    }
-
-    .info-value {
-        font-size: 0.875rem;
-        color: var(--cor03);
-        text-align: right;
-        font-weight: 500;
-    }
-
-    /* Estilização da tabela */
-    .table th {
-        font-weight: 600;
-        color: var(--cor03);
-        border-bottom: 2px solid #dee2e6;
-        font-size: 0.875rem;
-    }
-
-    .table td {
-        vertical-align: middle;
-        font-size: 0.875rem;
-    }
-
-    .table-hover tbody tr:hover {
-        background-color: rgba(0, 253, 148, 0.05);
-    }
-
-    /* Badges customizados */
-    .badge {
-        font-size: 0.75rem;
-        padding: 0.35rem 0.65rem;
-        font-weight: 500;
-    }
-
-    .badge i {
-        margin-right: 0.25rem;
-    }
-
-    .bg-primary-custom {
-        background-color: var(--cor02) !important;
-        color: var(--cor05) !important;
-    }
-
-    /* Botões personalizados */
-    .btn {
-        font-weight: 500;
-        border-radius: 0.375rem;
-        transition: all 0.2s ease-in-out;
-    }
-
-    .btn-primary-custom {
-        background-color: var(--cor02);
-        border-color: var(--cor02);
-        color: var(--cor05);
-        font-weight: 600;
-    }
-
-    .btn-primary-custom:hover {
-        background-color: var(--cor06);
-        border-color: var(--cor06);
-        color: var(--cor05);
-        transform: translateY(-1px);
-    }
-
-    .btn-secondary-custom {
-        background-color: var(--cor03);
-        border-color: var(--cor03);
-        color: var(--cor07);
-        font-weight: 600;
-    }
-
-    .btn-secondary-custom:hover {
-        background-color: var(--cor04);
-        border-color: var(--cor04);
-        color: var(--cor07);
-        transform: translateY(-1px);
-    }
-
-    .btn-outline-primary-custom {
-        color: var(--cor03);
-        border-color: var(--cor03);
-        background-color: transparent;
-    }
-
-    .btn-outline-primary-custom:hover {
-        background-color: var(--cor03);
-        border-color: var(--cor03);
-        color: var(--cor07);
-        transform: translateY(-1px);
-    }
-
-    .btn-danger-custom {
-        background-color: var(--cor08);
-        border-color: var(--cor08);
-        color: var(--cor07);
-    }
-
-    .btn-danger-custom:hover {
-        background-color: #c82333;
-        border-color: #c82333;
-        color: var(--cor07);
-        transform: translateY(-1px);
-    }
-
-    /* Estados vazios */
-    .text-center i {
-        opacity: 0.5;
-    }
-
-    /* Responsividade */
-    @media (max-width: 768px) {
-        .ciclo-item {
-            padding: 0.75rem;
-        }
-
-        .avaliacao-item {
-            margin-bottom: 1rem;
-        }
-
-        .info-item {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.25rem;
-        }
-
-        .info-value {
-            text-align: left;
-        }
-
-        .d-flex.gap-2 {
-            flex-direction: column;
-            gap: 0.5rem !important;
-        }
-
-        .btn {
-            width: 100%;
-        }
-    }
-
-    /* Animações suaves */
-    .card-custom,
-    .ciclo-item,
-    .avaliacao-item,
-    .btn {
-        transition: all 0.2s ease-in-out;
-    }
-
-    /* Melhorias nos tooltips */
-    [data-bs-toggle="tooltip"] {
-        cursor: pointer;
-    }
-
-    @keyframes fade-in {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .fade-in {
-        animation: fade-in 0.5s ease-out forwards;
-    }
-
-    /* Badges de status personalizados */
-    .badge.bg-warning {
-        background-color: #ffc107 !important;
-        color: #212529 !important;
-    }
-
-    .badge.bg-info {
-        background-color: var(--cor06) !important;
-        color: var(--cor05) !important;
-    }
-
-    .badge.bg-success {
-        background-color: var(--cor02) !important;
-        color: var(--cor05) !important;
-    }
-
-    .badge.bg-secondary {
-        background-color: #6c757d !important;
-        color: var(--cor07) !important;
-    }
-
-    .badge.bg-light {
-        background-color: #f8f9fa !important;
-        color: var(--cor03) !important;
-        border: 1px solid #dee2e6;
-    }
-    
-    /* Media queries para responsividade em dispositivos móveis */
-    @media (max-width: 768px) {
-        .section-header .d-flex {
-            flex-wrap: wrap;
-            gap: 8px !important;
-        }
-        
-        .section-header .btn {
-            width: 100%;
-            margin-bottom: 0;
-            font-size: 0.9rem;
-        }
-        
-        .card-custom {
-            margin-bottom: 15px;
-        }
-        
-        .avaliacao-item {
-            flex-direction: column;
-        }
-        
-        .table-responsive {
-            font-size: 14px;
-        }
-        
-        .ciclo-item {
-            margin-bottom: 15px;
-        }
-        
-        .btn {
-            padding: 0.375rem 0.5rem;
-        }
-        
-        .header {
-            padding: 15px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .container-fluid,
-        .container {
-            padding-left: 10px;
-            padding-right: 10px;
-        }
-        
-        .header h1 {
-            font-size: 1.5rem;
-        }
-        
-        .header p {
-            font-size: 0.9rem;
-        }
-        
-        .card-title {
-            font-size: 1rem;
-        }
-        
-        .card-body {
-            padding: 0.75rem;
-        }
-        
-        .info-label, .info-value {
-            font-size: 0.8rem;
-        }
-        
-        .avaliacao-titulo {
-            font-size: 1rem;
-        }
-        
-        .back-button {
-            font-size: 0.9rem;
-            padding: 8px 15px;
-            margin-bottom: 15px;
-        }
-        
-        .table td, .table th {
-            padding: 0.5rem;
-        }
-        
-        .btn-sm {
-            padding: 0.25rem 0.4rem;
-            font-size: 0.75rem;
-        }
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Inicializar tooltips
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-
-        // Adicionar animação suave aos cards
-        const avaliacaoItems = document.querySelectorAll('.avaliacao-item');
-        avaliacaoItems.forEach((item, index) => {
-            item.style.animationDelay = `${index * 0.1}s`;
-            item.classList.add('fade-in');
-        });
-
-        // Adicionar animação aos ciclos também
-        const cicloItems = document.querySelectorAll('.ciclo-item');
-        cicloItems.forEach((item, index) => {
-            item.style.animationDelay = `${index * 0.05}s`;
-            item.classList.add('fade-in');
-        });
-
-        // Garantir que os botões tenham as classes corretas
-        const buttons = document.querySelectorAll('.btn:not([class*="btn-"])');
-        buttons.forEach(button => {
-            if (!button.className.includes('btn-')) {
-                button.classList.add('btn-primary-custom');
-            }
-        });
-    });
-</script>
-
         </div>
     </main>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
-
-{% include "perfil.html" %}

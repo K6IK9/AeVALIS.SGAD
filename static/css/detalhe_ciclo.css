@@ -1,0 +1,422 @@
+/* detalhe_ciclo.css - Estilos específicos para a página de detalhe do ciclo */
+
+/* Estilos específicos da página (o grid system agora está no global.css) */
+
+/* Responsividade do grid específica desta página */
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group > .btn {
+        border-radius: 0.25rem !important;
+        margin-left: 0 !important;
+        margin-bottom: 0.25rem;
+    }
+    
+    .table-responsive {
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+    }
+}
+
+/* Utility Classes (substituindo Bootstrap) */
+.d-flex {
+    display: flex !important;
+}
+
+.justify-content-between {
+    justify-content: space-between !important;
+}
+
+.align-items-center {
+    align-items: center !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.text-primary,
+.text-success {
+    color: var(--cor02) !important;
+}
+
+/* Spacing (substituindo Bootstrap) */
+.mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.mb-1 {
+    margin-bottom: 0.25rem !important;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem !important;
+}
+
+.mt-2 {
+    margin-top: 0.5rem !important;
+}
+
+.mt-3 {
+    margin-top: 1rem !important;
+}
+
+.mt-4 {
+    margin-top: 1.5rem !important;
+}
+
+.py-4 {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+}
+
+/* Sizing */
+.w-100 {
+    width: 100% !important;
+}
+
+/* Borders */
+.border-end {
+    border-right: 1px solid #dee2e6 !important;
+}
+
+/* Table utilities */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Button Groups */
+.btn-group {
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+.btn-group > .btn:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.btn-group > .btn:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: -1px;
+}
+
+/* Cards customizados */
+.card-custom {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    background-color: var(--cor07);
+}
+
+.card-custom .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--cor03);
+}
+
+/* Botões - usando .btn do global.css */
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+}
+
+.btn-primary-custom {
+    background-color: var(--cor02);
+    border-color: var(--cor02);
+    color: var(--cor05);
+    font-weight: 600;
+}
+
+.btn-primary-custom:hover {
+    background-color: var(--cor06);
+    border-color: var(--cor06);
+    color: var(--cor05);
+    transform: translateY(-1px);
+}
+
+.btn-outline-secondary {
+    background-color: rgba(55, 111, 108, 0.15);
+    border-color: var(--cor03);
+    color: var(--cor03);
+    font-weight: 600;
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--cor03);
+    border-color: var(--cor03);
+    color: var(--cor07);
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary,
+.btn-outline-success {
+    background-color: rgba(0, 253, 148, 0.15);
+    border-color: var(--cor02);
+    color: var(--cor02);
+    font-weight: 600;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover {
+    background-color: var(--cor02);
+    border-color: var(--cor02);
+    color: var(--cor05);
+    transform: translateY(-1px);
+}
+
+.btn-outline-warning {
+    background-color: rgba(255, 193, 7, 0.15);
+    border-color: #ffc107;
+    color: #856404;
+    font-weight: 600;
+}
+
+.btn-outline-warning:hover {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: var(--cor05);
+    transform: translateY(-1px);
+}
+
+.btn-outline-danger {
+    background-color: rgba(255, 60, 60, 0.15);
+    border-color: var(--cor08);
+    color: var(--cor08);
+    font-weight: 600;
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--cor08);
+    border-color: var(--cor08);
+    color: var(--cor07);
+    transform: translateY(-1px);
+}
+
+/* Botões de filtro */
+.btn-group .btn {
+    border-width: 1.5px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+    transition: all var(--transition-fast) ease;
+}
+
+.btn-group .btn:not(.active):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.15);
+}
+
+.btn-group .btn.active {
+    transform: none;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+    font-weight: 700;
+}
+
+.btn-group .btn-outline-secondary.active {
+    background-color: var(--cor03);
+    border-color: var(--cor03);
+    color: var(--cor07);
+}
+
+.btn-group .btn-outline-success.active {
+    background-color: var(--cor02);
+    border-color: var(--cor02);
+    color: var(--cor05);
+}
+
+.btn-group .btn-outline-warning.active {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: var(--cor05);
+}
+
+/* Botões de ação na tabela e grupos de botões pequenos */
+.btn-group-sm .btn,
+.table .btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+    border-width: 1.5px;
+    font-weight: 600;
+    min-width: 40px;
+    transition: all var(--transition-fast) ease;
+}
+
+/* Sobrescrever estilos específicos para botões de tabela */
+.table .btn-group-sm .btn {
+    padding: 0.375rem 0.5rem;
+}
+
+/* Estilos específicos para botões outline em contexto de tabela */
+.table .btn-outline-primary,
+.table .btn-outline-success {
+    background-color: rgba(0, 253, 148, 0.15);
+    border-color: var(--cor02);
+    color: var(--cor02);
+}
+
+.table .btn-outline-primary:hover,
+.table .btn-outline-success:hover {
+    background-color: var(--cor02);
+    border-color: var(--cor02);
+    color: var(--cor05);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 253, 148, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Ícones em botões */
+.btn i {
+    font-size: 1rem;
+}
+
+.table .btn i {
+    font-size: 0.875rem;
+}
+
+/* Badges customizados - base já definida em global.css */
+
+.badge.bg-success {
+    background-color: var(--cor02) !important;
+    color: var(--cor05);
+}
+
+.badge.bg-secondary {
+    background-color: var(--cor03) !important;
+    color: var(--cor07);
+}
+
+.badge.bg-info {
+    background-color: var(--cor06) !important;
+    color: var(--cor05);
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: var(--cor05);
+}
+
+/* Tabela customizada */
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: var(--cor05);
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 0.75rem;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--cor03);
+    border-bottom: 2px solid #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 253, 148, 0.05);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Progress bar customizada */
+.progress {
+    display: flex;
+    height: 1rem;
+    overflow: hidden;
+    font-size: 0.75rem;
+    background-color: #e9ecef;
+    border-radius: 0.25rem;
+}
+
+.progress-bar {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    color: var(--cor07);
+    text-align: center;
+    white-space: nowrap;
+    background-color: var(--cor02);
+    transition: width 0.6s ease;
+}
+
+.progress-bar.bg-success {
+    background-color: var(--cor02) !important;
+}
+
+/* Classes para estilos inline removidos */
+.form-inline {
+    display: inline;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    color: #ccc;
+}
+
+/* Elementos HTML básicos */
+hr {
+    margin: 1rem 0;
+    color: inherit;
+    background-color: currentColor;
+    border: 0;
+    opacity: 0.25;
+}
+
+hr:not([size]) {
+    height: 1px;
+}
+
+/* Headings */
+h5 {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--cor04);
+}
+
+h6 {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--cor04);
+}
+
+/* Paragraphs */
+p {
+    margin-bottom: 1rem;
+}
+
+/* Small text */
+small {
+    font-size: 0.875em;
+}

@@ -1,793 +1,185 @@
-{% load static %}
-{% load user_tags %}
+{% load static %} {% load user_tags %}
 
 <!DOCTYPE html>
 <html lang="pt-br">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Visualizar Avaliação - IF SADD</title>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        /* Importação das fontes */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Vidaloka&display=swap');
-
-        /* Variáveis CSS comuns */
-        :root {
-            /* Cores principais */
-            --cor01: #f0f0f0;
-            --cor01-alt: #f1f1f1;
-            --cor02: #00fd94;
-            --cor03: #376f6c;
-            --cor04: #1e3231;
-            --cor05: #090909;
-            --cor06: #00cafd;
-            --cor07: #ffffff;
-            --cor08: #ff3c3c;
-
-            /* Fontes */
-            --font01: "Poppins", sans-serif;
-            --font02: "Vidaloka", serif;
-
-            /* Sombras */
-            --shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-            --shadow-alt: 4px 2px 8px rgba(0, 0, 0, 0.2);
-
-            /* Bordas e raios */
-            --border-radius-small: 5px;
-            --border-radius-medium: 15px;
-            --border-radius-large: 25px;
-            --border-radius-xl: 35px;
-            --border-radius-circle: 50%;
-
-            /* Espaçamentos */
-            --spacing-xs: 5px;
-            --spacing-sm: 10px;
-            --spacing-md: 15px;
-            --spacing-lg: 20px;
-            --spacing-xl: 25px;
-            --spacing-2xl: 40px;
-            --spacing-3xl: 50px;
-
-            /* Transições */
-            --transition-fast: 0.2s;
-            --transition-medium: 0.3s;
-        }
-
-        /* Reset global */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: var(--font01);
-        }
-
-        body {
-            background: var(--cor01);
-        }
-
-        /* Layout base para páginas de gerenciamento */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: var(--cor03);
-            color: white;
-            padding: 20px;
-            border-radius: var(--border-radius-medium);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0 0 10px 0;
-            font-size: 2.2em;
-        }
-
-        .header p {
-            margin: 0;
-            opacity: 0.9;
-        }
-
-        /* Seções de formulário */
-        .form-section {
-            background: var(--cor07);
-            padding: 30px;
-            border-radius: var(--border-radius-medium);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .form-section h2 {
-            color: var(--cor03);
-            margin-bottom: 20px;
-            font-size: 1.4em;
-        }
-
-        /* Botão de voltar */
-        .back-button {
-            background: var(--cor03);
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            display: inline-block;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-        }
-
-        .back-button:hover {
-            background: var(--cor04);
-            transform: translateY(-2px);
-            color: white;
-            text-decoration: none;
-        }
-
-        /* Mensagens */
-        .messages {
-            margin-bottom: 20px;
-        }
-
-        .message {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-        }
-
-        .message.warning {
-            background: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-
-        .message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border-left: 4px solid #17a2b8;
-        }
-
-        /* Estilos específicos para visualização de avaliação */
-        .avaliacao-card {
-            background: linear-gradient(135deg, var(--cor07) 0%, #f8f9fa 100%);
-            border: 1px solid #e9ecef;
-            border-radius: var(--border-radius-medium);
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .avaliacao-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--cor02) 0%, var(--cor06) 100%);
-        }
-
-        .avaliacao-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .avaliacao-info h3 {
-            color: var(--cor04);
-            margin: 0 0 10px 0;
-            font-size: 1.5em;
-            font-weight: 600;
-        }
-
-        .avaliacao-info p {
-            color: #6c757d;
-            margin: 5px 0;
-            font-size: 0.95em;
-        }
-
-        .avaliacao-status {
-            text-align: right;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
-        }
-
-        .status-badge {
-            background: linear-gradient(135deg, var(--cor02) 0%, #00e080 100%);
-            color: white;
-            padding: 8px 16px;
-            border-radius: var(--border-radius-large);
-            font-size: 0.9em;
-            font-weight: 500;
-            border: none;
-            box-shadow: 0 2px 8px rgba(0, 253, 148, 0.3);
-        }
-
-        .data-resposta {
-            background: #f8f9fa;
-            color: #6c757d;
-            padding: 6px 12px;
-            border-radius: var(--border-radius-small);
-            font-size: 0.85em;
-            border-left: 3px solid var(--cor06);
-        }
-
-        .pergunta-card {
-            background: var(--cor07);
-            border: 1px solid #e9ecef;
-            border-radius: var(--border-radius-medium);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            transition: all var(--transition-medium);
-        }
-
-        .pergunta-card:hover {
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .pergunta-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            gap: 15px;
-        }
-
-        .pergunta-titulo {
-            flex: 1;
-            color: var(--cor04);
-            font-size: 1.1em;
-            font-weight: 500;
-            line-height: 1.4;
-            margin: 0;
-        }
-
-        .pergunta-badges {
-            display: flex;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-
-        .pergunta-badge {
-            background: var(--cor03);
-            color: white;
-            padding: 4px 10px;
-            border-radius: var(--border-radius-small);
-            font-size: 0.8em;
-            font-weight: 500;
-        }
-
-        .resposta-container {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-left: 4px solid var(--cor02);
-            border-radius: var(--border-radius-small);
-            padding: 20px;
-            margin-top: 15px;
-        }
-
-        /* Estilos para diferentes tipos de resposta */
-        .likert-scale {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .likert-options {
-            display: flex;
-            gap: 10px;
-        }
-
-        .likert-option {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #ddd;
-            background: white;
-            color: #666;
-            font-weight: 600;
-            transition: all var(--transition-fast);
-        }
-
-        .likert-option.selected {
-            border-color: var(--cor02);
-            background: var(--cor02);
-            color: white;
-            transform: scale(1.1);
-            box-shadow: 0 2px 8px rgba(0, 253, 148, 0.3);
-        }
-
-        .likert-labels {
-            font-size: 0.85em;
-            color: #6c757d;
-            font-style: italic;
-        }
-
-        .nps-container {
-            text-align: center;
-        }
-
-        .nps-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            font-size: 0.85em;
-            color: #6c757d;
-            font-style: italic;
-        }
-
-        .nps-options {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-
-        .nps-option {
-            width: 30px;
-            height: 30px;
-            border-radius: var(--border-radius-small);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #ddd;
-            background: white;
-            color: #666;
-            font-size: 0.85em;
-            font-weight: 600;
-            transition: all var(--transition-fast);
-        }
-
-        .nps-option.selected {
-            border-color: var(--cor02);
-            background: var(--cor02);
-            color: white;
-            transform: scale(1.1);
-            box-shadow: 0 2px 8px rgba(0, 253, 148, 0.3);
-        }
-
-        .resposta-destaque {
-            background: linear-gradient(135deg, var(--cor02) 0%, #00e080 100%);
-            color: white;
-            padding: 15px;
-            border-radius: var(--border-radius-small);
-            text-align: center;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(0, 253, 148, 0.3);
-        }
-
-        .resposta-texto {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius-small);
-            padding: 15px;
-            white-space: pre-wrap;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.5;
-            color: var(--cor05);
-        }
-
-        /* Resposta binária (Sim/Não) com pill leve */
-        .resposta-binaria {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 28px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 1rem;
-            letter-spacing: 0.4px;
-            border: 2px solid transparent;
-            background: #f5f7f8;
-            color: #2d2d2d;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-            margin: 12px auto 0 auto; /* centraliza horizontalmente */
-            min-width: 200px; /* mais largo */
-        }
-        .resposta-binaria.resposta-true {
-            border-color: #b4e6c3;
-            background: #f0fbf3;
-            color: #1e7a39;
-        }
-        .resposta-binaria.resposta-false {
-            border-color: #f3c2c7;
-            background: #fff5f6;
-            color: #a32330;
-        }
-        .resposta-binaria.resposta-indefinida {
-            border-color: #d0d0d0;
-            background: #fafafa;
-            color: #666;
-        }
-
-        .resposta-valor {
-            text-align: center;
-            margin-top: 15px;
-            padding: 10px;
-            background: white;
-            border-radius: var(--border-radius-small);
-            border: 2px solid var(--cor02);
-            color: var(--cor04);
-            font-weight: 600;
-        }
-
-        .comentario-card {
-            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-            border-left: 4px solid var(--cor06);
-            border-radius: var(--border-radius-medium);
-            padding: 20px;
-            margin-top: 25px;
-            box-shadow: 0 2px 8px rgba(0, 202, 253, 0.1);
-        }
-
-        .comentario-card h6 {
-            color: var(--cor04);
-            font-size: 1.1em;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .navegacao-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 40px;
-            padding: 20px 0;
-            border-top: 2px solid var(--cor01);
-        }
-
-        .btn-custom {
-            background: var(--cor03);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: var(--border-radius-small);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all var(--transition-medium);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-custom:hover {
-            background: var(--cor04);
-            color: white;
-            text-decoration: none;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .info-alert {
-            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
-            border-left: 4px solid var(--cor06);
-            border-radius: var(--border-radius-small);
-            padding: 15px;
-            margin-top: 15px;
-            color: #0c5460;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
-            .form-section {
-                padding: 20px;
-            }
-
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .avaliacao-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-
-            .avaliacao-status {
-                align-items: flex-start;
-                width: 100%;
-            }
-
-            .pergunta-header {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .pergunta-badges {
-                align-self: flex-start;
-            }
-
-            .likert-scale {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .nps-labels {
-                flex-direction: column;
-                gap: 5px;
-                text-align: center;
-            }
-
-            .navegacao-footer {
-                flex-direction: column;
-                gap: 15px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 1.6em;
-            }
-
-            .back-button {
-                width: 100%;
-                text-align: center;
-            }
-
-            .likert-options {
-                gap: 5px;
-            }
-
-            .likert-option {
-                width: 30px;
-                height: 30px;
-            }
-
-            .nps-options {
-                gap: 3px;
-            }
-
-            .nps-option {
-                width: 25px;
-                height: 25px;
-                font-size: 0.8em;
-            }
-        }
-    </style>
-</head>
-
-<body>
+    <!-- CSS personalizado -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'css/global.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'css/visualizar_avaliacao.css' %}"
+    />
+  </head>
+
+  <body>
     <main>
-        <div class="container">
-            <a href="{% url 'inicio' %}" class="back-button">← Voltar</a>
+      <div class="container">
+        <a href="{% url 'inicio' %}" class="back-button">← Voltar</a>
 
-            <!-- Header da página -->
-            <div class="header">
-                <h1>Visualizar Avaliação</h1>
-                <p>{{ avaliacao.disciplina.disciplina_nome }} - {{ avaliacao.turma.codigo_turma }}</p>
-            </div>
+        <!-- Header da página -->
+        <div class="header">
+          <h1>Visualizar Avaliação</h1>
+          <p>
+            {{ avaliacao.disciplina.disciplina_nome }} - {{
+            avaliacao.turma.codigo_turma }}
+          </p>
+        </div>
 
-            <!-- Mensagens -->
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="message {{ message.tags }}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
+        <!-- Mensagens -->
+        {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+          <div class="message {{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
 
-            <!-- Conteúdo principal -->
-            <div class="form-section">
-                <!-- Informações da Avaliação -->
-                <div class="avaliacao-card">
-                    <div class="avaliacao-header">
-                        <div class="avaliacao-info">
-                            <h3>{{ titulo }}</h3>
-                            <p><strong>Disciplina:</strong> {{ avaliacao.disciplina.disciplina_nome }}</p>
-                            <p><strong>Turma:</strong> {{ avaliacao.turma.codigo_turma }}</p>
-                            <p><strong>Ciclo:</strong> {{ avaliacao.ciclo.nome }}</p>
-                            <p><strong>Questionário:</strong> {{ avaliacao.ciclo.questionario.titulo }}</p>
-                        </div>
-                        <div class="avaliacao-status">
-                            <span class="status-badge">
-                                ✓ Avaliação Respondida
-                            </span>
-                            {% if avaliacao.data_resposta %}
-                            <div class="data-resposta">
-                                📅 {{ avaliacao.data_resposta|date:"d/m/Y às H:i" }}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="info-alert">
-                        🔒 <strong>Avaliação Anônima:</strong> As respostas foram coletadas de forma anônima.
-                    </div>
-                </div>
-
-                <!-- Respostas -->
-                {% for resposta in respostas %}
-                <div class="pergunta-card">
-                    <div class="pergunta-header">
-                        <h6 class="pergunta-titulo">
-                            {{ resposta.pergunta.enunciado }}
-                            {% if resposta.pergunta.obrigatoria %}
-                            <span style="color: var(--cor08);">*</span>
-                            {% endif %}
-                        </h6>
-                        <div class="pergunta-badges">
-                            {% if resposta.pergunta.categoria %}
-                            <span class="pergunta-badge">{{ resposta.pergunta.categoria.nome }}</span>
-                            {% endif %}
-                            <span class="pergunta-badge">{{ resposta.pergunta.get_tipo_display }}</span>
-                        </div>
-                    </div>
-
-                    <div class="resposta-container">
-                        {% if resposta.pergunta.tipo == 'likert' %}
-                        <div class="likert-scale">
-                            <span class="likert-labels">Discordo Totalmente</span>
-                            <div class="likert-options">
-                                {% for i in "12345"|make_list %}
-                                <div class="likert-option {% if resposta.valor_numerico == i|add:0 %}selected{% endif %}">
-                                    {{ i }}
-                                </div>
-                                {% endfor %}
-                            </div>
-                            <span class="likert-labels">Concordo Totalmente</span>
-                        </div>
-                        <div class="resposta-valor">
-                            <strong>Resposta Selecionada: {{ resposta.valor_numerico }}</strong>
-                        </div>
-
-                        {% elif resposta.pergunta.tipo == 'nps' %}
-                        <div class="nps-container">
-                            <div class="nps-labels">
-                                <span>0 - Nunca recomendaria</span>
-                                <span>10 - Certamente recomendaria</span>
-                            </div>
-                            <div class="nps-options">
-                                {% nps_scale as escala %}
-                                {% for i in escala %}
-                                <div class="nps-option {% if resposta.valor_numerico == i %}selected{% endif %}">
-                                    {{ i }}
-                                </div>
-                                {% endfor %}
-                            </div>
-                            <div class="resposta-valor">
-                                <strong>Nota Atribuída: {{ resposta.valor_numerico }}</strong>
-                            </div>
-                        </div>
-
-                        {% elif resposta.pergunta.tipo == 'sim_nao' %}
-                        <div class="resposta-binaria {% if resposta.valor_boolean %}resposta-true{% elif resposta.valor_boolean is not None %}resposta-false{% else %}resposta-indefinida{% endif %}">
-                            {% if resposta.valor_boolean is not None %}
-                                {% if resposta.valor_boolean %}✓ Sim{% else %}✗ Não{% endif %}
-                            {% else %}
-                                {{ resposta.valor_texto|default:"-" }}
-                            {% endif %}
-                        </div>
-
-                        {% elif resposta.pergunta.tipo == 'multipla_escolha' %}
-                        <div class="resposta-destaque">
-                            {{ resposta.valor_texto }}
-                        </div>
-
-                        {% elif resposta.pergunta.tipo == 'texto_livre' %}
-                        <div class="resposta-texto">{{ resposta.valor_texto }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-
-                <!-- Comentário Geral -->
-                {% if avaliacao.comentario_geral %}
-                <div class="comentario-card">
-                    <h6>💬 Comentário Adicional</h6>
-                    <div class="resposta-texto">{{ avaliacao.comentario_geral }}</div>
+        <!-- Conteúdo principal -->
+        <div class="form-section">
+          <!-- Informações da Avaliação -->
+          <div class="avaliacao-card">
+            <div class="avaliacao-header">
+              <div class="avaliacao-info">
+                <h3>{{ titulo }}</h3>
+                <p>
+                  <strong>Disciplina:</strong> {{
+                  avaliacao.disciplina.disciplina_nome }}
+                </p>
+                <p>
+                  <strong>Turma:</strong> {{ avaliacao.turma.codigo_turma }}
+                </p>
+                <p><strong>Ciclo:</strong> {{ avaliacao.ciclo.nome }}</p>
+                <p>
+                  <strong>Questionário:</strong> {{
+                  avaliacao.ciclo.questionario.titulo }}
+                </p>
+              </div>
+              <div class="avaliacao-status">
+                <span class="status-badge"> ✓ Avaliação Respondida </span>
+                {% if avaliacao.data_resposta %}
+                <div class="data-resposta">
+                  📅 {{ avaliacao.data_resposta|date:"d/m/Y às H:i" }}
                 </div>
                 {% endif %}
-
-                <!-- Navegação -->
-                <div class="navegacao-footer">
-                    <a href="{% url 'listar_avaliacoes' %}" class="btn-custom">
-                        ← Voltar para Lista
-                    </a>
-                    <a href="javascript:window.print()" class="btn-custom">
-                        🖨️ Imprimir
-                    </a>
-                </div>
+              </div>
             </div>
 
-<style>
-    /* Estilos específicos para impressão */
-    @media print {
-        header,
-        .back-button,
-        .btn-custom,
-        .navegacao-footer {
-            display: none !important;
-        }
+            <div class="info-alert">
+              🔒 <strong>Avaliação Anônima:</strong> As respostas foram
+              coletadas de forma anônima.
+            </div>
+          </div>
 
-        body {
-            background: white !important;
-        }
+          <!-- Respostas -->
+          {% for resposta in respostas %}
+          <div class="pergunta-card">
+            <div class="pergunta-header">
+              <h6 class="pergunta-titulo">
+                {{ resposta.pergunta.enunciado }} {% if
+                resposta.pergunta.obrigatoria %}
+                <span style="color: var(--cor08)">*</span>
+                {% endif %}
+              </h6>
+              <div class="pergunta-badges">
+                {% if resposta.pergunta.categoria %}
+                <span class="pergunta-badge"
+                  >{{ resposta.pergunta.categoria.nome }}</span
+                >
+                {% endif %}
+                <span class="pergunta-badge"
+                  >{{ resposta.pergunta.get_tipo_display }}</span
+                >
+              </div>
+            </div>
 
-        .pergunta-card {
-            break-inside: avoid;
-            margin-bottom: 15px !important;
-            box-shadow: none !important;
-            border: 1px solid #ddd !important;
-        }
+            <div class="resposta-container">
+              {% if resposta.pergunta.tipo == 'likert' %}
+              <div class="likert-scale">
+                <span class="likert-labels">Discordo Totalmente</span>
+                <div class="likert-options">
+                  {% for i in "12345"|make_list %}
+                  <div
+                    class="likert-option {% if resposta.valor_numerico == i|add:0 %}selected{% endif %}"
+                  >
+                    {{ i }}
+                  </div>
+                  {% endfor %}
+                </div>
+                <span class="likert-labels">Concordo Totalmente</span>
+              </div>
+              <div class="resposta-valor">
+                <strong
+                  >Resposta Selecionada: {{ resposta.valor_numerico }}</strong
+                >
+              </div>
 
-        .avaliacao-card {
-            margin-bottom: 20px !important;
-            box-shadow: none !important;
-            border: 2px solid #333 !important;
-        }
+              {% elif resposta.pergunta.tipo == 'nps' %}
+              <div class="nps-container">
+                <div class="nps-labels">
+                  <span>0 - Nunca recomendaria</span>
+                  <span>10 - Certamente recomendaria</span>
+                </div>
+                <div class="nps-options">
+                  {% nps_scale as escala %} {% for i in escala %}
+                  <div
+                    class="nps-option {% if resposta.valor_numerico == i %}selected{% endif %}"
+                  >
+                    {{ i }}
+                  </div>
+                  {% endfor %}
+                </div>
+                <div class="resposta-valor">
+                  <strong>Nota Atribuída: {{ resposta.valor_numerico }}</strong>
+                </div>
+              </div>
 
-        .form-section {
-            box-shadow: none !important;
-            border: none !important;
-        }
+              {% elif resposta.pergunta.tipo == 'sim_nao' %}
+              <div
+                class="resposta-binaria {% if resposta.valor_boolean %}resposta-true{% elif resposta.valor_boolean is not None %}resposta-false{% else %}resposta-indefinida{% endif %}"
+              >
+                {% if resposta.valor_boolean is not None %} {% if
+                resposta.valor_boolean %}✓ Sim{% else %}✗ Não{% endif %} {% else
+                %} {{ resposta.valor_texto|default:"-" }} {% endif %}
+              </div>
 
-        .resposta-container {
-            background: #f8f9fa !important;
-        }
+              {% elif resposta.pergunta.tipo == 'multipla_escolha' %}
+              <div class="resposta-destaque">{{ resposta.valor_texto }}</div>
 
-        .likert-option.selected,
-        .nps-option.selected {
-            background: #333 !important;
-            border-color: #333 !important;
-        }
+              {% elif resposta.pergunta.tipo == 'texto_livre' %}
+              <div class="resposta-texto">{{ resposta.valor_texto }}</div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
 
-        .resposta-destaque {
-            background: #e9ecef !important;
-            color: #333 !important;
-        }
+          <!-- Comentário Geral -->
+          {% if avaliacao.comentario_geral %}
+          <div class="comentario-card">
+            <h6>💬 Comentário Adicional</h6>
+            <div class="resposta-texto">{{ avaliacao.comentario_geral }}</div>
+          </div>
+          {% endif %}
 
-        .status-badge {
-            background: #6c757d !important;
-        }
-    }
-</style>
-
+          <!-- Navegação -->
+          <div class="navegacao-footer">
+            <a href="{% url 'listar_avaliacoes' %}" class="btn-custom">
+              ← Voltar para Lista
+            </a>
+            <a href="javascript:window.print()" class="btn-custom">
+              🖨️ Imprimir
+            </a>
+          </div>
         </div>
+      </div>
     </main>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-
+  </body>
 </html>

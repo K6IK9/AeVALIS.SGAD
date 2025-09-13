@@ -1,0 +1,543 @@
+/* ===== Relatório de Avaliações CSS ===== */
+
+/* Variáveis específicas do relatório */
+:root {
+    --report-primary: var(--cor03);
+    --report-background: var(--cor07);
+    --report-success: #28a745;
+    --report-warning: #ffc107;
+    --report-danger: var(--cor08);
+    --report-border: rgba(71, 168, 189, 0.2);
+}
+
+/* Cabeçalho do relatório */
+
+/* Botão voltar */
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--report-primary);
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    border-radius: 15px;
+    background: var(--report-background);
+    border: 1px solid var(--report-border);
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    background: var(--report-primary);
+    color: var(--report-background);
+    transform: translateX(-5px);
+    text-decoration: none;
+}
+
+/* Header */
+.header h1 {
+    color: var(--report-primary);
+    font-size: 1.8em;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.header p {
+    text-align: center;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Container principal - usando .form-section do global.css */
+
+/* Cabeçalho do relatório */
+.relatorio-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.relatorio-header h2 {
+    color: var(--report-primary);
+    font-size: 1.8em;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Seção de filtros */
+.filtros-section {
+    background: var(--report-background);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    border: 1px solid var(--report-border);
+}
+
+.filtros-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+/* Formulário - .form-group definido no global.css */
+
+.form-label-report {
+    display: block;
+    font-weight: 600;
+    color: var(--report-primary);
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-control option {
+    padding: 10px;
+    background: white;
+    color: #333;
+}
+
+/* Botões */
+.btn-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.btn-filtrar {
+    background: var(--report-primary);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-filtrar:hover {
+    background: var(--cor01);
+    transform: translateY(-2px);
+}
+
+.btn-export {
+    background: var(--report-success);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-export:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
+/* Grid de avaliações */
+.avaliacoes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.avaliacao-card {
+    background: var(--report-background);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid var(--report-border);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border-top: 4px solid var(--report-primary);
+}
+
+.avaliacao-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--report-border);
+}
+
+.card-title {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--report-primary);
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.card-subtitle {
+    color: #666;
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.card-info {
+    margin-bottom: 15px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+.info-item strong {
+    color: var(--report-primary);
+}
+
+/* Estatísticas por pergunta */
+.pergunta-stats {
+    margin-bottom: 15px;
+}
+
+.pergunta-title {
+    font-weight: 600;
+    color: var(--report-primary);
+    font-size: 0.85em;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 8px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.stat-value {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: var(--report-primary);
+}
+
+.stat-label {
+    font-size: 0.7em;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+/* Comentários */
+.comentarios-section {
+    margin-top: 15px;
+}
+
+.comentarios-title {
+    font-weight: 600;
+    color: var(--report-primary);
+    font-size: 0.9em;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.comentario-card {
+    background: white;
+    padding: 12px;
+    border-radius: 10px;
+    border-left: 4px solid var(--report-primary);
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.comentario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.comentario-aluno {
+    font-weight: 600;
+    color: var(--report-primary);
+    font-size: 0.8em;
+}
+
+.comentario-data {
+    color: #666;
+    font-size: 0.7em;
+}
+
+.comentario-texto {
+    font-size: 0.85em;
+    line-height: 1.4;
+    color: #333;
+}
+
+/* Tabela de dados - usando .data-table do global.css com customizações */
+.data-table thead {
+    background: var(--report-primary);
+    color: white;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.data-table th {
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-table td {
+    font-size: 0.9em;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Badges - base já definida em global.css */
+
+.badge-success {
+    background: var(--report-success);
+    color: white;
+}
+
+.badge-warning {
+    background: var(--report-warning);
+    color: #333;
+}
+
+.badge-danger {
+    background: var(--report-danger);
+    color: white;
+}
+
+.badge-info {
+    background: var(--report-primary);
+    color: white;
+}
+
+/* Cards de métricas */
+.metricas-container {
+    background: var(--report-background);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    border: 1px solid var(--report-border);
+}
+
+.metricas-title {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: var(--report-primary);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.metricas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.metric-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-top: 4px solid var(--report-primary);
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.metric-value {
+    font-size: 2.2em;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.metric-value.success {
+    color: var(--report-success);
+}
+
+.metric-value.warning {
+    color: var(--report-warning);
+}
+
+.metric-value.danger {
+    color: var(--report-danger);
+}
+
+.metric-label {
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    font-size: 0.8em;
+}
+
+/* Estado vazio */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.empty-state .icon {
+    font-size: 4em;
+    margin-bottom: 20px;
+    color: var(--report-primary);
+}
+
+.empty-state h4 {
+    color: var(--report-primary);
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    color: #666;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .form-section {
+        padding: 15px;
+    }
+    
+    .filtros-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .avaliacoes-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-filtrar,
+    .btn-export {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .metricas-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .data-table {
+        font-size: 0.8em;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 8px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .metricas-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-row {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+    
+    .relatorio-header h2 {
+        font-size: 1.5em;
+    }
+    
+    .card-title {
+        font-size: 1.1em;
+    }
+}
+
+/* Estilos para impressão */
+@media print {
+    .btn, button {
+        display: none !important;
+    }
+    
+    .filtros-section {
+        display: none !important;
+    }
+    
+    .avaliacoes-grid {
+        display: block !important;
+    }
+    
+    .avaliacao-card {
+        break-inside: avoid;
+        margin-bottom: 15px !important;
+    }
+    
+    .form-section {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .relatorio-header h2 {
+        color: #000 !important;
+    }
+}

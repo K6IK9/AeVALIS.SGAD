@@ -1,0 +1,137 @@
+/* minhas_avaliacoes.css - Estilos específicos para a página "Minhas Avaliações" */
+
+/* ===== GRID DE AVALIAÇÕES ===== */
+.avaliacoes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* ===== CARDS DE AVALIAÇÃO ===== */
+.avaliacao-card {
+    background: var(--cor07);
+    border-radius: var(--border-radius-medium);
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform var(--transition-fast), box-shadow   var(--transition-fast);
+}
+
+.avaliacao-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.minhas-avaliacoes-header {
+    border-bottom: 2px solid var(--cor01);
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+}
+
+.minhas-avaliacoes-header h3 {
+    color: var(--cor03);
+    margin-bottom: 5px;
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+}
+
+.avaliacao-info {
+    margin-bottom: 15px;
+}
+
+.avaliacao-info p {
+    margin-bottom: 8px;
+    color: var(--cor04);
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
+}
+
+.avaliacao-info strong {
+    color: var(--cor03);
+    font-weight: 600;
+}
+
+.avaliacao-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ===== ESTADO VAZIO ===== */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--cor07);
+    border-radius: var(--border-radius-medium);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.empty-state h3 {
+    color: var(--cor03);
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.empty-state p {
+    color: var(--cor04);
+    margin-bottom: 20px;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+    .avaliacoes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+    
+    .header h1 {
+        font-size: var(--font-size-xl);
+    }
+    
+    .back-button {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .avaliacoes-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .avaliacao-card {
+        padding: 15px;
+    }
+    
+    .minhas-avaliacoes-header h3 {
+        font-size: var(--font-size-md);
+    }
+    
+    .avaliacao-info p {
+        font-size: var(--font-size-xs);
+        margin-bottom: 6px;
+    }
+    
+    .btn {
+        padding: 8px 12px;
+        font-size: var(--font-size-xs);
+        width: 100%;
+    }
+    
+    .empty-state {
+        padding: 30px 15px;
+    }
+    
+    .header {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .header h1 {
+        font-size: var(--font-size-lg);
+    }
+    
+    .header p {
+        font-size: var(--font-size-xs);
+    }
+}

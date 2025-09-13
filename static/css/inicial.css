@@ -1,0 +1,371 @@
+/* ================================================
+   PÁGINA INICIAL - Sistema de Avaliação Docente
+   ================================================ */
+
+/* ===== LAYOUT ESPECÍFICO DA PÁGINA INICIAL ===== */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* ===== CONTAINER PRINCIPAL ===== */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 20px;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ===== NAVEGAÇÃO INTEGRADA ===== */
+.main-nav {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
+
+.nav-logo img {
+    height: 55px;
+    filter: brightness(0) saturate(100%) invert(24%) sepia(12%) saturate(1547%) hue-rotate(132deg) brightness(93%) contrast(90%);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.nav-logo img:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.nav-perfil {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--border-radius-circle);
+    background: var(--cor03);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    font-size: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: all var(--transition-fast);
+}
+
+.nav-perfil:hover {
+    background: var(--cor04);
+    transform: translateY(-2px) scale(1.1);
+    box-shadow: var(--shadow-hover);
+    color: white;
+    text-decoration: none;
+}
+
+/* ===== TÍTULO DE BOAS-VINDAS ===== */
+h1 {
+    text-align: center;
+    font-family: var(--font02);
+    font-weight: 400;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    color: var(--cor04);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    line-height: 1.2;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+h1 span#alunoAtual {
+    display: block;
+    font-family: var(--font01);
+    font-weight: 600;
+    color: var(--cor03);
+    margin-top: 10px;
+    font-size: clamp(1.2rem, 3vw, 2rem);
+}
+
+.erro-perfil {
+    color: var(--cor08) !important;
+}
+
+/* ===== SEÇÃO DE OPÇÕES ===== */
+#opcoes {
+    width: 100%;
+    max-width: 600px;
+    padding: 40px;
+    background: var(--cor07);
+    border-radius: var(--border-radius-large);
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(55, 111, 108, 0.1);
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+    
+    transition: var(--transition-fast);
+    animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+#opcoes:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(55, 111, 108, 0.12);
+}
+
+#opcoes h2 {
+    color: var(--cor03);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-align: center;
+    position: relative;
+}
+
+#opcoes h2::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--cor02);
+    border-radius: 2px;
+}
+
+/* ===== BOTÕES DA PÁGINA INICIAL ===== */
+#opcoes button {
+    width: 100%;
+    padding: 18px 25px;
+    background: var(--cor02);
+    color: var(--cor05);
+    border: none;
+    border-radius: var(--border-radius-medium);
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    
+    box-shadow: 0 4px 15px rgba(0, 253, 148, 0.25);
+}
+
+.opcao-link {
+    width: 100%;
+    text-decoration: none;
+    display: block;
+}
+
+#opcoes button:hover {
+    transform: translateY(-1px);
+    background: var(--cor06);
+    box-shadow: 0 4px 15px rgba(0, 253, 148, 0.25);
+}
+
+#opcoes button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(0, 253, 148, 0.2);
+}
+
+/* Botões secundários para diferentes roles */
+#opcoes button:nth-child(3),
+#opcoes button:nth-child(4) {
+    background: var(--cor03);
+    color: var(--cor07);
+    box-shadow: 0 4px 15px rgba(55, 111, 108, 0.25);
+}
+
+#opcoes button:nth-child(3):hover,
+#opcoes button:nth-child(4):hover {
+    background: var(--cor04);
+    box-shadow: 0 4px 15px rgba(55, 111, 108, 0.25);
+}
+
+/* ===== AVISO PARA PROFESSORES ===== */
+.aviso-perfil {
+    max-width: 650px;
+    background: var(--cor07);
+    border: 1px solid #e2e8e8;
+    border-left: 5px solid var(--cor03);
+    padding: 24px 28px;
+    border-radius: 18px;
+    box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.aviso-perfil p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.aviso-perfil p:first-child {
+    margin-bottom: 12px;
+    font-size: 1.05rem;
+    color: var(--cor03);
+    font-weight: 600;
+}
+
+.aviso-perfil p:nth-child(2) {
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.aviso-perfil p:last-child {
+    font-size: 0.85rem;
+    color: #777;
+}
+
+/* ===== MENSAGEM DE ERRO ===== */
+.erro-sistema {
+    background: var(--cor07);
+    color: var(--cor08) !important;
+    padding: 20px;
+    border-radius: var(--border-radius-medium);
+    border-left: 4px solid var(--cor08);
+    box-shadow: var(--shadow);
+    text-align: center;
+    font-size: 1.1rem;
+    max-width: 600px;
+}
+
+/* ===== RESPONSIVIDADE ESPECÍFICA ===== */
+@media (max-width: 768px) {
+    .main-nav {
+        top: 20px;
+        width: 95%;
+    }
+
+    .nav-logo img {
+        height: 50px;
+    }
+
+    .nav-perfil {
+        width: 55px;
+        height: 55px;
+        font-size: 1.4rem;
+    }
+
+    main {
+        padding: 30px 15px;
+        gap: 30px;
+    }
+
+    #opcoes {
+        padding: 30px 25px;
+        max-width: 100%;
+    }
+
+    #opcoes button {
+        padding: 16px 20px;
+        font-size: 0.95rem;
+    }
+
+    h1 {
+        margin-bottom: 5px;
+    }
+
+    .aviso-perfil {
+        padding: 20px 24px;
+        margin: 0 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-nav {
+        top: 15px;
+        width: 95%;
+    }
+
+    .nav-logo img {
+        height: 45px;
+    }
+
+    .nav-perfil {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+
+    #opcoes {
+        padding: 25px 20px;
+        gap: 20px;
+    }
+
+    #opcoes h2 {
+        font-size: 1.3rem;
+    }
+
+    #opcoes button {
+        padding: 14px 18px;
+        font-size: 0.9rem;
+    }
+
+    .aviso-perfil {
+        padding: 18px 20px;
+        margin: 0 10px;
+    }
+
+    .aviso-perfil p:first-child {
+        font-size: 1rem;
+    }
+
+    .aviso-perfil p:nth-child(2) {
+        font-size: 0.85rem;
+    }
+
+    .aviso-perfil p:last-child {
+        font-size: 0.8rem;
+    }
+}
+
+/* ===== EFEITOS ESPECIAIS ===== */
+/* Animações de typing */
+.typing-effect {
+    overflow: hidden;
+    border-right: 2px solid var(--cor02);
+    white-space: nowrap;
+    animation: typing 2s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+@keyframes blink-caret {
+    from, to { border-color: transparent; }
+    50% { border-color: var(--cor02); }
+}
+
+/* Partículas flutuantes */
+.floating-particle {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    background: var(--cor02);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.3;
+}
+
+/* Efeitos de hover personalizados */
+.nav-logo img:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.nav-perfil:hover {
+    transform: translateY(-2px) scale(1.1);
+}

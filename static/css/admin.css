@@ -1,0 +1,449 @@
+/* ================================================
+   PÁGINAS ADMINISTRATIVAS - Sistema de Avaliação Docente
+   ================================================ */
+
+/* ===== LAYOUT ESPECÍFICO DO ADMIN ===== */
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.admin-card {
+    background: var(--cor07);
+    padding: 25px;
+    border-radius: var(--border-radius-medium);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    transition: all var(--transition-medium);
+    border-top: 5px solid var(--cor02);
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.admin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-card h3 {
+    color: var(--cor03);
+    margin-bottom: 12px;
+    font-size: 1.3em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-card p {
+    color: #666;
+    margin-bottom: auto;
+    line-height: 1.5;
+    font-size: 0.9em;
+    flex: 1;
+}
+
+.card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 15px;
+    flex-shrink: 0;
+    align-items: center;
+    width: 100%;
+}
+
+.card-actions .btn {
+    width: 90%;
+    text-align: center;
+    font-size: 0.9em;
+    padding: 10px;
+}
+
+.icon {
+    font-size: 1.5em;
+}
+
+/* ===== SEÇÃO DE ESTATÍSTICAS ===== */
+.stats-section {
+    background: var(--cor07);
+    padding: 30px;
+    border-radius: var(--border-radius-medium);
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}
+
+.stats-section h2 {
+    margin: 0 0 20px 0;
+    color: var(--cor03);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: var(--cor01);
+    border-radius: var(--border-radius-small);
+    border-left: 4px solid var(--cor02);
+    transition: all var(--transition-fast);
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.stat-number {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--cor03);
+    display: block;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+/* ===== SEÇÃO DE CABEÇALHO DE PÁGINAS ===== */
+.section-header {
+    margin-bottom: 20px;
+}
+
+.section-header .d-flex {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ===== FILTROS E BUSCA ===== */
+.filtros-container {
+    background: var(--cor07);
+    padding: 20px;
+    border-radius: var(--border-radius-medium);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
+
+.filtros-container h3 {
+    margin: 0 0 15px 0;
+    color: var(--cor03);
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: end;
+}
+
+.form-col {
+    flex: 1;
+    min-width: 200px;
+}
+
+.form-col label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: var(--cor03);
+}
+
+.form-col select,
+.form-col input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color var(--transition-fast);
+}
+
+.form-col select:focus,
+.form-col input:focus {
+    outline: none;
+    border-color: var(--cor02);
+}
+
+/* ===== BOTÕES DE AÇÃO ===== */
+.btn-action {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+/* ===== TABELAS ADMINISTRATIVAS ===== */
+.table-container {
+    background: var(--cor07);
+    border-radius: var(--border-radius-medium);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.scroll-hint {
+    display: none;
+    text-align: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    max-height: 600px;
+}
+
+.data-table {
+    margin-top: 0;
+}
+
+/* ===== MODAL ADMINISTRATIVO ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--cor07);
+    border-radius: var(--border-radius-medium);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background: var(--cor03);
+    color: white;
+    border-radius: var(--border-radius-medium) var(--border-radius-medium) 0 0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.3em;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    padding: 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* ===== BADGES DE STATUS ESPECÍFICOS ===== */
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.badge.bg-info {
+    background-color: var(--cor06) !important;
+    color: var(--cor05) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--cor02) !important;
+    color: var(--cor05) !important;
+}
+
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+    color: var(--cor07) !important;
+}
+
+.badge.bg-light {
+    background-color: #f8f9fa !important;
+    color: var(--cor03) !important;
+    border: 1px solid #dee2e6;
+}
+
+/* ===== ALERTAS E VALIDAÇÕES ===== */
+.validation-error {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 5px;
+}
+
+.validation-summary {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-bottom: 15px;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+}
+
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.alert-error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+}
+
+.alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+/* ===== CONTADORES E INFORMAÇÕES ===== */
+.item-count {
+    font-size: 0.9em;
+    color: var(--cor03);
+    margin-top: 10px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+/* ===== RESPONSIVIDADE ADMINISTRATIVA ===== */
+@media (max-width: 768px) {
+    .admin-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .admin-card {
+        height: auto;
+        min-height: 200px;
+        padding: 20px;
+    }
+
+    .card-actions .btn {
+        width: 100%;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .form-col {
+        min-width: unset;
+    }
+
+    .modal-content {
+        max-width: 95vw;
+        margin: 10px;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    .section-header .d-flex {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .section-header .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .filtros-container {
+        padding: 15px;
+    }
+
+    .admin-card {
+        padding: 15px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 15px;
+    }
+
+    .btn-action {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .btn-small {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+}

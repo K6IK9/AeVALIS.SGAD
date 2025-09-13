@@ -1,629 +1,161 @@
-{% load permission_tags %}
-{% load user_tags %}
-{% load static %}
+{% load user_tags %} {% load static %}
 
 <!DOCTYPE html>
 <html lang="pt-br">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IF SADD - Home</title>
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Vidaloka&display=swap');
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="{% static 'css/global.css' %}" />
+    <!-- CSS Específico da Página Inicial -->
+    <link rel="stylesheet" href="{% static 'css/inicial.css' %}" />
 
-        :root {
-            /* Cores principais */
-            --cor01: #f0f0f0;
-            --cor01-alt: #f1f1f1;
-            --cor02: #00fd94;
-            --cor03: #376f6c;
-            --cor04: #1e3231;
-            --cor05: #090909;
-            --cor06: #00cafd;
-            --cor07: #ffffff;
-            --cor08: #ff3c3c;
+    <!-- Ícones Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
 
-            /* Fontes */
-            --font01: "Poppins", sans-serif;
-            --font02: "Vidaloka", serif;
-
-            /* Sombras e efeitos */
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
-            --shadow-card: 0 10px 30px rgba(55, 111, 108, 0.15);
-
-            /* Bordas e raios */
-            --border-radius-small: 8px;
-            --border-radius-medium: 15px;
-            --border-radius-large: 25px;
-            --border-radius-circle: 50%;
-
-            /* Transições */
-            --transition-fast: 0.2s ease-in-out;
-            --transition-medium: 0.3s ease-in-out;
-            --transition-slow: 0.5s ease-in-out;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: var(--font01);
-        }
-
-        body {
-            min-height: 100vh;
-            background: var(--cor01);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        /* Header aprimorado */
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            padding: 15px 5%;
-            background: var(--cor01);
-            z-index: 100;
-            
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header button {
-            width: 50px;
-            height: 50px;
-            border-radius: var(--border-radius-circle);
-            border: none;
-            background: var(--cor07);
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            transition: var(--transition-fast);
-            
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        header button:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-            background: var(--cor03);
-        }
-
-        header button img {
-            width: 24px;
-            height: 24px;
-            transition: var(--transition-fast);
-        }
-
-        header button:hover img {
-            filter: brightness(0) invert(1);
-        }
-
-        /* Container principal */
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 100px 20px 50px;
-            gap: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        /* Título de boas-vindas */
-        h1 {
-            text-align: center;
-            font-family: var(--font02);
-            font-weight: 400;
-            font-size: clamp(1.8rem, 4vw, 3rem);
-            color: var(--cor04);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 10px;
-            line-height: 1.2;
-        }
-
-        h1 span#alunoAtual {
-            display: block;
-            font-family: var(--font01);
-            font-weight: 600;
-            color: var(--cor03);
-            margin-top: 10px;
-            font-size: clamp(1.2rem, 3vw, 2rem);
-        }
-
-        /* Seção de opções redesenhada */
-        #opcoes {
-            width: 100%;
-            max-width: 600px;
-            padding: 40px;
-            background: var(--cor07);
-            border-radius: var(--border-radius-large);
-            box-shadow: var(--shadow-card);
-            border: 1px solid rgba(55, 111, 108, 0.1);
-            
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 25px;
-            
-            transition: var(--transition-fast);
-        }
-
-        #opcoes:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 25px rgba(55, 111, 108, 0.12);
-        }
-
-        #opcoes h2 {
-            color: var(--cor03);
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            text-align: center;
-            position: relative;
-        }
-
-        #opcoes h2::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: var(--cor02);
-            border-radius: 2px;
-        }
-
-        /* Botões redesenhados */
-        #opcoes button {
-            width: 100%;
-            padding: 18px 25px;
-            background: var(--cor02);
-            color: var(--cor05);
-            border: none;
-            border-radius: var(--border-radius-medium);
-            font-size: 1rem;
-            font-weight: 600;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition-fast);
-            
-            box-shadow: 0 4px 15px rgba(0, 253, 148, 0.25);
-        }
-
-        /* Links que contêm botões */
-        .opcao-link {
-            width: 100%;
-            text-decoration: none;
-            display: block;
-        }
-
-        #opcoes button:hover {
-            transform: translateY(-1px);
-            background: var(--cor06);
-            box-shadow: 0 4px 15px rgba(0, 253, 148, 0.25);
-        }
-
-        #opcoes button:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(0, 253, 148, 0.2);
-        }
-
-        /* Botões secundários para diferentes roles */
-        #opcoes button:nth-child(3),
-        #opcoes button:nth-child(4) {
-            background: var(--cor03);
-            color: var(--cor07);
-            box-shadow: 0 4px 15px rgba(55, 111, 108, 0.25);
-        }
-
-        #opcoes button:nth-child(3):hover,
-        #opcoes button:nth-child(4):hover {
-            background: var(--cor04);
-            box-shadow: 0 4px 15px rgba(55, 111, 108, 0.25);
-        }
-
-        /* Mensagem de erro */
-        h2[style*="color:rgb(255, 0, 0)"] {
-            background: var(--cor07);
-            color: var(--cor08) !important;
-            padding: 20px;
-            border-radius: var(--border-radius-medium);
-            border-left: 4px solid var(--cor08);
-            box-shadow: var(--shadow);
-            text-align: center;
-            font-size: 1.1rem;
-            max-width: 600px;
-        }
-
-        /* Animações de entrada */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        h1 {
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        #opcoes {
-            animation: fadeInUp 0.6s ease-out 0.1s both;
-        }
-
-        /* Responsividade aprimorada */
-        @media (max-width: 768px) {
-            header {
-                padding: 15px 20px;
-            }
-
-            main {
-                padding: 100px 15px 30px;
-                gap: 30px;
-            }
-
-            #opcoes {
-                padding: 30px 25px;
-                max-width: 100%;
-            }
-
-            #opcoes button {
-                padding: 16px 20px;
-                font-size: 0.95rem;
-            }
-
-            h1 {
-                margin-bottom: 5px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            header button {
-                width: 45px;
-                height: 45px;
-            }
-
-            header button img {
-                width: 20px;
-                height: 20px;
-            }
-
-            #opcoes {
-                padding: 25px 20px;
-                gap: 20px;
-            }
-
-            #opcoes h2 {
-                font-size: 1.3rem;
-            }
-
-            #opcoes button {
-                padding: 14px 18px;
-                font-size: 0.9rem;
-            }
-        }
-
-        /* Estados de loading e interação */
-        .loading {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-
-        /* Melhoria na acessibilidade */
-        button:focus-visible {
-            outline: 2px solid var(--cor02);
-            outline-offset: 2px;
-        }
-
-        /* Suporte para modo escuro (futuro) */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --cor01: #1a1a1a;
-                --cor07: #2d2d2d;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <header>
-        <button id="ifSadd">
-            <img src="{% static 'assets/saad_logo.svg' %}" alt="Sadd Logo">
-        </button>
-        <button id="perfil">
-            <img src="{% static 'assets/perfil.svg' %}" alt="Perfil">
-        </button>
-    </header>
+  <body>
     <main>
-
-
-        {% if user|has_role:'admin' %}
-        <h1>Seja bem-vindo(a) Administrador:
-            {% if user.first_name and user.last_name %}
-            <span id="alunoAtual">{{ user.first_name }} {{ user.last_name }}</span>
-            {% else %}
-            <span id="alunoAtual" style="color: #ff3c3c;">Por favor, configure seu perfil</span>
-            {% endif %}
-        </h1>
-        <section id="opcoes">
-            <h2>Opções Disponíveis</h2>
-            <a href="{% url 'listar_avaliacoes' %}" class="opcao-link">
-                <button id="realizar_avaliacao">Gerenciar Avaliações Docentes</button>
-            </a>
-            <a href="{% url 'relatorio_avaliacoes' %}" class="opcao-link">
-                <button id="relatorio_avaliacoes">Relatórios de Avaliações</button>
-            </a>
-            <a href="{% url 'admin_hub' %}" class="opcao-link">
-                <button id="admin_hub">Acessar Hub Administrativo</button>
-            </a>
-        </section>
-
-
-        {% elif user|has_role:'coordenador' %}
-        <h1>Seja bem-vindo(a) Coordenador:
-            {% if user.first_name and user.last_name %}
-            <span id="alunoAtual">{{ user.first_name }} {{ user.last_name }}</span>
-            {% else %}
-            <span id="alunoAtual" style="color: #ff3c3c;">Por favor, configure seu perfil</span>
-            {% endif %}
-        </h1>
-        <section id="opcoes">
-            <h2>Opções Disponíveis</h2>
-            <a href="{% url 'listar_avaliacoes' %}" class="opcao-link">
-                <button id="realizar_avaliacao">Gerenciar Avaliações Docentes</button>
-            </a>
-            <a href="{% url 'relatorio_avaliacoes' %}" class="opcao-link">
-                <button id="relatorio_avaliacoes">Relatórios de Avaliações</button>
-            </a>
-        </section>
-        {% elif user|has_role:'professor' %}
-        <h1>Seja bem-vindo(a) Professor:
-            {% if user.first_name and user.last_name %}
-            <span id="alunoAtual">{{ user.first_name }} {{ user.last_name }}</span>
-            {% else %}
-            <span id="alunoAtual" style="color: #ff3c3c;">Por favor, configure seu perfil</span>
-            {% endif %}
-        </h1>
-        <div class="aviso-perfil" style="max-width:650px;background:#ffffff;border:1px solid #e2e8e8;border-left:5px solid var(--cor03);padding:24px 28px;border-radius:18px;box-shadow:0 4px 14px -4px rgba(0,0,0,0.08);text-align:center;animation:fadeInUp .6s ease-out;">
-            <p style="margin:0 0 12px;font-size:1.05rem;color:var(--cor03);font-weight:600;">Nenhuma ação disponível para o perfil de Professor nesta etapa.</p>
-            <p style="margin:0 0 6px;font-size:.9rem;color:#555;">O acompanhamento das avaliações é realizado pela coordenação.</p>
-            <p style="margin:0;font-size:.85rem;color:#777;">Se você não se identifica com o perfil apresentado, entre em contato com a coordenação para ajuste do seu acesso.</p>
+      <!-- Navegação integrada -->
+      <div class="main-nav">
+        <div class="nav-logo">
+          <img src="{% static 'assets/saad_logo.svg' %}" alt="IF SADD" />
         </div>
-        {% elif user|has_role:'aluno' %}
-        <h1>Seja bem-vindo(a) Aluno:
-            {% if user.first_name and user.last_name %}
-            <span id="alunoAtual">{{ user.first_name }} {{ user.last_name }}</span>
-            {% else %}
-            <span id="alunoAtual" style="color: #ff3c3c;">Por favor, configure seu perfil</span>
-            {% endif %}
-        </h1>
-        <section id="opcoes">
-            <h2>Opções Disponíveis</h2>
-            <a href="{% url 'listar_avaliacoes' %}" class="opcao-link">
-                <button id="responder_avaliacao">Responder Avaliação Docente</button>
-            </a>
-            <a href="{% url 'minhas_avaliacoes' %}" class="opcao-link">
-                <button id="ver_avaliacoes_anteriores">Ver Avaliações Anteriores</button>
-            </a>
-        </section>
+        <a
+          href="{% url 'perfil_usuario' %}"
+          class="nav-perfil"
+          title="Acessar Perfil"
+        >
+          <i class="fas fa-user"></i>
+        </a>
+      </div>
+
+      {% if user|has_role:'admin' %}
+      <h1>
+        Seja bem-vindo(a) Administrador: {% if user.first_name and user.last_name %}
+        <span id="alunoAtual">{{ user.first_name }} {{ user.last_name }}</span>
         {% else %}
-        <h1>Seja bem-vindo(a)
-            {% if user.first_name and user.last_name %}
-            <span id="alunoAtual">{{ user.first_name }} {{ user.last_name }}</span>
-            {% else %}
-            <span id="alunoAtual" style="color: #ff3c3c;">Por favor, configure seu perfil</span>
-            {% endif %}
-        </h1>
-        <h2 style="color:rgb(255, 0, 0);">Por favor, entre em contato com o administrador do sistema para definir seu
-            perfil de usuario.</h2>
+        <span id="alunoAtual" class="erro-perfil"
+          >Por favor, configure seu perfil</span
+        >
         {% endif %}
+      </h1>
+      <section id="opcoes">
+        <h2>Opções Disponíveis</h2>
+        <a href="{% url 'listar_avaliacoes' %}" class="opcao-link">
+          <button id="realizar_avaliacao">Gerenciar Avaliações Docentes</button>
+        </a>
+        <a href="{% url 'relatorio_avaliacoes' %}" class="opcao-link">
+          <button id="relatorio_avaliacoes">Relatórios de Avaliações</button>
+        </a>
+        <a href="{% url 'admin_hub' %}" class="opcao-link">
+          <button id="admin_hub">Acessar Hub Administrativo</button>
+        </a>
+      </section>
 
+      {% elif user|has_role:'coordenador' %}
+      <h1>
+        Seja bem-vindo(a) Coordenador: {% if user.first_name and user.last_name %}
+        <span id="alunoAtual">{{ user.first_name }} {{ user.last_name }}</span>
+        {% else %}
+        <span id="alunoAtual" class="erro-perfil"
+          >Por favor, configure seu perfil</span
+        >
+        {% endif %}
+      </h1>
+      <section id="opcoes">
+        <h2>Opções Disponíveis</h2>
+        <a href="{% url 'listar_avaliacoes' %}" class="opcao-link">
+          <button id="realizar_avaliacao">Gerenciar Avaliações Docentes</button>
+        </a>
+        <a href="{% url 'relatorio_avaliacoes' %}" class="opcao-link">
+          <button id="relatorio_avaliacoes">Relatórios de Avaliações</button>
+        </a>
+      </section>
+
+      {% elif user|has_role:'professor' %}
+      <h1>
+        Seja bem-vindo(a) Professor: {% if user.first_name and user.last_name %}
+        <span id="alunoAtual">{{ user.first_name }} {{ user.last_name }}</span>
+        {% else %}
+        <span id="alunoAtual" class="erro-perfil"
+          >Por favor, configure seu perfil</span
+        >
+        {% endif %}
+      </h1>
+      <div class="aviso-perfil">
+        <p>Nenhuma ação disponível para o perfil de Professor nesta etapa.</p>
+        <p>O acompanhamento das avaliações é realizado pela coordenação.</p>
+        <p>
+          Se você não se identifica com o perfil apresentado, entre em contato
+          com a coordenação para ajuste do seu acesso.
+        </p>
+      </div>
+
+      {% elif user|has_role:'servidor' %}
+      <h1>
+        Seja bem-vindo(a) Servidor: {% if user.first_name and user.last_name %}
+        <span id="alunoAtual">{{ user.first_name }} {{ user.last_name }}</span>
+        {% else %}
+        <span id="alunoAtual" class="erro-perfil"
+          >Por favor, configure seu perfil</span
+        >
+        {% endif %}
+      </h1>
+      <div class="aviso-perfil">
+        <p>
+          Nenhuma ação disponível para o perfil de Servidor
+          (Técnico-Administrativo) nesta etapa.
+        </p>
+        <p>O sistema é voltado para avaliação docente.</p>
+        <p>
+          Se você não se identifica com o perfil apresentado, entre em contato
+          com a coordenação para ajuste do seu acesso.
+        </p>
+      </div>
+
+      {% elif user|has_role:'aluno' %}
+      <h1>
+        Seja bem-vindo(a) Aluno: {% if user.first_name and user.last_name %}
+        <span id="alunoAtual">{{ user.first_name }} {{ user.last_name }}</span>
+        {% else %}
+        <span id="alunoAtual" class="erro-perfil"
+          >Por favor, configure seu perfil</span
+        >
+        {% endif %}
+      </h1>
+      <section id="opcoes">
+        <h2>Opções Disponíveis</h2>
+        <a href="{% url 'listar_avaliacoes' %}" class="opcao-link">
+          <button id="responder_avaliacao">Responder Avaliação Docente</button>
+        </a>
+        <a href="{% url 'minhas_avaliacoes' %}" class="opcao-link">
+          <button id="ver_avaliacoes_anteriores">
+            Ver Avaliações Anteriores
+          </button>
+        </a>
+      </section>
+
+      {% else %}
+      <h1>
+        Seja bem-vindo(a) {% if user.first_name and user.last_name %}
+        <span id="alunoAtual">{{ user.first_name }} {{ user.last_name }}</span>
+        {% else %}
+        <span id="alunoAtual" class="erro-perfil"
+          >Por favor, configure seu perfil</span
+        >
+        {% endif %}
+      </h1>
+      <h2 class="erro-sistema">
+        Por favor, entre em contato com o administrador do sistema para definir
+        seu perfil de usuario.
+      </h2>
+      {% endif %}
     </main>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Smooth scroll e efeitos de interação
-            const buttons = document.querySelectorAll('#opcoes button');
-            const header = document.querySelector('header');
-            
-            // Efeito de loading nos botões
-            buttons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    // Adiciona efeito de loading
-                    this.style.transform = 'scale(0.98)';
-                    this.style.opacity = '0.8';
-                    
-                    // Adiciona um pequeno delay para feedback visual
-                    setTimeout(() => {
-                        // O onclick do HTML vai executar após este timeout
-                    }, 150);
-                });
-            });
-
-            // Efeito parallax suave no header
-            window.addEventListener('scroll', function() {
-                const scrolled = window.pageYOffset;
-                const parallax = scrolled * 0.5;
-                
-                if (header) {
-                    header.style.transform = `translateY(${parallax}px)`;
-                }
-            });
-
-            // Animação de typing para o nome do usuário
-            const nomeUsuario = document.querySelector('#alunoAtual');
-            if (nomeUsuario && !nomeUsuario.textContent.includes('configure')) {
-                const texto = nomeUsuario.textContent;
-                nomeUsuario.textContent = '';
-                let i = 0;
-                
-                function typeWriter() {
-                    if (i < texto.length) {
-                        nomeUsuario.textContent += texto.charAt(i);
-                        i++;
-                        setTimeout(typeWriter, 100);
-                    }
-                }
-                
-                // Inicia o efeito após um pequeno delay
-                setTimeout(typeWriter, 1000);
-            }
-
-            // Efeito de hover personalizado para o logo
-            const logoButton = document.querySelector('#ifSadd');
-            if (logoButton) {
-                logoButton.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-3px) rotate(5deg)';
-                });
-                
-                logoButton.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0) rotate(0deg)';
-                });
-            }
-
-            // Efeito de hover para o botão de perfil
-            const perfilButton = document.querySelector('#perfil');
-            if (perfilButton) {
-                perfilButton.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-3px) scale(1.1)';
-                });
-                
-                perfilButton.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0) scale(1)';
-                });
-            }
-
-            // Adiciona classe para animações escalonadas nos botões
-            buttons.forEach((button, index) => {
-                button.style.setProperty('--delay', `${index * 0.1}s`);
-            });
-
-            // Efeito de partículas flutuantes (opcional)
-            function createFloatingParticle() {
-                const particle = document.createElement('div');
-                particle.style.cssText = `
-                    position: fixed;
-                    width: 4px;
-                    height: 4px;
-                    background: var(--cor02);
-                    border-radius: 50%;
-                    pointer-events: none;
-                    z-index: -1;
-                    opacity: 0.3;
-                `;
-                
-                particle.style.left = Math.random() * window.innerWidth + 'px';
-                particle.style.top = window.innerHeight + 'px';
-                
-                document.body.appendChild(particle);
-                
-                // Anima a partícula
-                const animation = particle.animate([
-                    { transform: 'translateY(0px)', opacity: 0.3 },
-                    { transform: `translateY(-${window.innerHeight + 100}px)`, opacity: 0 }
-                ], {
-                    duration: Math.random() * 3000 + 2000,
-                    easing: 'ease-out'
-                });
-                
-                animation.onfinish = () => particle.remove();
-            }
-
-            // Cria partículas ocasionalmente
-            setInterval(createFloatingParticle, 3000);
-
-            // Melhoria na acessibilidade - navegação por teclado
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Tab') {
-                    document.body.classList.add('keyboard-navigation');
-                }
-            });
-
-            document.addEventListener('mousedown', function() {
-                document.body.classList.remove('keyboard-navigation');
-            });
-        });
-
-        // Função para o botão do perfil (mantém compatibilidade)
-        document.getElementById('perfil').addEventListener('click', function() {
-            // Aqui você pode adicionar a lógica para abrir o perfil
-            // Por agora, mantemos a funcionalidade existente se houver
-        });
-
-    </script>
-
-    <style>
-        /* Animações adicionais */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        /* Melhorias para navegação por teclado */
-        .keyboard-navigation button:focus {
-            outline: 3px solid var(--cor02);
-            outline-offset: 2px;
-        }
-
-        /* Efeito de carregamento */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition-medium);
-        }
-
-        .loading-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid var(--cor01);
-            border-top: 3px solid var(--cor02);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-
-</body>
-
+  </body>
 </html>
-
-
-{% include "perfil.html" %}

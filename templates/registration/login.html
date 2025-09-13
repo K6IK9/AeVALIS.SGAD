@@ -2,370 +2,57 @@
 
 <!DOCTYPE html>
 <html lang="pt-br">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IF SADD - Login</title>
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Vidaloka&display=swap');
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="{% static 'css/global.css' %}" />
+    <!-- CSS Específico do Login -->
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  </head>
 
-        @import url('https://fonts.googleapis.com/css2?family=Vidaloka&display=swap');
-
-        :root {
-            --cor01: #f1f1f1;
-            --cor02: #00fd94;
-            --cor03: #376f6c;
-            --cor04: #1e3231;
-            --cor05: #090909;
-
-            --cor06: #00cafd;
-            --cor07: #ffffff;
-            --cor08: #ff3c3c;
-
-            --font01: "Poppins", sans-serif;
-            --font02: "Vidaloka", serif;
-
-            --shadow: 4px 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: var(--font01);
-        }
-
-        body {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            background: linear-gradient(-45deg, var(--cor04), var(--cor03));
-
-            header,
-            main,
-            footer {
-                width: 90%;
-                max-width: 500px;
-                margin: auto;
-            }
-
-            header,
-            footer {
-                height: auto;
-                position: absolute;
-            }
-
-            header {
-                top: 5vh;
-            }
-
-            footer {
-                bottom: 5vh;
-            }
-
-            main {
-                height: auto;
-                min-height: 400px;
-                display: flex;
-                align-items: center;
-            }
-        }
-        
-        /* Media queries para responsividade */
-        @media (max-width: 768px) {
-            body header {
-                flex-direction: column;
-                text-align: center;
-                top: 2vh;
-            }
-            
-            body header img {
-                margin-right: 0;
-                margin-bottom: 10px;
-            }
-            
-            body main {
-                padding: 20px 0;
-            }
-            
-            #loginForm {
-                padding: 80px 25px 40px 25px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            body header, 
-            body footer {
-                width: 95%;
-            }
-            
-            body header h1 {
-                font-size: 1.5rem;
-            }
-            
-            #perfilImg {
-                width: 120px;
-                height: 120px;
-            }
-            
-            #perfilImg img {
-                width: 60px;
-            }
-        }
-
-
-
-
-        /* --------- LOGIN --------- */
-
-        header {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-
-            img {
-                width: 70px;
-                height: 70px;
-                background: var(--cor01);
-                border-radius: 20px;
-                margin-right: 20px;
-            }
-
-            h1,
-            p {
-                color: var(--cor01);
-            }
-        }
-
-        .login-error {
-            background-color: rgba(255, 0, 0, 0.15);
-            border-left: 4px solid var(--cor08);
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-            animation: errorPulse 2s infinite;
-        }
-        
-        @keyframes errorPulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 60, 60, 0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(255, 60, 60, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 60, 60, 0); }
-        }
-
-        .login-error p {
-            color: var(--cor07);
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-        }
-
-        .login-error p:first-child {
-            font-weight: 600;
-        }
-
-        .login-error strong {
-            color: white;
-        }
-
-
-        main {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #perfilImg {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            background: var(--cor07);
-
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translate(-50%, -50%);
-
-
-            img {
-                width: 80px;
-            }
-        }
-
-        #loginForm {
-            width: 100%;
-            max-width: 450px;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-
-            background: var(--cor03);
-            box-shadow: var(--shadow);
-            border-radius: 25px;
-            padding: 100px 40px 40px 40px;
-
-            position: relative;
-
-            #buttonLogin {
-                width: 200px;
-                padding: 12px 18px;
-                border-radius: 10px;
-                border: none;
-                box-shadow: var(--shadow);
-
-                background: var(--cor02);
-                color: var(--cor05);
-
-                font-weight: bold;
-                font-size: 1rem;
-                letter-spacing: 0.5px;
-
-                cursor: pointer;
-                transition: all 0.2s ease;
-
-                /* Mantém o botão dentro da caixa */
-                display: inline-block;
-                margin: 0 auto;
-                text-decoration: none;
-            }
-            
-            #buttonLogin:hover {
-                background: #00e085;
-                box-shadow: 0 6px 12px rgba(0, 253, 148, 0.3);
-            }
-        }
-
-        .labelInput {
-            width: 100%;
-
-            display: flex;
-            align-items: center;
-
-            position: relative;
-
-
-            img {
-                width: 15px;
-
-                position: absolute;
-                left: 10px;
-            }
-
-            input {
-                width: 100%;
-                padding: 12px 10px 12px 30px;
-                font-size: 14px;
-
-                border-radius: 5px;
-                border: none;
-                box-shadow: var(--shadow);
-
-                background: var(--cor07);
-            }
-
-            input:focus {
-                outline: 1px solid var(--cor02);
-            }
-        }
-
-        .labelInput input[type="password"],
-        .labelInput input[type="text"] {
-            padding-right: 40px !important;
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            z-index: 2;
-            padding: 0;
-            display: flex;
-            align-items: center;
-        }
-
-        .toggle-password img {
-            width: 22px;
-            height: 22px;
-        }
-
-        footer {
-            text-align: center;
-
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            gap: 10px;
-
-            p {
-                color: var(--cor01);
-                font-size: 0.75rem;
-            }
-
-            span {
-                color: var(--cor06);
-                font-weight: 600;
-                cursor: pointer;
-                text-decoration: underline;
-            }
-        }
-    </style>
-</head>
-
-<body>
+  <body>
     <header>
-        <img src="{% static 'assets/saad_logo.svg' %}" alt="SADD Logo">
-        <div>
-            <h1>Login no SADD</h1>
-            <p>Sistema de Avaliação e Desenvolvimento Docente</p>
-        </div>
+      <img src="{% static 'assets/saad_logo.svg' %}" alt="SADD Logo" />
+      <div>
+        <h1>Login no SADD</h1>
+        <p>Sistema de Avaliação e Desenvolvimento Docente</p>
+      </div>
     </header>
     <main>
+      <form method="post" id="loginForm">
+        {% if messages %} {% for message in messages %}
+        <div class="login-error">
+          <p><strong>{{ message }}</strong></p>
+        </div>
+        {% endfor %} {% endif %}
 
+        <aside id="perfilImg">
+          <img src="{% static 'assets/saad_logo.svg' %}" alt="SUAP Logo" />
+        </aside>
 
-        <form method="post" id="loginForm">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="login-error">
-                        <p><strong>{{ message }}</strong></p>
-                    </div>
-                {% endfor %}
-            {% endif %}
+        <!-- Botão de login com SUAP -->
+        <div class="botao-login-container">
+          <a href="{% url 'social:begin' 'suap' %}" id="buttonLogin">
+            Entrar com SUAP
+          </a>
+        </div>
 
-            <aside id="perfilImg">
-                <img src="{% static 'assets/saad_logo.svg' %}" alt="SUAP Logo">
-            </aside>
-
-            <!-- Botão de login com SUAP -->
-            <div style="text-align: center; margin: 10px 0 0 0;">
-                <a href="{% url 'social:begin' 'suap' %}" id="buttonLogin">
-                    Entrar com SUAP
-                </a>
-            </div>
-
-            <div style="text-align: center; color: var(--cor01); margin-top: 14px;">
-                <p style="font-size: 0.9rem;">
-                    Clique no botão acima para fazer login<br>
-                    usando suas credenciais do SUAP
-                </p>
-            </div>
-        </form>
+        <div class="info-texto">
+          <p>
+            Clique no botão acima para fazer login<br />
+            usando suas credenciais do SUAP
+          </p>
+        </div>
+      </form>
     </main>
     <footer>
-        <p>Sistema integrado com SUAP - Instituto Federal de Mato Grosso</p>
-        <p style="margin-top: 5px;">Use suas credenciais institucionais para acessar</p>
+      <p>Sistema integrado com SUAP - Instituto Federal de Mato Grosso</p>
+      <p class="institucional">
+        Use suas credenciais institucionais para acessar
+      </p>
     </footer>
-</body>
-
+  </body>
 </html>
