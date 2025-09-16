@@ -160,10 +160,10 @@
                             {% for comentario in avaliacao.comentarios %}
                             <div class="comentario-card">
                                 <div class="comentario-header">
-                                    <span class="comentario-aluno">{{ comentario.resposta.aluno.user.get_full_name|default:"Anônimo" }}</span>
+                                    <span class="comentario-aluno">{{ comentario.aluno.user.get_full_name|default:"Anônimo" }}</span>
                                     <span class="comentario-data">{{ comentario.data_submissao|date:"d/m/Y H:i" }}</span>
                                 </div>
-                                <div class="comentario-texto">{{ comentario.texto }}</div>
+                                <div class="comentario-texto">{{ comentario.valor_texto }}</div>
                             </div>
                             {% endfor %}
                         </div>

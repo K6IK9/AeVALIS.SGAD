@@ -7,14 +7,16 @@
 7. telas de ciclo e de categoria estão com estilos quebrados okkk
 8. o sistema substitui o tipo de usuario ao logar novamente OKKK
 9. padronizar os filtros pois deve ter os mesmo botões ex. limpar filtros. OKK
-
-4. tela de relatorio tem estilos diferentes
-
-
+4. tela de relatorio tem estilos diferentes okkk
 3. em gerenciamento de curso não da para excluir, talvez modal não aparece OK TESTAR
 10. tela de gerenciar curso, não da para apagar curso OK TESTAR
 11. tela de gerenciar turma, não da para apagar turma OK TESTAR
 12. tela de gerenciar periodos, não da para apagar periodos OK TESTAR
+
+
+----
+13. Relatório de avaliação tem comentario com nome do respondente, não deveria ter, pois é para ser anonimo.
+
 
 # Novidades a implementar
 1. O sistema deve permitir que o administrator faça o relatorio de cada gerenciamento

@@ -468,40 +468,40 @@ Botões - REMOVIDO, usando padrão global
     .form-section {
         padding: 15px;
     }
-    
+
     .filtros-row {
         grid-template-columns: 1fr;
     }
-    
+
     .avaliacoes-grid {
         grid-template-columns: 1fr;
         gap: 15px;
     }
-    
+
     .btn-group {
         flex-direction: column;
         width: 100%;
     }
-    
+
     .btn-filtrar,
     .btn-export {
         width: 100%;
         justify-content: center;
     }
-    
+
     .metricas-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 15px;
     }
-    
+
     .stats-row {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .data-table {
         font-size: 0.8em;
     }
-    
+
     .data-table th,
     .data-table td {
         padding: 8px 10px;
@@ -512,16 +512,16 @@ Botões - REMOVIDO, usando padrão global
     .metricas-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .stats-row {
         grid-template-columns: 1fr;
         gap: 5px;
     }
-    
+
     .relatorio-header h2 {
         font-size: 1.5em;
     }
-    
+
     .card-title {
         font-size: 1.1em;
     }
@@ -529,29 +529,31 @@ Botões - REMOVIDO, usando padrão global
 
 /* Estilos para impressão */
 @media print {
-    .btn, button {
+
+    .btn,
+    button {
         display: none !important;
     }
-    
+
     .filtros-section {
         display: none !important;
     }
-    
+
     .avaliacoes-grid {
         display: block !important;
     }
-    
+
     .avaliacao-card {
         break-inside: avoid;
         margin-bottom: 15px !important;
     }
-    
+
     .form-section {
         max-width: none;
         margin: 0;
         padding: 0;
     }
-    
+
     .relatorio-header h2 {
         color: #000 !important;
     }

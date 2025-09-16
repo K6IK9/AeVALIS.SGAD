@@ -1816,6 +1816,67 @@ def relatorio_avaliacoes(request):
     # Estatísticas
     total_avaliacoes = avaliacoes.count()
 
+    # Calcular dados adicionais para cada avaliação
+    avaliacoes_com_stats = []
+    for avaliacao in avaliacoes:
+        # Contar respondentes únicos
+        respondentes = RespostaAvaliacao.objects.filter(
+            avaliacao=avaliacao
+        ).values('aluno').distinct().count()
+        
+        # Calcular taxa de resposta
+        total_alunos = avaliacao.turma.matriculas.filter(status='ativa').count()
+        taxa_resposta = (respondentes / total_alunos * 100) if total_alunos > 0 else 0
+        
+        # Calcular estatísticas por pergunta
+        pergunta_stats = []
+        perguntas_questionario = avaliacao.ciclo.questionario.perguntas.all()
+        
+        for pergunta_questionario in perguntas_questionario:
+            pergunta = pergunta_questionario.pergunta
+            respostas_pergunta = RespostaAvaliacao.objects.filter(
+                avaliacao__ciclo=avaliacao.ciclo,
+                avaliacao__professor=avaliacao.professor,
+                avaliacao__turma=avaliacao.turma,
+                pergunta=pergunta,
+                valor_numerico__isnull=False
+            )
+            
+            if respostas_pergunta.exists():
+                # Calcular média
+                media = respostas_pergunta.aggregate(media=Avg('valor_numerico'))['media'] or 0
+                
+                # Calcular moda (valor mais frequente)
+                valores = respostas_pergunta.values('valor_numerico').annotate(
+                    count=Count('valor_numerico')
+                ).order_by('-count')
+                moda = valores[0]['valor_numerico'] if valores else 0
+                
+                # Contar respostas
+                respostas_count = respostas_pergunta.count()
+                
+                pergunta_stats.append({
+                    'pergunta': pergunta,
+                    'media': round(media, 1),
+                    'moda': moda,
+                    'respostas_count': respostas_count
+                })
+        
+        # Buscar comentários da avaliação
+        comentarios = RespostaAvaliacao.objects.filter(
+            avaliacao=avaliacao,
+            valor_texto__isnull=False,
+            valor_texto__gt=''
+        ).exclude(valor_texto='').select_related('aluno__user')
+        
+        # Adicionar dados calculados à avaliação
+        avaliacao.respondentes = respondentes
+        avaliacao.taxa_resposta = round(taxa_resposta, 1)
+        avaliacao.pergunta_stats = pergunta_stats
+        avaliacao.comentarios = comentarios
+        
+        avaliacoes_com_stats.append(avaliacao)
+
     # Calcular média simples das respostas numéricas
     media_geral = 0
     if total_avaliacoes > 0:
@@ -1898,7 +1959,7 @@ def relatorio_avaliacoes(request):
     context = {
         "ciclos": ciclos,
         "professores": professores,
-        "avaliacoes": avaliacoes,
+        "avaliacoes": avaliacoes_com_stats,
         "total_avaliacoes": total_avaliacoes,
         "media_geral": round(media_geral, 2),
         "ciclo_selecionado": ciclo_selecionado,
