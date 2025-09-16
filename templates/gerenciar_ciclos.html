@@ -192,6 +192,54 @@
       {% if not editing %}
       <div class="form-section">
         <h2>📋 Ciclos de Avaliação Cadastrados</h2>
+
+        <!-- Seção de Filtros -->
+        <div class="filters-section" id="filtersSection">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label for="searchCicloNome">Buscar por Nome:</label>
+              <input type="text" id="searchCicloNome" placeholder="Digite o nome do ciclo">
+            </div>
+            
+            <div class="filter-group">
+              <label for="filterPeriodo">Período Letivo:</label>
+              <select id="filterPeriodo">
+                <option value="">Todos os períodos</option>
+                {% for ciclo in ciclos %}
+                  <option value="{{ ciclo.periodo_letivo.nome }}">{{ ciclo.periodo_letivo.nome }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <div class="filter-group">
+              <label for="filterStatus">Status:</label>
+              <select id="filterStatus">
+                <option value="">Todos os status</option>
+                <option value="agendado">Agendado</option>
+                <option value="ativo">Ativo</option>
+                <option value="encerrado">Encerrado</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="filterAtivo">Ativo:</label>
+              <select id="filterAtivo">
+                <option value="">Todos</option>
+                <option value="sim">Sim</option>
+                <option value="não">Não</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <div class="filter-group">
+              <button type="button" onclick="clearFilters()" class="btn btn-clear">Limpar Filtros</button>
+            </div>
+          </div>
+        </div>
+
         <div class="info-section">
           <strong>Total de ciclos:</strong> {{ ciclos.count }}
         </div>
@@ -346,6 +394,71 @@
           </div>
         </div>
       </div>
+
+    <script>
+        // Função para filtrar a tabela
+        function filterTable() {
+          const nomeFilter = document.getElementById('searchCicloNome').value.toLowerCase();
+          const periodoFilter = document.getElementById('filterPeriodo').value.toLowerCase();
+          const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
+          const ativoFilter = document.getElementById('filterAtivo').value.toLowerCase();
+          
+          const tableRows = document.querySelectorAll('.data-table tbody tr');
+          let visibleCount = 0;
+
+          tableRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            
+            // Verifica se a linha tem células (não é a linha "Nenhum ciclo encontrado")
+            if (cells.length > 1) {
+              const cicloNome = cells[0].textContent.toLowerCase(); // Nome
+              const cicloPeriodo = cells[1].textContent.toLowerCase(); // Período
+              const cicloStatus = cells[5].textContent.toLowerCase(); // Status
+              const cicloAtivo = cells[6].textContent.toLowerCase(); // Ativo
+
+              const nomeMatch = !nomeFilter || cicloNome.includes(nomeFilter);
+              const periodoMatch = !periodoFilter || cicloPeriodo.includes(periodoFilter);
+              const statusMatch = !statusFilter || cicloStatus.includes(statusFilter);
+              const ativoMatch = !ativoFilter || cicloAtivo.includes(ativoFilter);
+
+              if (nomeMatch && periodoMatch && statusMatch && ativoMatch) {
+                row.style.display = '';
+                visibleCount++;
+              } else {
+                row.style.display = 'none';
+              }
+            }
+          });
+
+          // Atualiza o contador
+          const itemCount = document.querySelector('.info-section strong');
+          if (itemCount) {
+            itemCount.textContent = `Ciclos encontrados: ${visibleCount}`;
+          }
+        }
+
+        // Função para limpar filtros
+        function clearFilters() {
+          document.getElementById('searchCicloNome').value = '';
+          document.getElementById('filterPeriodo').value = '';
+          document.getElementById('filterStatus').value = '';
+          document.getElementById('filterAtivo').value = '';
+          filterTable();
+        }
+
+        // Adiciona event listeners aos campos de filtro
+        document.addEventListener('DOMContentLoaded', function() {
+          const searchCicloNome = document.getElementById('searchCicloNome');
+          const filterPeriodo = document.getElementById('filterPeriodo');
+          const filterStatus = document.getElementById('filterStatus');
+          const filterAtivo = document.getElementById('filterAtivo');
+
+          if (searchCicloNome) searchCicloNome.addEventListener('input', filterTable);
+          if (filterPeriodo) filterPeriodo.addEventListener('change', filterTable);
+          if (filterStatus) filterStatus.addEventListener('change', filterTable);
+          if (filterAtivo) filterAtivo.addEventListener('change', filterTable);
+        });
+    </script>
     </div>
   </main>
 </body>

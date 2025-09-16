@@ -1,3 +1,4 @@
+{% load user_tags %}
 {% load static %}
 
 <!DOCTYPE html>
@@ -6,87 +7,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatórios de Avaliações - IF SADD</title>
+    <title>IF SADD - Relatórios de Avaliações</title>
 
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Vidaloka&display=swap" rel="stylesheet">
-    
-    <!-- CSS Files -->
+    <!-- CSS Global -->
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    <!-- CSS de Gerenciamento -->
+    <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}">
+    <!-- CSS específico do relatório -->
     <link rel="stylesheet" href="{% static 'css/relatorio_avaliacoes.css' %}">
 </head>
 
 <body>
-    <main>
-        <div class="container">
-            <a href="{% url 'inicio' %}" class="back-button">← Voltar</a>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 Relatórios de Avaliações</h1>
+            <p>Visualize e analise os dados das avaliações docentes</p>
+        </div>
 
-            <!-- Header da página -->
-            <div class="relatorio-header">
-                <h2><i class="bi bi-graph-up"></i> Relatórios de Avaliações</h2>
-                <p>Visualize e analise os dados das avaliações</p>
+        <!-- Navegação Breadcrumb -->
+        <div class="nav-breadcrumb">
+            <a href="{% url 'inicio' %}">🏠 Início</a>
+            <span>→</span>
+            <span>📊 Relatórios</span>
+        </div>
+
+        <!-- Mensagens -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">
+                {{ message }}
             </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-            <!-- Mensagens -->
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="message {{ message.tags }}">
-                    {{ message }}
+        <!-- Seção de Filtros -->
+        <div class="form-section">
+            <h2>🔍 Filtros de Relatório</h2>
+            <form method="get" id="form-filtros">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ciclo">Ciclo de Avaliação</label>
+                        <select name="ciclo" id="ciclo" class="form-control">
+                            <option value="">Todos os ciclos</option>
+                            {% for ciclo in ciclos %}
+                            <option value="{{ ciclo.id }}" 
+                                    {% if ciclo_selecionado == ciclo.id|stringformat:'s' %}selected{% endif %}>
+                                {{ ciclo.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="professor">Professor</label>
+                        <select name="professor" id="professor" class="form-control">
+                            <option value="">Todos os professores</option>
+                            {% for prof in professores %}
+                            <option value="{{ prof.id }}" 
+                                    {% if professor_selecionado == prof.id|stringformat:'s' %}selected{% endif %}>
+                                {{ prof.user.get_full_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
-                {% endfor %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <button type="submit" class="btn">
+                            🔍 Filtrar Relatório
+                        </button>
+                        <a href="javascript:void(0);" onclick="exportarCSV()" class="btn btn-secondary">
+                            📥 Exportar CSV
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Conteúdo principal -->
+        {% if avaliacoes %}
+        <div class="form-section">
+            <h2>📈 Relatórios de Avaliação</h2>
+            <div class="item-count">
+                Total de avaliações encontradas: {{ avaliacoes|length }}
             </div>
-            {% endif %}
-
-            <!-- Seção de Filtros -->
-            <div class="form-section">
-                <div class="filtros-section">
-                    <form method="get" id="form-filtros">
-                        <div class="filtros-row">
-                            <div class="form-group">
-                                <label for="ciclo" class="form-label-report">Ciclo</label>
-                                <select name="ciclo" id="ciclo" class="form-control">
-                                    <option value="">Todos os ciclos</option>
-                                    {% for ciclo in ciclos %}
-                                    <option value="{{ ciclo.id }}" 
-                                            {% if ciclo_selecionado == ciclo.id|stringformat:'s' %}selected{% endif %}>
-                                        {{ ciclo.nome }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="professor" class="form-label-report">Professor</label>
-                                <select name="professor" id="professor" class="form-control">
-                                    <option value="">Todos os professores</option>
-                                    {% for prof in professores %}
-                                    <option value="{{ prof.id }}" 
-                                            {% if professor_selecionado == prof.id|stringformat:'s' %}selected{% endif %}>
-                                        {{ prof.user.get_full_name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="btn-group">
-                            <button type="submit" class="btn-filtrar">
-                                <i class="bi bi-funnel"></i> Filtrar
-                            </button>
-                            <a href="javascript:void(0);" onclick="exportarCSV()" class="btn-export">
-                                <i class="bi bi-download"></i> Exportar CSV
-                            </a>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Conteúdo principal -->
-                {% if avaliacoes %}
-                <div class="avaliacoes-grid">
+            
+            <div class="avaliacoes-grid">
                     {% for avaliacao in avaliacoes %}
                     <div class="avaliacao-card">
                         <div class="card-header">
@@ -180,19 +190,17 @@
                     </div>
                 </div>
                 {% endif %}
-                
-                {% else %}
-                <div class="empty-state">
-                    <div class="icon">
-                        <i class="bi bi-graph-up"></i>
-                    </div>
-                    <h4>Nenhuma avaliação encontrada</h4>
-                    <p>Tente ajustar os filtros ou aguarde a conclusão de avaliações pelos alunos.</p>
-                </div>
-                {% endif %}
+            </div>
+        {% else %}
+        <div class="form-section">
+            <div class="empty-state">
+                <h3>📊 Nenhuma avaliação encontrada</h3>
+                <p>Não há dados de avaliação para os filtros selecionados.</p>
+                <p>Tente ajustar os filtros ou aguarde a conclusão de avaliações pelos alunos.</p>
             </div>
         </div>
-    </main>
+        {% endif %}
+    </div>
 
     <script>
     // ================= Gráficos por Ciclo =================

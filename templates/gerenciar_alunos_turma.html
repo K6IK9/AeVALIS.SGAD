@@ -61,16 +61,25 @@
             </div>
         </div>
 
-        <!-- Formulário de Busca -->
-        <div class="form-section">
-            <form method="get" class="search-form">
-                <div class="search-box">
-                    <input type="text" name="busca_aluno" value="{{ busca_aluno }}" 
-                           placeholder="Buscar por nome, matrícula ou email..." />
-                    <button type="submit" class="btn-search">🔍 Buscar</button>
-                    {% if busca_aluno %}
-                    <a href="{% url 'gerenciar_alunos_turma' turma.id %}" class="btn-clear">❌ Limpar</a>
-                    {% endif %}
+        <!-- Filtros e Busca -->
+        <div class="filters-section">
+            <h3 class="filters-title">Filtros e Busca</h3>
+            <form method="get" id="filtros-form">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="busca_aluno">Buscar por Nome/Matrícula/Email:</label>
+                        <div class="search-box">
+                            <input type="text" name="busca_aluno" id="busca_aluno" class="form-control"
+                                   value="{{ busca_aluno }}" 
+                                   placeholder="Digite o nome, matrícula ou email do aluno..." />
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <button type="submit" class="btn-filter">🔍 Pesquisar</button>
+                    </div>
+                    <div class="filter-group">
+                        <button type="button" class="btn-filter" onclick="limparFiltros()">Limpar Filtros</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -163,6 +172,12 @@
                 return false;
             }
         });
+
+        // Função para limpar filtros
+        function limparFiltros() {
+            document.getElementById('busca_aluno').value = '';
+            document.getElementById('filtros-form').submit();
+        }
     </script>
 </body>
 </html>

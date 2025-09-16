@@ -35,24 +35,36 @@
     text-decoration: none;
 }
 
-/* Header */
-.header h1 {
-    color: var(--report-primary);
-    font-size: 1.8em;
-    font-weight: 700;
-    margin-bottom: 10px;
+/* Header - garantindo compatibilidade com estrutura padrão */
+.header {
+    background: var(--cor03) !important;
+    color: white !important;
+    padding: 20px;
+    border-radius: var(--border-radius-medium);
+    margin-bottom: 30px;
     text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    color: white !important;
+    font-size: 2.2em;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    font-family: var(--font02);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .header p {
-    text-align: center;
-    color: #666;
-    margin-bottom: 20px;
+    color: white !important;
+    opacity: 0.9;
+    margin: 0;
 }
 
 /* Container principal - usando .form-section do global.css */
 
-/* Cabeçalho do relatório */
+/* ===== REMOVIDO - USANDO ESTRUTURA PADRÃO AGORA =====
+Cabeçalho do relatório
 .relatorio-header {
     text-align: center;
     margin-bottom: 30px;
@@ -69,7 +81,10 @@
     gap: 10px;
 }
 
-/* Seção de filtros */
+===== FIM DA SEÇÃO REMOVIDA ===== */
+
+/* ===== REMOVIDO - USANDO ESTRUTURA PADRÃO AGORA =====
+Seção de filtros
 .filtros-section {
     background: var(--report-background);
     padding: 20px;
@@ -85,7 +100,7 @@
     margin-bottom: 15px;
 }
 
-/* Formulário - .form-group definido no global.css */
+Formulário - .form-group definido no global.css
 
 .form-label-report {
     display: block;
@@ -103,7 +118,7 @@
     color: #333;
 }
 
-/* Botões */
+Botões - REMOVIDO, usando padrão global
 .btn-group {
     display: flex;
     gap: 10px;

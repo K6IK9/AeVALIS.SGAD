@@ -121,19 +121,20 @@
 
     <!-- Formulário de Pesquisa e Filtros -->
     {% if not editing %}
-    <div class="form-section">
-      <h2>🔍 Pesquisar Usuários</h2>
-      <form method="get" class="search-filters-form">
-        <div class="filters">
+    <div class="filters-section">
+      <h3 class="filters-title">Filtros e Busca</h3>
+      <form method="get" id="filtros-form">
+        <div class="filter-row">
           <div class="filter-group">
-            <label for="search">Nome/Email/Matrícula:</label>
+            <label for="search">Buscar por Nome/Email/Matrícula:</label>
             <div class="search-box">
-              <input type="text" id="search" name="search" value="{{ request.GET.search }}" 
-                     placeholder="Digite para pesquisar...">
+              <input type="text" id="search" name="search" class="form-control" 
+                     value="{{ request.GET.search }}" 
+                     placeholder="Digite o nome, email ou matrícula do usuário...">
             </div>
           </div>
           <div class="filter-group">
-            <label for="role">Função:</label>
+            <label for="role">Filtrar por Função:</label>
             <select name="role" id="role" class="form-control">
               <option value="">Todas as funções</option>
               <option value="aluno" {% if request.GET.role == 'aluno' %}selected{% endif %}>Aluno</option>
@@ -143,7 +144,7 @@
             </select>
           </div>
           <div class="filter-group">
-            <label for="status">Status:</label>
+            <label for="status">Filtrar por Status:</label>
             <select name="status" id="status" class="form-control">
               <option value="">Todos os status</option>
               <option value="ativo" {% if request.GET.status == 'ativo' %}selected{% endif %}>Ativo</option>
@@ -151,7 +152,10 @@
             </select>
           </div>
           <div class="filter-group">
-            <button type="submit" class="btn">🔍 Filtrar</button>
+            <button type="submit" class="btn-filter">🔍 Pesquisar</button>
+          </div>
+          <div class="filter-group">
+            <button type="button" class="btn-filter" onclick="limparFiltros()">Limpar Filtros</button>
           </div>
         </div>
       </form>
@@ -480,6 +484,14 @@
           this.form.submit();
         }, 500);
       });
+    }
+
+    // Função para limpar filtros
+    function limparFiltros() {
+      document.getElementById('search').value = '';
+      document.getElementById('role').value = '';
+      document.getElementById('status').value = '';
+      document.getElementById('filtros-form').submit();
     }
 
     // Initialize when page loads

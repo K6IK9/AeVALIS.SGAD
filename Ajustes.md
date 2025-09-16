@@ -6,9 +6,9 @@
 6. em Usuários Cadastrados tem estilos quebrando para fora da caixa okkk
 7. telas de ciclo e de categoria estão com estilos quebrados okkk
 8. o sistema substitui o tipo de usuario ao logar novamente OKKK
+9. padronizar os filtros pois deve ter os mesmo botões ex. limpar filtros. OKK
 
 4. tela de relatorio tem estilos diferentes
-9. padronizar os filtros pois deve ter os mesmo botões ex. limpar filtros.
 
 
 3. em gerenciamento de curso não da para excluir, talvez modal não aparece OK TESTAR

@@ -117,6 +117,60 @@
       {% if not editing %}
       <div class="form-section">
         <h2>Disciplinas Cadastradas</h2>
+
+        <!-- Seção de Filtros -->
+        <div class="filters-section" id="filtersSection">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label for="searchDisciplinaNome">Buscar por Nome:</label>
+              <input type="text" id="searchDisciplinaNome" placeholder="Digite o nome da disciplina">
+            </div>
+            
+            <div class="filter-group">
+              <label for="searchDisciplinaSigla">Buscar por Sigla:</label>
+              <input type="text" id="searchDisciplinaSigla" placeholder="Digite a sigla">
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <div class="filter-group">
+              <label for="filterCurso">Curso:</label>
+              <select id="filterCurso">
+                <option value="">Todos os cursos</option>
+                {% for curso in cursos %}
+                  <option value="{{ curso.curso_nome }}">{{ curso.curso_nome }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="filterTipo">Tipo:</label>
+              <select id="filterTipo">
+                <option value="">Todos os tipos</option>
+                <option value="OBRIGATORIA">Obrigatória</option>
+                <option value="OPTATIVA">Optativa</option>
+                <option value="ELETIVA">Eletiva</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <div class="filter-group">
+              <label for="filterPeriodo">Período Letivo:</label>
+              <select id="filterPeriodo">
+                <option value="">Todos os períodos</option>
+                {% for periodo in periodos %}
+                  <option value="{{ periodo.periodo_nome }}">{{ periodo.periodo_nome }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <button type="button" onclick="clearFilters()" class="btn btn-clear">Limpar Filtros</button>
+            </div>
+          </div>
+        </div>
+
         <div class="item-count">
           Total de disciplinas: {{ disciplinas.count }}
         </div>
@@ -172,6 +226,83 @@
         </table>
       </div>
       {% endif %}
+
+      <script>
+        // Função para filtrar a tabela
+        function filterTable() {
+          const nomeFilter = document.getElementById('searchDisciplinaNome').value.toLowerCase();
+          const siglaFilter = document.getElementById('searchDisciplinaSigla').value.toLowerCase();
+          const cursoFilter = document.getElementById('filterCurso').value.toLowerCase();
+          const tipoFilter = document.getElementById('filterTipo').value.toLowerCase();
+          const periodoFilter = document.getElementById('filterPeriodo').value.toLowerCase();
+          
+          const tableRows = document.querySelectorAll('.data-table tbody tr');
+          let visibleCount = 0;
+
+          tableRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            
+            // Verifica se a linha tem células (não é a linha "Nenhuma disciplina encontrada")
+            if (cells.length > 1) {
+              const disciplinaNome = cells[1].textContent.toLowerCase(); // Nome da disciplina
+              const disciplinaSigla = cells[2].textContent.toLowerCase(); // Sigla
+              const disciplinaTipo = cells[3].textContent.toLowerCase(); // Tipo
+              const disciplinaCurso = cells[4].textContent.toLowerCase(); // Curso
+              const disciplinaPeriodo = cells[6].textContent.toLowerCase(); // Período Letivo
+
+              const nomeMatch = !nomeFilter || disciplinaNome.includes(nomeFilter);
+              const siglaMatch = !siglaFilter || disciplinaSigla.includes(siglaFilter);
+              const cursoMatch = !cursoFilter || disciplinaCurso.includes(cursoFilter);
+              const tipoMatch = !tipoFilter || disciplinaTipo.includes(tipoFilter);
+              const periodoMatch = !periodoFilter || disciplinaPeriodo.includes(periodoFilter);
+
+              if (nomeMatch && siglaMatch && cursoMatch && tipoMatch && periodoMatch) {
+                row.style.display = '';
+                visibleCount++;
+              } else {
+                row.style.display = 'none';
+              }
+            }
+          });
+
+          // Atualiza o contador
+          const itemCount = document.querySelector('.item-count');
+          if (itemCount) {
+            itemCount.textContent = `Disciplinas encontradas: ${visibleCount}`;
+          }
+
+          // Mostra mensagem se nenhum resultado for encontrado
+          const emptyRow = document.querySelector('tr td[colspan]');
+          if (emptyRow) {
+            emptyRow.parentElement.style.display = visibleCount === 0 ? '' : 'none';
+          }
+        }
+
+        // Função para limpar filtros
+        function clearFilters() {
+          document.getElementById('searchDisciplinaNome').value = '';
+          document.getElementById('searchDisciplinaSigla').value = '';
+          document.getElementById('filterCurso').value = '';
+          document.getElementById('filterTipo').value = '';
+          document.getElementById('filterPeriodo').value = '';
+          filterTable();
+        }
+
+        // Adiciona event listeners aos campos de filtro
+        document.addEventListener('DOMContentLoaded', function() {
+          const searchDisciplinaNome = document.getElementById('searchDisciplinaNome');
+          const searchDisciplinaSigla = document.getElementById('searchDisciplinaSigla');
+          const filterCurso = document.getElementById('filterCurso');
+          const filterTipo = document.getElementById('filterTipo');
+          const filterPeriodo = document.getElementById('filterPeriodo');
+
+          if (searchDisciplinaNome) searchDisciplinaNome.addEventListener('input', filterTable);
+          if (searchDisciplinaSigla) searchDisciplinaSigla.addEventListener('input', filterTable);
+          if (filterCurso) filterCurso.addEventListener('change', filterTable);
+          if (filterTipo) filterTipo.addEventListener('change', filterTable);
+          if (filterPeriodo) filterPeriodo.addEventListener('change', filterTable);
+        });
+      </script>
     </div>
   </body>
 </html>

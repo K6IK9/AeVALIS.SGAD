@@ -88,7 +88,45 @@
 
       <div class="form-section">
         <h2>Períodos Letivos Cadastrados</h2>
-        <div class="item-count">Total de períodos: {{ periodos.count }}</div>
+
+        <!-- Seção de Filtros -->
+        <div class="filters-section" id="filtersSection">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label for="searchPeriodoNome">Buscar por Nome:</label>
+              <input type="text" id="searchPeriodoNome" placeholder="Digite o nome do período">
+            </div>
+            
+            <div class="filter-group">
+              <label for="filterAno">Ano:</label>
+              <select id="filterAno">
+                <option value="">Todos os anos</option>
+                {% for periodo in periodos %}
+                  <option value="{{ periodo.ano }}">{{ periodo.ano }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <div class="filter-group">
+              <label for="filterSemestre">Semestre:</label>
+              <select id="filterSemestre">
+                <option value="">Todos os semestres</option>
+                <option value="1">1º Semestre</option>
+                <option value="2">2º Semestre</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <button type="button" onclick="clearFilters()" class="btn btn-clear">Limpar Filtros</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="item-count">
+          Total de períodos: {{ periodos.count }}
+        </div>
         <table class="data-table">
           <thead>
             <tr>
@@ -255,6 +293,69 @@
           closeEditModal();
           closeDeleteModal();
         }
+      });
+
+      // Função para filtrar a tabela
+      function filterTable() {
+        const nomeFilter = document.getElementById('searchPeriodoNome').value.toLowerCase();
+        const anoFilter = document.getElementById('filterAno').value;
+        const semestreFilter = document.getElementById('filterSemestre').value;
+        
+        const tableRows = document.querySelectorAll('.data-table tbody tr');
+        let visibleCount = 0;
+
+        tableRows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          
+          // Verifica se a linha tem células (não é a linha "Nenhum período encontrado")
+          if (cells.length > 1) {
+            const periodoNome = cells[1].textContent.toLowerCase(); // Nome
+            const periodoAno = cells[2].textContent.trim(); // Ano
+            const periodoSemestre = cells[3].textContent.toLowerCase(); // Semestre
+
+            const nomeMatch = !nomeFilter || periodoNome.includes(nomeFilter);
+            const anoMatch = !anoFilter || periodoAno === anoFilter;
+            const semestreMatch = !semestreFilter || periodoSemestre.includes(semestreFilter + 'º');
+
+            if (nomeMatch && anoMatch && semestreMatch) {
+              row.style.display = '';
+              visibleCount++;
+            } else {
+              row.style.display = 'none';
+            }
+          }
+        });
+
+        // Atualiza o contador
+        const itemCount = document.querySelector('.item-count');
+        if (itemCount) {
+          itemCount.textContent = `Períodos encontrados: ${visibleCount}`;
+        }
+
+        // Mostra mensagem se nenhum resultado for encontrado
+        const emptyRow = document.querySelector('tr td[colspan]');
+        if (emptyRow) {
+          emptyRow.parentElement.style.display = visibleCount === 0 ? '' : 'none';
+        }
+      }
+
+      // Função para limpar filtros
+      function clearFilters() {
+        document.getElementById('searchPeriodoNome').value = '';
+        document.getElementById('filterAno').value = '';
+        document.getElementById('filterSemestre').value = '';
+        filterTable();
+      }
+
+      // Adiciona event listeners aos campos de filtro
+      document.addEventListener('DOMContentLoaded', function() {
+        const searchPeriodoNome = document.getElementById('searchPeriodoNome');
+        const filterAno = document.getElementById('filterAno');
+        const filterSemestre = document.getElementById('filterSemestre');
+
+        if (searchPeriodoNome) searchPeriodoNome.addEventListener('input', filterTable);
+        if (filterAno) filterAno.addEventListener('change', filterTable);
+        if (filterSemestre) filterSemestre.addEventListener('change', filterTable);
       });
 
       // Tratar envio do formulário de edição via AJAX

@@ -36,6 +36,42 @@
       </div>
       {% endif %}
 
+      <!-- Filtros e Busca -->
+      {% if not editing %}
+      <div class="filters-section">
+        <h3 class="filters-title">Filtros e Busca</h3>
+        <form method="get" id="filtros-form">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label for="busca">Buscar por Nome/Sigla:</label>
+              <div class="search-box">
+                <input type="text" name="busca" id="busca" class="form-control"
+                       value="{{ request.GET.busca }}"
+                       placeholder="Digite o nome ou sigla do curso...">
+              </div>
+            </div>
+            <div class="filter-group">
+              <label for="coordenador">Filtrar por Coordenador:</label>
+              <select name="coordenador" id="coordenador" class="form-control">
+                <option value="">Todos os coordenadores</option>
+                {% for coord in coordenadores %}
+                <option value="{{ coord.id }}" {% if request.GET.coordenador == coord.id|stringformat:"s" %}selected{% endif %}>
+                  {{ coord.user.get_full_name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="filter-group">
+              <button type="submit" class="btn-filter">🔍 Pesquisar</button>
+            </div>
+            <div class="filter-group">
+              <button type="button" class="btn-filter" onclick="limparFiltros()">Limpar Filtros</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
       <div class="form-section">
         <h2>
           {% if editing %}Editar Curso{% else %}Criar Novo Curso{% endif %}
@@ -158,7 +194,14 @@
       {% endif %}
     </div>
 
-    </div>
+    <script>
+      // Função para limpar filtros
+      function limparFiltros() {
+        document.getElementById('busca').value = '';
+        document.getElementById('coordenador').value = '';
+        document.getElementById('filtros-form').submit();
+      }
+    </script>
   </div>
 </body>
 </html>
