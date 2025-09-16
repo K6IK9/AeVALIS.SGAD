@@ -5,6 +5,11 @@ from .views import AdminHubView, IndexView
 
 urlpatterns = [
     path("gerenciar-roles/", views.gerenciar_roles, name="gerenciar_roles"),
+    path(
+        "resetar-role-automatica/<int:usuario_id>/",
+        views.resetar_role_automatica,
+        name="resetar_role_automatica",
+    ),
     path("gerenciar-usuarios/", views.gerenciar_usuarios, name="gerenciar_usuarios"),
     path(
         "editar-usuario/<int:usuario_id>/", views.editar_usuario, name="editar_usuario"

@@ -134,6 +134,9 @@
                                 <td data-label="Role Atual">
                                     <span class="role-badge role-{{ item.role|lower|cut:' '|cut:'ã'|cut:'í' }}">
                                         {{ item.role }}
+                                        {% if item.role_manual %}
+                                            <small title="Role definida manualmente (não será alterada pelo SUAP)">🔒</small>
+                                        {% endif %}
                                     </span>
                                 </td>
                                 <td data-label="Data de Cadastro">{{ item.usuario.date_joined|date:"d/m/Y H:i" }}</td>
@@ -144,6 +147,13 @@
                                             title="Alterar permissões do usuário">
                                             ✏️ Alterar Role
                                         </button>
+                                        {% if item.role_manual and user|get_user_role == 'Administrador' %}
+                                        <button class="btn btn-sm btn-warning"
+                                            onclick="resetarRoleAutomatica({{ item.usuario.id }}, '{{ item.usuario.username }}')"
+                                            title="Permitir que o SUAP volte a gerenciar automaticamente a role">
+                                            🔓 Resetar Auto
+                                        </button>
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>
@@ -248,6 +258,12 @@
 
             // Mostrar modal
             document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function resetarRoleAutomatica(userId, username) {
+            if (confirm(`Tem certeza que deseja permitir que o SUAP volte a gerenciar automaticamente a role do usuário ${username}?\n\nIsso significa que a role será redefinida baseada no tipo de usuário no SUAP no próximo login.`)) {
+                window.location.href = `/resetar-role-automatica/${userId}/`;
+            }
         }
 
         function fecharModal(event) {

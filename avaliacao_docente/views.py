@@ -32,7 +32,13 @@ from django.db.models import Q, Avg
 from django.utils import timezone
 from rolepermissions.roles import assign_role, remove_role
 from rolepermissions.checkers import has_role
-from .utils import check_user_permission, get_user_role_name
+from .utils import (
+    check_user_permission,
+    get_user_role_name,
+    mark_role_manually_changed,
+    reset_role_manual_flag,
+    is_role_manually_changed,
+)
 from django.contrib import messages
 from django.core.paginator import Paginator
 from .forms import (
@@ -73,6 +79,9 @@ def gerenciar_roles(request):
             # Atribui a nova role
             assign_role(usuario, nova_role)
 
+            # Marcar que a role foi alterada manualmente para evitar sobrescrita no próximo login
+            mark_role_manually_changed(usuario)
+
             # Gerenciar perfis usando função utilitária
             mensagens_perfil = gerenciar_perfil_usuario(usuario, nova_role)
 
@@ -107,6 +116,7 @@ def gerenciar_roles(request):
     usuarios_com_roles = []
     for user in usuarios_queryset.order_by("username"):
         role_atual = get_user_role_name(user)
+        role_manual = is_role_manually_changed(user)
 
         # Aplicar filtro por role
         if filtro_role:
@@ -123,7 +133,9 @@ def gerenciar_roles(request):
             if role_atual != role_esperada:
                 continue
 
-        usuarios_com_roles.append({"usuario": user, "role": role_atual})
+        usuarios_com_roles.append(
+            {"usuario": user, "role": role_atual, "role_manual": role_manual}
+        )
 
     context = {
         "form": form,
@@ -133,6 +145,38 @@ def gerenciar_roles(request):
     }
 
     return render(request, "gerenciar_roles.html", context)
+
+
+@login_required
+def resetar_role_automatica(request, usuario_id):
+    """
+    View para resetar a flag de role manual, permitindo que o SUAP
+    volte a gerenciar automaticamente a role do usuário
+    """
+    if not check_user_permission(request.user, ["admin"]):
+        messages.error(
+            request, "Apenas administradores podem resetar roles automáticas."
+        )
+        return redirect("gerenciar_roles")
+
+    try:
+        usuario = User.objects.get(id=usuario_id)
+        if reset_role_manual_flag(usuario):
+            messages.success(
+                request,
+                f"Flag manual removida para {usuario.username}. O SUAP voltará a gerenciar automaticamente a role deste usuário.",
+            )
+        else:
+            messages.warning(
+                request,
+                f"Usuário {usuario.username} não possui integração com SUAP ou não tem flag manual definida.",
+            )
+    except User.DoesNotExist:
+        messages.error(request, "Usuário não encontrado.")
+    except Exception as e:
+        messages.error(request, f"Erro ao resetar flag manual: {str(e)}")
+
+    return redirect("gerenciar_roles")
 
 
 @login_required

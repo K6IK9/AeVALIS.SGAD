@@ -5,8 +5,9 @@
 5. em atualizar curso, está dando como o curso já existe OKkkkk
 6. em Usuários Cadastrados tem estilos quebrando para fora da caixa okkk
 7. telas de ciclo e de categoria estão com estilos quebrados okkk
-4. tela de relatorio tem estios diferentes
-8. o sistema substitui o tipo de usuario ao logar novamente
+8. o sistema substitui o tipo de usuario ao logar novamente OKKK
+
+4. tela de relatorio tem estilos diferentes
 9. padronizar os filtros pois deve ter os mesmo botões ex. limpar filtros.
 
 

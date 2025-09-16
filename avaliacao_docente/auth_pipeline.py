@@ -11,6 +11,7 @@ def apply_suap_user_type(
     - Remove roles existentes entre {admin, coordenador, professor, aluno} e aplica a nova role.
     - Cria/ajusta PerfilAluno ou PerfilProfessor conforme a role (coordenador usa PerfilProfessor).
     - Mantém admin intocado se o usuário já tiver admin (não rebaixa admin automaticamente).
+    - Respeita roles definidas manualmente (não sobrescreve se foram alteradas por admin).
     """
     if backend.name != "suap" or not user:
         return
@@ -23,6 +24,35 @@ def apply_suap_user_type(
             return
     except Exception:
         pass
+
+    # Verificar se a role foi definida manualmente (flag para evitar sobrescrita)
+    # Se o usuário já tem uma role diferente da que seria aplicada pelo SUAP,
+    # e não é seu primeiro login (user.last_login não é None), não sobrescrever
+    if user.last_login is not None:
+        # Verificar se já tem alguma role definida (que não seja a padrão do SUAP)
+        current_roles = []
+        for role_name in ["coordenador", "professor", "aluno"]:
+            if has_role(user, role_name):
+                current_roles.append(role_name)
+
+        # Se já tem role definida, verificar se deve manter
+        if current_roles:
+            # Usar função utilitária para verificar se foi alterada manualmente
+            try:
+                from .utils import is_role_manually_changed
+
+                if is_role_manually_changed(user):
+                    return
+            except Exception:
+                # Fallback: verificar diretamente
+                try:
+                    social_auth = user.social_auth.filter(provider="suap").first()
+                    if social_auth and isinstance(social_auth.extra_data, dict):
+                        # Se tem flag de alteração manual, não sobrescrever
+                        if social_auth.extra_data.get("role_manually_changed", False):
+                            return
+                except Exception:
+                    pass
 
     # Tenta obter o tipo do response; se ausente, tenta via extra_data
     tipo: Optional[str] = None
