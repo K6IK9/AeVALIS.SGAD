@@ -50,7 +50,7 @@
 
             <!-- Filtros -->
             <div class="filters-section">
-                <h3 style="margin: 0 0 15px 0; color: var(--cor03, #376f6c);">Filtros e Busca</h3>
+                <h3 class="filters-title">Filtros e Busca</h3>
                 <form method="get" id="filtros-form">
                     <div class="filter-row">
                         <div class="filter-group">
@@ -87,49 +87,82 @@
                 </form>
             </div>
 
-            <div class="user-count">
-                Total de usuários: <span id="users-count">{{ usuarios_com_roles|length }}</span>
+            <!-- Lista de Usuários com Permissões -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h2>👥 Gerenciamento de Permissões ({{ usuarios_com_roles|length }})</h2>
+                </div>
+
+                {% if usuarios_com_roles %}
+                <div class="table-scroll-hint">
+                    <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table users-table roles-table">
+                        <thead>
+                            <tr>
+                                <th>Avatar</th>
+                                <th>Nome</th>
+                                <th>Matrícula</th>
+                                <th>Email</th>
+                                <th>Role Atual</th>
+                                <th>Data de Cadastro</th>
+                                <th class="actions-column">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in usuarios_com_roles %}
+                            <tr>
+                                <td>
+                                    <div class="user-avatar">
+                                        {{ item.usuario.first_name|first|upper|default:"U" }}
+                                    </div>
+                                </td>
+                                <td data-label="Nome">
+                                    <strong>{{ item.usuario.get_full_name|default:item.usuario.username }}</strong>
+                                </td>
+                                <td data-label="Matrícula">
+                                    {% if item.usuario.perfil_aluno %}
+                                        {{ item.usuario.perfil_aluno.matricula|default:"Não informada" }}
+                                    {% elif item.usuario.perfil_professor %}
+                                        {{ item.usuario.perfil_professor.registro_academico|default:"Não informada" }}
+                                    {% else %}
+                                        {{ item.usuario.username|default:"Não informada" }}
+                                    {% endif %}
+                                </td>
+                                <td data-label="Email">{{ item.usuario.email|default:"Não informado" }}</td>
+                                <td data-label="Role Atual">
+                                    <span class="role-badge role-{{ item.role|lower|cut:' '|cut:'ã'|cut:'í' }}">
+                                        {{ item.role }}
+                                    </span>
+                                </td>
+                                <td data-label="Data de Cadastro">{{ item.usuario.date_joined|date:"d/m/Y H:i" }}</td>
+                                <td data-label="Ações" class="actions-column">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-secondary"
+                                            onclick="alterarRole({{ item.usuario.id }}, '{{ item.usuario.first_name }} {{ item.usuario.last_name }}', '{{ item.usuario.username }}', '{{ item.role }}')"
+                                            title="Alterar permissões do usuário">
+                                            ✏️ Alterar Role
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center-table">
+                                    Nenhum usuário encontrado.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <p class="empty-message">Nenhum usuário encontrado.</p>
+                </div>
+                {% endif %}
             </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Matrícula</th>
-                        <th>Email</th>
-                        <th>Role Atual</th>
-                        <th>Data de Cadastro</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in usuarios_com_roles %}
-                    <tr>
-                        <td>{{ item.usuario.first_name }} {{ item.usuario.last_name|default:"" }}</td>
-                        <td>{{ item.usuario.username }}</td>
-                        <td>{{ item.usuario.email|default:"Não informado" }}</td>
-                        <td>
-                            <span class="role-badge role-{{ item.role|lower|cut:' '|cut:'ã'|cut:'í' }}">
-                                {{ item.role }}
-                            </span>
-                        </td>
-                        <td>{{ item.usuario.date_joined|date:"d/m/Y H:i" }}</td>
-                        <td>
-                            <button class="btn-action btn-edit"
-                                onclick="alterarRole({{ item.usuario.id }}, '{{ item.usuario.first_name }} {{ item.usuario.last_name }}', '{{ item.usuario.username }}', '{{ item.role }}')">
-                                Alterar Role
-                            </button>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 40px;">
-                            Nenhum usuário encontrado.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
 
         <!-- Modal para Alteração de Role -->
         <div id="modal-overlay" class="modal-overlay" onclick="fecharModal(event)">
@@ -161,8 +194,8 @@
                             </select>
                         </div>
 
-                        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                            <button type="button" class="btn-action" style="background: #6c757d; color: white;"
+                        <div class="actions-end">
+                            <button type="button" class="btn-action btn-cancel"
                                 onclick="fecharModal()">
                                 Cancelar
                             </button>
@@ -232,10 +265,90 @@
 
         // Busca em tempo real (com delay)
         let timeoutId;
-        document.getElementById('busca').addEventListener('keypress', function (event) {
-            if (event.key === 'Enter') {
-                aplicarFiltros();
-            }
+        const buscaElement = document.getElementById('busca');
+        if (buscaElement) {
+            buscaElement.addEventListener('keypress', function (event) {
+                if (event.key === 'Enter') {
+                    aplicarFiltros();
+                }
+            });
+        }
+
+        // Drag scroll functionality para a tabela
+        function enableDragScroll() {
+            const tableContainer = document.querySelector('.table-responsive');
+            if (!tableContainer) return;
+            
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            tableContainer.addEventListener('mousedown', (e) => {
+                // Evitar drag em elementos interativos
+                if (e.target.tagName === 'INPUT' || 
+                    e.target.tagName === 'BUTTON' || 
+                    e.target.tagName === 'A' ||
+                    e.target.closest('button') ||
+                    e.target.closest('a')) {
+                    return;
+                }
+                
+                isDown = true;
+                tableContainer.classList.add('grabbing');
+                startX = e.pageX - tableContainer.offsetLeft;
+                scrollLeft = tableContainer.scrollLeft;
+                e.preventDefault();
+            });
+
+            tableContainer.addEventListener('mouseleave', () => {
+                isDown = false;
+                tableContainer.classList.remove('grabbing');
+            });
+
+            tableContainer.addEventListener('mouseup', () => {
+                isDown = false;
+                tableContainer.classList.remove('grabbing');
+            });
+
+            tableContainer.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - tableContainer.offsetLeft;
+                const walk = (x - startX) * 2;
+                tableContainer.scrollLeft = scrollLeft - walk;
+            });
+
+            // Touch events for mobile
+            tableContainer.addEventListener('touchstart', (e) => {
+                if (e.target.tagName === 'INPUT' || 
+                    e.target.tagName === 'BUTTON' || 
+                    e.target.tagName === 'A') {
+                    return;
+                }
+                
+                isDown = true;
+                startX = e.touches[0].pageX - tableContainer.offsetLeft;
+                scrollLeft = tableContainer.scrollLeft;
+            });
+
+            tableContainer.addEventListener('touchmove', (e) => {
+                if (!isDown) return;
+                const x = e.touches[0].pageX - tableContainer.offsetLeft;
+                const walk = (x - startX) * 2;
+                tableContainer.scrollLeft = scrollLeft - walk;
+            });
+
+            tableContainer.addEventListener('touchend', () => {
+                isDown = false;
+            });
+
+            // Scroll smooth behavior
+            tableContainer.style.scrollBehavior = 'auto';
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            enableDragScroll();
         });
     </script>
 </body>

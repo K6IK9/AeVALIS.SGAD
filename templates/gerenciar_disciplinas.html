@@ -49,7 +49,7 @@
                 >{{ form.disciplina_nome.label }}</label
               >
               {{ form.disciplina_nome }} {% if form.disciplina_nome.errors %}
-              <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px">
+              <div class="field-error">
                 {% for error in form.disciplina_nome.errors %} {{ error }} {% endfor %}
               </div>
               {% endif %}
@@ -58,7 +58,7 @@
             <div class="form-group">
               <label for="{{ form.disciplina_sigla.id_for_label }}">{{ form.disciplina_sigla.label }}</label>
               {{ form.disciplina_sigla }} {% if form.disciplina_sigla.errors %}
-              <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px">
+              <div class="field-error">
                 {% for error in form.disciplina_sigla.errors %} {{ error }} {% endfor %}
               </div>
               {% endif %}
@@ -69,7 +69,7 @@
             <div class="form-group">
               <label for="{{ form.disciplina_tipo.id_for_label }}">{{ form.disciplina_tipo.label }}</label>
               {{ form.disciplina_tipo }} {% if form.disciplina_tipo.errors %}
-              <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px">
+              <div class="field-error">
                 {% for error in form.disciplina_tipo.errors %} {{ error }} {% endfor %}
               </div>
               {% endif %}
@@ -78,7 +78,7 @@
             <div class="form-group">
               <label for="{{ form.curso.id_for_label }}">{{ form.curso.label }}</label>
               {{ form.curso }} {% if form.curso.errors %}
-              <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px">
+              <div class="field-error">
                 {% for error in form.curso.errors %} {{ error }} {% endfor %}
               </div>
               {% endif %}
@@ -89,7 +89,7 @@
             <div class="form-group">
               <label for="{{ form.professor.id_for_label }}">{{ form.professor.label }}</label>
               {{ form.professor }} {% if form.professor.errors %}
-              <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px">
+              <div class="field-error">
                 {% for error in form.professor.errors %} {{ error }} {% endfor %}
               </div>
               {% endif %}
@@ -98,7 +98,7 @@
             <div class="form-group">
               <label for="{{ form.periodo_letivo.id_for_label }}">{{ form.periodo_letivo.label }}</label>
               {{ form.periodo_letivo }} {% if form.periodo_letivo.errors %}
-              <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px">
+              <div class="field-error">
                 {% for error in form.periodo_letivo.errors %} {{ error }} {% endfor %}
               </div>
               {% endif %}
@@ -149,17 +149,21 @@
                   class="btn-action btn-edit"
                   >✏️ Editar</a
                 >
-                <button
-                  onclick="confirmarExclusao({{ disciplina.id }}, '{{ disciplina.disciplina_nome }}')"
-                  class="btn-action btn-delete"
-                >
-                  🗑️ Excluir
-                </button>
+                <form method="post" action="{% url 'excluir_disciplina' disciplina.id %}" class="inline-form">
+                  {% csrf_token %}
+                  <button
+                    type="submit"
+                    class="btn-action btn-delete"
+                    onclick="return confirm('Tem certeza que deseja excluir a disciplina \'{{ disciplina.disciplina_nome }}\'? Esta ação não poderá ser desfeita.')"
+                  >
+                    🗑️ Excluir
+                  </button>
+                </form>
               </td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="8" style="text-align: center; padding: 40px">
+              <td colspan="8" class="text-center-table">
                 Nenhuma disciplina encontrada.
               </td>
             </tr>
@@ -169,98 +173,5 @@
       </div>
       {% endif %}
     </div>
-
-    <!-- Modal de Confirmação de Exclusão -->
-    <div id="modal-overlay" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header danger">
-          <h3>Confirmar Exclusão</h3>
-        </div>
-        <div class="modal-content">
-          <p id="modal-message">
-            Tem certeza que deseja excluir esta disciplina? Esta ação não poderá
-            ser desfeita.
-          </p>
-          <div class="modal-actions">
-            <button
-              onclick="fecharModal()"
-              class="btn-action"
-              style="background: #6c757d; color: white"
-            >
-              Cancelar
-            </button>
-            <button onclick="excluirItem()" class="btn-action btn-delete">
-              Excluir
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <script>
-      // Variável global para controle do modal de exclusão
-      let itemParaExcluir = null;
-
-      // Função para abrir modal de exclusão - padrão igual ao de cursos
-      function confirmarExclusao(id, nome) {
-        itemParaExcluir = id;
-        document.getElementById(
-          "modal-message"
-        ).textContent = `Tem certeza que deseja excluir a disciplina "${nome}"? Esta ação não poderá ser desfeita.`;
-        document.getElementById("modal-overlay").classList.add("active");
-      }
-
-      // Função para fechar modal de exclusão - padrão igual ao de cursos
-      function fecharModal() {
-        document.getElementById("modal-overlay").classList.remove("active");
-        itemParaExcluir = null;
-      }
-
-      // Função para confirmar exclusão - padrão igual ao de cursos
-      function excluirItem() {
-        if (!itemParaExcluir) return;
-
-        fetch(`/excluir-disciplina/${itemParaExcluir}/`, {
-          method: "POST",
-          headers: {
-            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
-              .value,
-            "Content-Type": "application/json",
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              alert(data.message || "Disciplina excluída com sucesso!");
-              location.reload();
-            } else {
-              alert(data.error || "Erro ao excluir disciplina.");
-            }
-          })
-          .catch((error) => {
-            console.error("Erro:", error);
-            alert("Erro ao excluir disciplina.");
-          })
-          .finally(() => {
-            fecharModal();
-          });
-      }
-
-      // Fechar modal de exclusão ao clicar fora dele
-      document
-        .getElementById("modal-overlay")
-        .addEventListener("click", function (e) {
-          if (e.target === this) {
-            fecharModal();
-          }
-        });
-
-      // Fechar modal com tecla Escape
-      document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") {
-          fecharModal();
-        }
-      });
-    </script>
   </body>
 </html>

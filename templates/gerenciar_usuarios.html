@@ -72,42 +72,42 @@
         <div class="form-row">
           <div class="form-group">
             <label for="username">Nome de usuário:</label>
-            <input type="text" id="username" name="username" value="{{ usuario.username }}" required>
+            <input type="text" id="username" name="username" value="{{ usuario.username }}" class="form-control" required>
           </div>
           <div class="form-group">
             <label for="email">Email:</label>
-            <input type="email" id="email" name="email" value="{{ usuario.email }}" required>
+            <input type="email" id="email" name="email" value="{{ usuario.email }}" class="form-control" required>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="first_name">Nome:</label>
-            <input type="text" id="first_name" name="first_name" value="{{ usuario.first_name }}" required>
+            <input type="text" id="first_name" name="first_name" value="{{ usuario.first_name }}" class="form-control" required>
           </div>
           <div class="form-group">
             <label for="last_name">Sobrenome:</label>
-            <input type="text" id="last_name" name="last_name" value="{{ usuario.last_name }}" required>
+            <input type="text" id="last_name" name="last_name" value="{{ usuario.last_name }}" class="form-control" required>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="matricula">Matrícula:</label>
-            <input type="text" id="matricula" name="matricula" value="{{ matricula }}" placeholder="Opcional">
+            <input type="text" id="matricula" name="matricula" value="{{ matricula }}" class="form-control" placeholder="Opcional">
           </div>
           <div class="form-group">
             <label for="password">Nova senha:</label>
-            <input type="password" id="password" name="password" placeholder="Deixe em branco para manter a atual">
+            <input type="password" id="password" name="password" class="form-control" placeholder="Deixe em branco para manter a atual">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label class="checkbox-label">
-              <input type="checkbox" name="is_active" {% if usuario.is_active %}checked{% endif %}>
-              Usuário ativo
-            </label>
+            <div class="checkbox-group">
+              <input type="checkbox" name="is_active" id="is_active" {% if usuario.is_active %}checked{% endif %}> 
+              <label for="is_active">Usuário ativo</label>
+            </div>
           </div>
         </div>
 
@@ -199,12 +199,12 @@
               </td>
               <td data-label="Email">{{ usuario.email|default:"Não informado" }}</td>
               <td data-label="Matrícula">
-                {% if usuario.perfilaluno %}
-                  {{ usuario.perfilaluno.matricula|default:"Não informada" }}
-                {% elif usuario.perfilprofessor %}
-                  {{ usuario.perfilprofessor.matricula|default:"Não informada" }}
+                {% if usuario.perfil_aluno %}
+                  {{ usuario.perfil_aluno.matricula|default:"Não informada" }}
+                {% elif usuario.perfil_professor %}
+                  {{ usuario.perfil_professor.registro_academico|default:"Não informada" }}
                 {% else %}
-                  Não informada
+                  {{ usuario.username|default:"Não informada" }}
                 {% endif %}
               </td>
               <td data-label="Funções">
@@ -233,7 +233,7 @@
                   {% endif %}
                   {% if user.is_superuser and user != usuario %}
                   <form method="post" action="{% url 'excluir_usuario' usuario.id %}" 
-                        style="display: inline;" 
+                        class="inline-form" 
                         onsubmit="return confirm('Tem certeza que deseja excluir o usuário {{ usuario.get_full_name|escapejs }}? Esta ação não pode ser desfeita.')">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-danger" 
@@ -338,9 +338,10 @@
             <small class="help-text">Mantenha Ctrl pressionado para selecionar múltiplas funções</small>
           </div>
           <div class="form-group">
-            <label>
-              <input type="checkbox" name="is_active" checked> Usuário ativo
-            </label>
+            <div class="checkbox-group">
+              <input type="checkbox" name="is_active" id="modal_is_active" checked>
+              <label for="modal_is_active">Usuário ativo</label>
+            </div>
           </div>
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" onclick="closeModal('createUserModal')">
@@ -359,9 +360,47 @@
   <!-- Scripts -->
   {% if not editing %}
   <script>
+    // Modal functions (only when not editing)
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('modal')) {
+        closeModal(e.target.id);
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const openModal = document.querySelector('.modal.show');
+        if (openModal) {
+          closeModal(openModal.id);
+        }
+      }
+    });
+
     // Drag scroll functionality
     function enableDragScroll() {
       const tableContainer = document.querySelector('.table-responsive');
+      if (!tableContainer) return;
+      
       let isDown = false;
       let startX;
       let scrollLeft;
@@ -429,16 +468,24 @@
       tableContainer.style.scrollBehavior = 'auto';
     }
 
-    // Initialize drag scroll when page loads
-    document.addEventListener('DOMContentLoaded', enableDragScroll);
-
     // Auto-pesquisa com delay
-    let searchTimeout;
-    document.getElementById('search').addEventListener('input', function() {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        this.form.submit();
-      }, 500);
+    function setupSearch() {
+      const searchInput = document.getElementById('search');
+      if (!searchInput) return;
+      
+      let searchTimeout;
+      searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          this.form.submit();
+        }, 500);
+      });
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      enableDragScroll();
+      setupSearch();
     });
   </script>
   {% endif %}

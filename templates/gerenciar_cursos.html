@@ -125,18 +125,22 @@
                   <div class="action-buttons">
                     <a
                       href="{% url 'editar_curso' curso.id %}"
-                      class="btn btn-sm btn-secondary"
+                      class="btn btn-sm btn-primary"
                       title="Editar curso"
                     >
                       ✏️ Editar
                     </a>
-                    <button
-                      onclick="confirmarExclusao({{ curso.id }}, '{{ curso.curso_nome|escapejs }}')"
-                      class="btn btn-sm btn-danger"
-                      title="Excluir curso"
-                    >
-                      🗑️ Excluir
-                    </button>
+                    <form method="post" action="{% url 'excluir_curso' curso.id %}" class="inline-form">
+                      {% csrf_token %}
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-danger"
+                        title="Excluir curso"
+                        onclick="return confirm('Tem certeza que deseja excluir o curso \'{{ curso.curso_nome }}\'? Esta ação não poderá ser desfeita.')"
+                      >
+                        🗑️ Excluir
+                      </button>
+                    </form>
                   </div>
                 </td>
               </tr>
@@ -154,89 +158,7 @@
       {% endif %}
     </div>
 
-    <!-- Modal de Confirmação de Exclusão -->
-    <div id="modal-overlay" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header danger">
-          <h3>⚠️ Confirmar Exclusão</h3>
-        </div>
-        <div class="modal-content">
-          <p id="modal-message">
-            Tem certeza que deseja excluir este curso? Esta ação não poderá ser
-            desfeita.
-          </p>
-          <div class="modal-actions">
-            <button onclick="fecharModal()" class="btn btn-secondary">
-              ❌ Cancelar
-            </button>
-            <button onclick="excluirItem()" class="btn btn-danger">
-              🗑️ Excluir
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
-
-    <script>
-      let itemParaExcluir = null;
-
-      function confirmarExclusao(id, nome) {
-        itemParaExcluir = id;
-        document.getElementById(
-          "modal-message"
-        ).textContent = `Tem certeza que deseja excluir o curso "${nome}"? Esta ação não poderá ser desfeita.`;
-        document.getElementById("modal-overlay").classList.add("active");
-      }
-
-      function fecharModal() {
-        document.getElementById("modal-overlay").classList.remove("active");
-        itemParaExcluir = null;
-      }
-
-      function excluirItem() {
-        if (!itemParaExcluir) return;
-
-        fetch(`/excluir-curso/${itemParaExcluir}/`, {
-          method: "POST",
-          headers: {
-            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
-              .value,
-            "Content-Type": "application/json",
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              alert(data.message);
-              location.reload();
-            } else {
-              alert(data.error);
-            }
-          })
-          .catch((error) => {
-            console.error("Erro:", error);
-            alert("Erro ao excluir curso.");
-          })
-          .finally(() => {
-            fecharModal();
-          });
-      }
-
-      // Fechar modal ao clicar fora dele
-      document
-        .getElementById("modal-overlay")
-        .addEventListener("click", function (e) {
-          if (e.target === this) {
-            fecharModal();
-          }
-        });
-
-      // Fechar modal com tecla Escape
-      document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") {
-          fecharModal();
-        }
-      });
-    </script>
-  </body>
+  </div>
+</body>
 </html>

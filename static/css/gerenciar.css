@@ -274,6 +274,12 @@
     cursor: inherit;
 }
 
+/* Roles table specific adjustments */
+.users-table.roles-table {
+    min-width: 1000px;
+    /* Menos colunas que a tabela de usuários */
+}
+
 .users-table th,
 .users-table td {
     white-space: nowrap;
@@ -549,6 +555,69 @@
     color: var(--cor08);
     font-size: 0.875em;
     margin-top: 5px;
+}
+
+/* Mensagem de erro de validação de campo específico */
+.field-error {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Formulário inline para ações */
+.inline-form {
+    display: inline;
+}
+
+/* Centralização de conteúdo em células de tabela */
+.text-center-table {
+    text-align: center;
+    padding: 40px;
+}
+
+/* Título de seção com filtros */
+.filters-title {
+    margin: 0 0 15px 0;
+    color: var(--cor03);
+    font-family: var(--font02);
+    font-size: 1.3em;
+}
+
+/* Ações no final de um modal ou seção */
+.actions-end {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+/* Botão cancelar (cinza) */
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #545b62;
+    color: white;
+}
+
+/* Botão principal (verde) */
+.btn-primary-color {
+    background: var(--cor02);
+    color: var(--cor05);
+}
+
+.btn-primary-color:hover {
+    background: var(--cor03);
+    color: var(--cor07);
+}
+
+/* Estado desabilitado */
+.disabled-state {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Layout de grid para formulários */
@@ -1355,7 +1424,7 @@ input[type="checkbox"] {
 }
 
 .data-table .col-ativo {
-    min-width: 80px;
+    min-width: 115px;
 }
 
 .data-table .col-acoes {

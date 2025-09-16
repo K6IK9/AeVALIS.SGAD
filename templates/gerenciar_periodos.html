@@ -47,7 +47,7 @@
                 >{{ form.nome.label }}</label
               >
               {{ form.nome }} {% if form.nome.errors %}
-              <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px">
+              <div class="field-error">
                 {% for error in form.nome.errors %} {{ error }} {% endfor %}
               </div>
               {% endif %}
@@ -58,7 +58,7 @@
                 >{{ form.ano.label }}</label
               >
               {{ form.ano }} {% if form.ano.errors %}
-              <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px">
+              <div class="field-error">
                 {% for error in form.ano.errors %} {{ error }} {% endfor %}
               </div>
               {% endif %}
@@ -69,7 +69,7 @@
                 >{{ form.semestre.label }}</label
               >
               {{ form.semestre }} {% if form.semestre.errors %}
-              <div style="color: #dc3545; font-size: 0.875em; margin-top: 5px">
+              <div class="field-error">
                 {% for error in form.semestre.errors %} {{ error }} {% endfor %}
               </div>
               {% endif %}
@@ -77,7 +77,7 @@
           </div>
 
           {% if form.non_field_errors %}
-          <div style="color: #dc3545; font-size: 0.875em; margin-bottom: 15px">
+          <div class="non-field-errors">
             {% for error in form.non_field_errors %} {{ error }} {% endfor %}
           </div>
           {% endif %}
@@ -117,19 +117,22 @@
                   >
                     ✏️ Editar
                   </button>
-                  <button
-                    type="button"
-                    class="btn-action btn-delete"
-                    onclick="excluirPeriodo({{ periodo.id }}, '{{ periodo.nome }}')"
-                  >
-                    🗑️ Excluir
-                  </button>
+                  <form method="post" action="{% url 'excluir_periodo' periodo.id %}" class="inline-form">
+                    {% csrf_token %}
+                    <button
+                      type="submit"
+                      class="btn-action btn-delete"
+                      onclick="return confirm('Tem certeza que deseja excluir o período \'{{ periodo.nome }}\'? Esta ação não poderá ser desfeita.')"
+                    >
+                      🗑️ Excluir
+                    </button>
+                  </form>
                 </div>
               </td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="6" style="text-align: center; padding: 40px">
+              <td colspan="6" class="text-center-table">
                 Nenhum período letivo encontrado.
               </td>
             </tr>
@@ -189,16 +192,14 @@
             <div class="modal-actions">
               <button
                 type="button"
-                class="btn-action"
-                style="background: #6c757d; color: white"
+                class="btn-action btn-cancel"
                 onclick="closeEditModal()"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                class="btn-action"
-                style="background: var(--cor02); color: var(--cor05)"
+                class="btn-action btn-primary-color"
               >
                 Salvar Alterações
               </button>
@@ -208,45 +209,9 @@
       </div>
     </div>
 
-    <!-- Modal de Confirmação de Exclusão -->
-    <div id="deleteModal" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header danger">
-          <h3>Confirmar Exclusão</h3>
-        </div>
-        <div class="modal-content">
-          <p id="delete-message">
-            Tem certeza que deseja excluir este período letivo?
-          </p>
-          <p>
-            <strong>Atenção:</strong> Esta ação não pode ser desfeita e pode
-            afetar outros dados relacionados.
-          </p>
-          <div class="modal-actions">
-            <button
-              type="button"
-              class="btn-action"
-              style="background: #6c757d; color: white"
-              onclick="closeDeleteModal()"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              class="btn-action btn-delete"
-              onclick="confirmDelete()"
-            >
-              Excluir
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <script>
       // Variáveis globais para controle dos modais
       let currentEditId = null;
-      let currentDeleteId = null;
 
       // Função para abrir modal de edição
       function editarPeriodo(id, nome, ano, semestre) {
@@ -265,53 +230,6 @@
       function closeEditModal() {
         document.getElementById("editModal").classList.remove("active");
         currentEditId = null;
-      }
-
-      // Função para abrir modal de exclusão
-      function excluirPeriodo(id, nome) {
-        currentDeleteId = id;
-        const messageElement = document.getElementById("delete-message");
-        messageElement.innerHTML = `Tem certeza que deseja excluir o período "<strong>${nome}</strong>"?`;
-        document.getElementById("deleteModal").classList.add("active");
-      }
-
-      // Função para fechar modal de exclusão
-      function closeDeleteModal() {
-        document.getElementById("deleteModal").classList.remove("active");
-        currentDeleteId = null;
-      }
-
-      // Função para confirmar exclusão
-      function confirmDelete() {
-        if (currentDeleteId) {
-          fetch(`/excluir-periodo/${currentDeleteId}/`, {
-            method: "POST",
-            headers: {
-              "X-CSRFToken": document.querySelector(
-                "[name=csrfmiddlewaretoken]"
-              ).value,
-              "Content-Type": "application/json",
-            },
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                alert(data.message || "Período excluído com sucesso!");
-                location.reload();
-              } else {
-                alert(
-                  "Erro ao excluir período: " +
-                    (data.error || "Erro desconhecido")
-                );
-              }
-            })
-            .catch((error) => {
-              console.error("Erro:", error);
-              alert("Erro ao excluir período");
-            });
-
-          closeDeleteModal();
-        }
       }
 
       // Fechar modais ao clicar fora do modal

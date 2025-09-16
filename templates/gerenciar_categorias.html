@@ -1,202 +1,169 @@
-{% load user_tags %} {% load static %}
+{% load user_tags %}
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IF SADD - Gerenciar Categorias</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IF SADD - Gerenciar Categorias</title>
 
-    <!-- CSS personalizado -->
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="{% static 'css/global.css' %}"
-    />
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="{% static 'css/gerenciar.css' %}"
-    />
-  </head>
+  <!-- CSS personalizado -->
+  <link rel="stylesheet" type="text/css" href="{% static 'css/global.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'css/gerenciar.css' %}" />
+</head>
 
-  <body>
-    <div class="container">
-      <div class="header">
-        <h1>📂 Gerenciamento de Categorias</h1>
-        <p>Crie e organize as categorias de perguntas para avaliações</p>
-      </div>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📂 Gerenciamento de Categorias</h1>
+      <p>Crie e organize as categorias de perguntas para avaliações</p>
+    </div>
 
-      <!-- Navegação Breadcrumb -->
-      <div class="nav-breadcrumb">
-        <a href="{% url 'inicio' %}">🏠 Início</a>
-        <span>→</span>
-        <a href="{% url 'admin_hub' %}">⚙️ Administração</a>
-        <span>→</span>
-        <span>📂 Categorias</span>
-      </div>
+    <!-- Navegação Breadcrumb -->
+    <div class="nav-breadcrumb">
+      <a href="{% url 'inicio' %}">🏠 Início</a>
+      <span>→</span>
+      <a href="{% url 'admin_hub' %}">⚙️ Administração</a>
+      <span>→</span>
+      <span>📂 Categorias</span>
+    </div>
 
-      {% if messages %}
-      <div class="messages">
-        {% for message in messages %}
-        <div class="message {{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-      </div>
-      {% endif %}
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+      <div class="message {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
-      <div class="form-section">
-        <h2>
-          {% if editing %}✏️ Editar Categoria{% else %}📝 Criar Nova Categoria{%
-          endif %}
-        </h2>
-        <form method="post">
-          {% csrf_token %}
-          <div class="form-row">
-            <div class="form-group">
-              <label for="{{ form.nome.id_for_label }}"
-                >{{ form.nome.label }}</label
-              >
-              {{ form.nome }} {% if form.nome.errors %}
-              <div class="error-message">
-                {% for error in form.nome.errors %} {{ error }} {% endfor %}
-              </div>
-              {% endif %}
-            </div>
-
-            <div class="form-group small">
-              <label for="{{ form.ordem.id_for_label }}"
-                >{{ form.ordem.label }}</label
-              >
-              {{ form.ordem }} {% if form.ordem.errors %}
-              <div class="error-message">
-                {% for error in form.ordem.errors %} {{ error }} {% endfor %}
-              </div>
-              {% endif %}
-            </div>
-          </div>
-
+    <div class="form-section">
+      <h2>
+        {% if editing %}✏️ Editar Categoria{% else %}📝 Criar Nova Categoria{% endif %}
+      </h2>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-row">
           <div class="form-group">
-            <label for="{{ form.descricao.id_for_label }}"
-              >{{ form.descricao.label }}</label
-            >
-            {{ form.descricao }} {% if form.descricao.errors %}
+            <label for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>
+            {{ form.nome }}
+            {% if form.nome.errors %}
             <div class="error-message">
-              {% for error in form.descricao.errors %} {{ error }} {% endfor %}
+              {% for error in form.nome.errors %}{{ error }}{% endfor %}
             </div>
             {% endif %}
           </div>
 
-          <div class="form-group">
-            <div class="checkbox-group">
-              {{ form.ativa }}
-              <label for="{{ form.ativa.id_for_label }}"
-                >{{ form.ativa.label }}</label
-              >
-            </div>
-            {% if form.ativa.errors %}
+          <div class="form-group small">
+            <label for="{{ form.ordem.id_for_label }}">{{ form.ordem.label }}</label>
+            {{ form.ordem }}
+            {% if form.ordem.errors %}
             <div class="error-message">
-              {% for error in form.ativa.errors %} {{ error }} {% endfor %}
+              {% for error in form.ordem.errors %}{{ error }}{% endfor %}
             </div>
             {% endif %}
           </div>
-
-          {% if form.non_field_errors %}
-          <div class="error-message">
-            {% for error in form.non_field_errors %} {{ error }} {% endfor %}
-          </div>
-          {% endif %}
-
-          <button type="submit" class="btn">
-            {% if editing %}💾 Atualizar Categoria{% else %}➕ Criar Categoria{%
-            endif %}
-          </button>
-          {% if editing %}
-          <a href="{% url 'gerenciar_categorias' %}" class="btn btn-secondary"
-            >Cancelar</a
-          >
-          {% endif %}
-        </form>
-      </div>
-
-      {% if not editing %}
-      <div class="form-section">
-        <h2>📋 Categorias Cadastradas</h2>
-        <div class="item-count">
-          Total de categorias: {{ categorias.count }}
         </div>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Descrição</th>
-              <th>Ordem</th>
-              <th>Status</th>
-              <th>Perguntas</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for categoria in categorias %}
-            <tr>
-              <td><strong>{{ categoria.nome }}</strong></td>
-              <td>{{ categoria.descricao|default:"-" }}</td>
-              <td>{{ categoria.ordem }}</td>
-              <td>
-                <span
-                  class="status-badge {% if categoria.ativa %}status-ativa{% else %}status-inativa{% endif %}"
-                >
-                  {% if categoria.ativa %} ✅ Ativa {% else %} ❌ Inativa {%
-                  endif %}
-                </span>
-              </td>
-              <td>
-                {{ categoria.perguntas.count }} pergunta{{
-                categoria.perguntas.count|pluralize }}
-              </td>
-              <td>
-                <div class="action-buttons">
-                  <a
-                    href="{% url 'editar_categoria_simples' categoria.id %}"
-                    class="btn-action btn-edit"
-                  >
-                    ✏️ Editar
-                  </a>
-                  {% if categoria.perguntas.count == 0 %}
-                  <form
-                    method="post"
-                    action="{% url 'excluir_categoria' categoria.id %}"
-                    style="display: inline"
-                    onsubmit="return confirm('Tem certeza que deseja excluir a categoria \'{{ categoria.nome }}\'? Esta ação não pode ser desfeita.')"
-                  >
-                    {% csrf_token %}
-                    <button type="submit" class="btn-action btn-delete">
-                      🗑️ Excluir
-                    </button>
-                  </form>
-                  {% else %}
-                  <button
-                    type="button"
-                    class="btn-action btn-delete"
-                    onclick="alert('Não é possível excluir esta categoria pois ela possui {{ categoria.perguntas.count }} pergunta(s) associada(s).')"
-                    style="opacity: 0.5; cursor: not-allowed"
-                  >
+
+        <div class="form-group">
+          <label for="{{ form.descricao.id_for_label }}">{{ form.descricao.label }}</label>
+          {{ form.descricao }}
+          {% if form.descricao.errors %}
+          <div class="error-message">
+            {% for error in form.descricao.errors %}{{ error }}{% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox-group">
+            {{ form.ativa }}
+            <label for="{{ form.ativa.id_for_label }}">{{ form.ativa.label }}</label>
+          </div>
+          {% if form.ativa.errors %}
+          <div class="error-message">
+            {% for error in form.ativa.errors %}{{ error }}{% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="error-message">
+          {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+        </div>
+        {% endif %}
+
+        <button type="submit" class="btn">
+          {% if editing %}💾 Atualizar Categoria{% else %}➕ Criar Categoria{% endif %}
+        </button>
+        {% if editing %}
+        <a href="{% url 'gerenciar_categorias' %}" class="btn btn-secondary">Cancelar</a>
+        {% endif %}
+      </form>
+    </div>
+
+    {% if not editing %}
+    <div class="form-section">
+      <h2>📋 Categorias Cadastradas</h2>
+      <div class="item-count">
+        Total de categorias: {{ categorias.count }}
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th>Ordem</th>
+            <th>Status</th>
+            <th>Perguntas</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for categoria in categorias %}
+          <tr>
+            <td><strong>{{ categoria.nome }}</strong></td>
+            <td>{{ categoria.descricao|default:"-" }}</td>
+            <td>{{ categoria.ordem }}</td>
+            <td>
+              <span class="status-badge {% if categoria.ativa %}status-ativa{% else %}status-inativa{% endif %}">
+                {% if categoria.ativa %}✅ Ativa{% else %}❌ Inativa{% endif %}
+              </span>
+            </td>
+            <td>
+              {{ categoria.perguntas.count }} pergunta{{ categoria.perguntas.count|pluralize }}
+            </td>
+            <td>
+              <div class="action-buttons">
+                <a href="{% url 'editar_categoria_simples' categoria.id %}" class="btn-action btn-edit">
+                  ✏️ Editar
+                </a>
+                {% if categoria.perguntas.count == 0 %}
+                <form method="post" action="{% url 'excluir_categoria' categoria.id %}" class="inline-form" onsubmit="return confirm('Tem certeza que deseja excluir a categoria \'{{ categoria.nome }}\'? Esta ação não pode ser desfeita.')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-action btn-delete">
                     🗑️ Excluir
                   </button>
-                  {% endif %}
-                </div>
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="6" style="text-align: center; padding: 40px">
-                Nenhuma categoria encontrada.
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      {% endif %}
+                </form>
+                {% else %}
+                <button type="button" class="btn-action btn-delete disabled-state" onclick="alert('Não é possível excluir esta categoria pois ela possui {{ categoria.perguntas.count }} pergunta(s) associada(s).')">
+                  🗑️ Excluir
+                </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center-table">
+              Nenhuma categoria encontrada.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-  </body>
+    {% endif %}
+  </div>
+</body>
 </html>

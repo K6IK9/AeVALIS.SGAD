@@ -38,6 +38,14 @@ urlpatterns = [
         name="excluir_disciplina",
     ),
     path("gerenciar-periodos/", views.gerenciar_periodos, name="gerenciar_periodos"),
+    path(
+        "editar-periodo/<int:periodo_id>/", views.editar_periodo, name="editar_periodo"
+    ),
+    path(
+        "excluir-periodo/<int:periodo_id>/",
+        views.excluir_periodo,
+        name="excluir_periodo",
+    ),
     path("gerenciar-turmas/", views.gerenciar_turmas, name="gerenciar_turmas"),
     path("editar-turma/<int:turma_id>/", views.editar_turma, name="editar_turma"),
     path("excluir-turma/<int:turma_id>/", views.excluir_turma, name="excluir_turma"),

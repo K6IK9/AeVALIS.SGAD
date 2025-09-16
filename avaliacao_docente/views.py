@@ -269,12 +269,19 @@ def editar_usuario(request, usuario_id):
             # Atualizar matrícula no perfil se fornecida
             matricula = request.POST.get("matricula", "")
             if matricula:
-                if hasattr(usuario, "perfilaluno") and usuario.perfilaluno:
-                    usuario.perfilaluno.matricula = matricula
-                    usuario.perfilaluno.save()
-                elif hasattr(usuario, "perfilprofessor") and usuario.perfilprofessor:
-                    usuario.perfilprofessor.matricula = matricula
-                    usuario.perfilprofessor.save()
+                if hasattr(usuario, "perfil_aluno") and usuario.perfil_aluno:
+                    # Para alunos, a matrícula é na verdade o username
+                    usuario.username = matricula
+                elif hasattr(usuario, "perfil_professor") and usuario.perfil_professor:
+                    # Para professores e coordenadores
+                    usuario.perfil_professor.registro_academico = matricula
+                    usuario.perfil_professor.save()
+                else:
+                    # Para administradores ou usuários sem perfil específico
+                    # A matrícula pode ser armazenada no username como identificação
+                    usuario.username = matricula
+
+                usuario.save()
 
             messages.success(
                 request, f"Usuário '{usuario.username}' atualizado com sucesso!"
@@ -286,10 +293,14 @@ def editar_usuario(request, usuario_id):
 
     # Buscar matrícula do perfil
     matricula = ""
-    if hasattr(usuario, "perfilaluno") and usuario.perfilaluno:
-        matricula = usuario.perfilaluno.matricula or ""
-    elif hasattr(usuario, "perfilprofessor") and usuario.perfilprofessor:
-        matricula = usuario.perfilprofessor.matricula or ""
+    if hasattr(usuario, "perfil_aluno") and usuario.perfil_aluno:
+        matricula = usuario.perfil_aluno.matricula or ""
+    elif hasattr(usuario, "perfil_professor") and usuario.perfil_professor:
+        matricula = usuario.perfil_professor.registro_academico or ""
+    else:
+        # Para administradores ou usuários sem perfil específico
+        # A matrícula pode estar no username
+        matricula = usuario.username or ""
 
     context = {"usuario": usuario, "matricula": matricula, "editing": True}
     return render(request, "gerenciar_usuarios.html", context)
@@ -444,7 +455,10 @@ def excluir_curso(request, curso_id):
     View para excluir um curso
     """
     if not check_user_permission(request.user, ["coordenador", "admin"]):
-        return JsonResponse({"error": "Sem permissão"}, status=403)
+        if request.headers.get("Content-Type") == "application/json":
+            return JsonResponse({"error": "Sem permissão"}, status=403)
+        messages.error(request, "Sem permissão para realizar esta ação.")
+        return redirect("gerenciar_cursos")
 
     if request.method == "POST":
         try:
@@ -452,27 +466,32 @@ def excluir_curso(request, curso_id):
 
             # Verificar se há disciplinas relacionadas
             if curso.disciplinas.exists():
-                return JsonResponse(
-                    {
-                        "error": f"Não é possível excluir o curso '{curso.curso_nome}' pois existem disciplinas vinculadas a ele."
-                    },
-                    status=400,
-                )
+                error_msg = f"Não é possível excluir o curso '{curso.curso_nome}' pois existem disciplinas vinculadas a ele."
+                if request.headers.get("Content-Type") == "application/json":
+                    return JsonResponse({"error": error_msg}, status=400)
+                messages.error(request, error_msg)
+                return redirect("gerenciar_cursos")
 
             nome_curso = curso.curso_nome
             curso.delete()
 
-            return JsonResponse(
-                {
-                    "success": True,
-                    "message": f"Curso '{nome_curso}' excluído com sucesso!",
-                }
-            )
+            success_msg = f"Curso '{nome_curso}' excluído com sucesso!"
+            if request.headers.get("Content-Type") == "application/json":
+                return JsonResponse({"success": True, "message": success_msg})
+
+            messages.success(request, success_msg)
+            return redirect("gerenciar_cursos")
 
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+            error_msg = str(e)
+            if request.headers.get("Content-Type") == "application/json":
+                return JsonResponse({"error": error_msg}, status=500)
+            messages.error(request, f"Erro ao excluir curso: {error_msg}")
+            return redirect("gerenciar_cursos")
 
-    return JsonResponse({"error": "Método não permitido"}, status=405)
+    if request.headers.get("Content-Type") == "application/json":
+        return JsonResponse({"error": "Método não permitido"}, status=405)
+    return redirect("gerenciar_cursos")
 
 
 @login_required
@@ -552,7 +571,10 @@ def excluir_disciplina(request, disciplina_id):
     View para excluir uma disciplina
     """
     if not check_user_permission(request.user, ["coordenador", "admin"]):
-        return JsonResponse({"error": "Sem permissão"}, status=403)
+        if request.headers.get("Content-Type") == "application/json":
+            return JsonResponse({"error": "Sem permissão"}, status=403)
+        messages.error(request, "Sem permissão para realizar esta ação.")
+        return redirect("gerenciar_disciplinas")
 
     if request.method == "POST":
         try:
@@ -560,27 +582,32 @@ def excluir_disciplina(request, disciplina_id):
 
             # Verificar se há turmas relacionadas
             if disciplina.turmas.exists():
-                return JsonResponse(
-                    {
-                        "error": f"Não é possível excluir a disciplina '{disciplina.disciplina_nome}' pois existem turmas vinculadas a ela."
-                    },
-                    status=400,
-                )
+                error_msg = f"Não é possível excluir a disciplina '{disciplina.disciplina_nome}' pois existem turmas vinculadas a ela."
+                if request.headers.get("Content-Type") == "application/json":
+                    return JsonResponse({"error": error_msg}, status=400)
+                messages.error(request, error_msg)
+                return redirect("gerenciar_disciplinas")
 
             nome_disciplina = disciplina.disciplina_nome
             disciplina.delete()
 
-            return JsonResponse(
-                {
-                    "success": True,
-                    "message": f"Disciplina '{nome_disciplina}' excluída com sucesso!",
-                }
-            )
+            success_msg = f"Disciplina '{nome_disciplina}' excluída com sucesso!"
+            if request.headers.get("Content-Type") == "application/json":
+                return JsonResponse({"success": True, "message": success_msg})
+
+            messages.success(request, success_msg)
+            return redirect("gerenciar_disciplinas")
 
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+            error_msg = str(e)
+            if request.headers.get("Content-Type") == "application/json":
+                return JsonResponse({"error": error_msg}, status=500)
+            messages.error(request, f"Erro ao excluir disciplina: {error_msg}")
+            return redirect("gerenciar_disciplinas")
 
-    return JsonResponse({"error": "Método não permitido"}, status=405)
+    if request.headers.get("Content-Type") == "application/json":
+        return JsonResponse({"error": "Método não permitido"}, status=405)
+    return redirect("gerenciar_disciplinas")
 
 
 @login_required
@@ -654,7 +681,10 @@ def excluir_periodo(request, periodo_id):
     View para excluir um período letivo
     """
     if not check_user_permission(request.user, ["coordenador", "admin"]):
-        return JsonResponse({"error": "Sem permissão"}, status=403)
+        if request.headers.get("Content-Type") == "application/json":
+            return JsonResponse({"error": "Sem permissão"}, status=403)
+        messages.error(request, "Sem permissão para realizar esta ação.")
+        return redirect("gerenciar_periodos")
 
     if request.method == "POST":
         try:
@@ -662,35 +692,39 @@ def excluir_periodo(request, periodo_id):
 
             # Verificar se há turmas ou disciplinas relacionadas
             if periodo.turmas.exists():
-                return JsonResponse(
-                    {
-                        "error": f"Não é possível excluir o período '{periodo.nome}' pois existem turmas vinculadas a ele."
-                    },
-                    status=400,
-                )
+                error_msg = f"Não é possível excluir o período '{periodo.nome}' pois existem turmas vinculadas a ele."
+                if request.headers.get("Content-Type") == "application/json":
+                    return JsonResponse({"error": error_msg}, status=400)
+                messages.error(request, error_msg)
+                return redirect("gerenciar_periodos")
 
             if periodo.disciplinas.exists():
-                return JsonResponse(
-                    {
-                        "error": f"Não é possível excluir o período '{periodo.nome}' pois existem disciplinas vinculadas a ele."
-                    },
-                    status=400,
-                )
+                error_msg = f"Não é possível excluir o período '{periodo.nome}' pois existem disciplinas vinculadas a ele."
+                if request.headers.get("Content-Type") == "application/json":
+                    return JsonResponse({"error": error_msg}, status=400)
+                messages.error(request, error_msg)
+                return redirect("gerenciar_periodos")
 
             nome_periodo = periodo.nome
             periodo.delete()
 
-            return JsonResponse(
-                {
-                    "success": True,
-                    "message": f"Período '{nome_periodo}' excluído com sucesso!",
-                }
-            )
+            success_msg = f"Período '{nome_periodo}' excluído com sucesso!"
+            if request.headers.get("Content-Type") == "application/json":
+                return JsonResponse({"success": True, "message": success_msg})
+
+            messages.success(request, success_msg)
+            return redirect("gerenciar_periodos")
 
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+            error_msg = str(e)
+            if request.headers.get("Content-Type") == "application/json":
+                return JsonResponse({"error": error_msg}, status=500)
+            messages.error(request, f"Erro ao excluir período: {error_msg}")
+            return redirect("gerenciar_periodos")
 
-    return JsonResponse({"error": "Método não permitido"}, status=405)
+    if request.headers.get("Content-Type") == "application/json":
+        return JsonResponse({"error": "Método não permitido"}, status=405)
+    return redirect("gerenciar_periodos")
 
 
 @login_required
@@ -911,7 +945,10 @@ def excluir_turma(request, turma_id):
     View para excluir uma turma
     """
     if not check_user_permission(request.user, ["coordenador", "admin"]):
-        return JsonResponse({"error": "Sem permissão"}, status=403)
+        if request.headers.get("Content-Type") == "application/json":
+            return JsonResponse({"error": "Sem permissão"}, status=403)
+        messages.error(request, "Sem permissão para realizar esta ação.")
+        return redirect("gerenciar_turmas")
 
     if request.method == "POST":
         try:
@@ -920,27 +957,32 @@ def excluir_turma(request, turma_id):
             # Verificar se há matrículas ativas
             matriculas_ativas = turma.matriculas.filter(status="ativa").count()
             if matriculas_ativas > 0:
-                return JsonResponse(
-                    {
-                        "error": f"Não é possível excluir a turma '{turma.codigo_turma}' pois existem {matriculas_ativas} aluno(s) matriculado(s)."
-                    },
-                    status=400,
-                )
+                error_msg = f"Não é possível excluir a turma '{turma.codigo_turma}' pois existem {matriculas_ativas} aluno(s) matriculado(s)."
+                if request.headers.get("Content-Type") == "application/json":
+                    return JsonResponse({"error": error_msg}, status=400)
+                messages.error(request, error_msg)
+                return redirect("gerenciar_turmas")
 
             codigo_turma = turma.codigo_turma
             turma.delete()
 
-            return JsonResponse(
-                {
-                    "success": True,
-                    "message": f"Turma '{codigo_turma}' excluída com sucesso!",
-                }
-            )
+            success_msg = f"Turma '{codigo_turma}' excluída com sucesso!"
+            if request.headers.get("Content-Type") == "application/json":
+                return JsonResponse({"success": True, "message": success_msg})
+
+            messages.success(request, success_msg)
+            return redirect("gerenciar_turmas")
 
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+            error_msg = str(e)
+            if request.headers.get("Content-Type") == "application/json":
+                return JsonResponse({"error": error_msg}, status=500)
+            messages.error(request, f"Erro ao excluir turma: {error_msg}")
+            return redirect("gerenciar_turmas")
 
-    return JsonResponse({"error": "Método não permitido"}, status=405)
+    if request.headers.get("Content-Type") == "application/json":
+        return JsonResponse({"error": "Método não permitido"}, status=405)
+    return redirect("gerenciar_turmas")
 
 
 class AdminHubView(LoginRequiredMixin, TemplateView):

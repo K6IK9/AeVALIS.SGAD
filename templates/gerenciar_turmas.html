@@ -202,10 +202,16 @@
                     <a href="{% url 'gerenciar_alunos_turma' turma.id %}" class="btn-action btn-primary">
                       👥 Alunos
                     </a>
-                    <button type="button" class="btn-small btn-delete"
-                      onclick="confirmarExclusao('{{ turma.id }}', '{{ turma.disciplina.disciplina_nome }} - {{ turma.professor.user.get_full_name }}')">
-                      Excluir
-                    </button>
+                    <form method="post" action="{% url 'excluir_turma' turma.id %}" class="inline-form">
+                      {% csrf_token %}
+                      <button 
+                        type="submit" 
+                        class="btn-small btn-delete"
+                        onclick="return confirm('Tem certeza que deseja excluir a turma \'{{ turma.disciplina.disciplina_nome }} - {{ turma.professor.user.get_full_name }}\'? Esta ação não poderá ser desfeita.')"
+                      >
+                        Excluir
+                      </button>
+                    </form>
                   </div>
                 </td>
               </tr>
@@ -280,49 +286,6 @@
 
     // Inicializar verificação de scroll quando a página carrega
     document.addEventListener("DOMContentLoaded", verificarScroll);
-
-    // Variáveis globais para exclusão
-    let itemParaExcluir = null;
-
-    // Função para confirmar exclusão
-    function confirmarExclusao(turmaId, nome) {
-      itemParaExcluir = turmaId;
-      document.getElementById("modal-message").textContent = `Tem certeza que deseja excluir a turma "${nome}"? Esta ação não poderá ser desfeita.`;
-      document.getElementById("modal-exclusao-overlay").classList.add("active");
-    }
-
-    // Função para excluir item
-    function excluirItem() {
-      if (!itemParaExcluir) return;
-
-      fetch(`/admin/turmas/excluir/${itemParaExcluir}/`, {
-        method: "POST",
-        headers: {
-          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            location.reload(); // Recarregar página
-          } else {
-            alert(data.error || "Erro ao excluir turma.");
-          }
-        })
-        .catch((error) => {
-          console.error("Erro:", error);
-          alert("Erro ao processar solicitação.");
-        })
-        .finally(() => {
-          fecharModal();
-        });
-    }
-
-    // Função para fechar modal
-    function fecharModal() {
-      document.getElementById("modal-exclusao-overlay").classList.remove("active");
-      itemParaExcluir = null;
-    }
 
     // Event listener para fechar modal clicando fora
     document.addEventListener("click", function (event) {
@@ -594,49 +557,6 @@
     // Inicializar verificação de scroll quando a página carrega
     document.addEventListener("DOMContentLoaded", verificarScroll);
 
-    // Variáveis globais para exclusão
-    let itemParaExcluir = null;
-
-    // Função para confirmar exclusão
-    function confirmarExclusao(turmaId, nome) {
-      itemParaExcluir = turmaId;
-      document.getElementById("modal-message").textContent = `Tem certeza que deseja excluir a turma "${nome}"? Esta ação não poderá ser desfeita.`;
-      document.getElementById("modal-exclusao-overlay").classList.add("active");
-    }
-
-    // Função para excluir item
-    function excluirItem() {
-      if (!itemParaExcluir) return;
-
-      fetch(`/admin/turmas/excluir/${itemParaExcluir}/`, {
-        method: "POST",
-        headers: {
-          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            location.reload(); // Recarregar página
-          } else {
-            alert(data.error || "Erro ao excluir turma.");
-          }
-        })
-        .catch((error) => {
-          console.error("Erro:", error);
-          alert("Erro ao processar solicitação.");
-        })
-        .finally(() => {
-          fecharModal();
-        });
-    }
-
-    // Função para fechar modal
-    function fecharModal() {
-      document.getElementById("modal-exclusao-overlay").classList.remove("active");
-      itemParaExcluir = null;
-    }
-
     // Event listener para fechar modal clicando fora
     document.addEventListener("click", function (event) {
       const modals = document.querySelectorAll(".modal-overlay");
@@ -648,27 +568,6 @@
     });
   </script>
 
-  <!-- Modal de Confirmação de Exclusão -->
-  <div id="modal-exclusao-overlay" class="modal-overlay">
-    <div class="modal">
-      <div class="modal-header">
-        <h3>Confirmar Exclusão</h3>
-      </div>
-      <div class="modal-content">
-        <p id="modal-message">
-          Tem certeza que deseja excluir esta turma? Esta ação não poderá ser desfeita.
-        </p>
-        <div class="modal-actions">
-          <button onclick="fecharModal()" class="btn-action btn-cancel">
-            Cancelar
-          </button>
-          <button onclick="excluirItem()" class="btn-action btn-delete">
-            Excluir
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
 </body>
 
 </html>
