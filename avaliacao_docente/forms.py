@@ -664,15 +664,20 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
 
             # Normaliza opções vindas como string (linhas, CSV ou JSON)
             normalized = []
+            
             if isinstance(opcoes, str):
                 text = opcoes.strip()
                 parsed = None
+                
                 # Tenta JSON primeiro se parecer um array
                 if text.startswith("[") and text.endswith("]"):
                     try:
                         parsed = json.loads(text)
-                    except Exception:
+                        if not isinstance(parsed, list):
+                            parsed = None
+                    except (json.JSONDecodeError, ValueError):
                         parsed = None
+                
                 if parsed is None:
                     # Considera quebras de linha como principal separador
                     parts = []
@@ -682,27 +687,16 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
                             continue
                         # Também quebra por vírgulas se houver
                         if "," in line:
-                            parts.extend([p.strip() for p in line.split(",")])
+                            parts.extend([p.strip() for p in line.split(",") if p.strip()])
                         else:
                             parts.append(line)
                     parsed = parts
 
-                # Deduplica preservando ordem e remove vazios
-                seen = set()
-                for item in parsed:
-                    s = str(item).strip()
-                    if not s or s in seen:
-                        continue
-                    seen.add(s)
-                    normalized.append(s)
+                # Processa itens parseados
+                normalized = self._deduplicate_options(parsed)
+                
             elif isinstance(opcoes, (list, tuple)):
-                seen = set()
-                for item in opcoes:
-                    s = str(item).strip()
-                    if not s or s in seen:
-                        continue
-                    seen.add(s)
-                    normalized.append(s)
+                normalized = self._deduplicate_options(opcoes)
             else:
                 raise forms.ValidationError("Formato inválido para as opções.")
 
@@ -713,6 +707,28 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
             return normalized
 
         return opcoes
+
+    def _deduplicate_options(self, items):
+        """
+        Remove duplicatas preservando ordem e remove itens vazios
+        
+        Args:
+            items: Lista de itens para deduplificar
+            
+        Returns:
+            Lista com itens únicos e não vazios
+        """
+        seen = set()
+        normalized = []
+        
+        for item in items:
+            s = str(item).strip()
+            if not s or s in seen:
+                continue
+            seen.add(s)
+            normalized.append(s)
+            
+        return normalized
 
 
 class RespostaAvaliacaoForm(forms.Form):

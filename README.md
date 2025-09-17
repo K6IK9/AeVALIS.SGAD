@@ -21,6 +21,17 @@ O **Sistema de Avaliação Docente** é uma aplicação web desenvolvida em Djan
 - **Autenticação**: Sistema de autenticação do Django com roles customizados
 - **Deploy**: Configurado para Vercel
 
+## 📚 Documentação
+
+Para informações detalhadas sobre instalação, configuração, deployment e práticas de desenvolvimento, consulte a **[pasta de documentação](./docs/README.md)**.
+
+### 📖 Documentos Principais
+
+- **[Setup Rápido](./docs/SETUP_RAPIDO.md)** - Guia de instalação rápida
+- **[Deploy Vercel](./docs/DEPLOY_VERCEL.md)** - Instruções para deploy em produção
+- **[Gerenciamento de Roles](./docs/ROLES_MANUAIS.md)** - Manual de roles e permissões
+- **[Arquivos Estáticos](./docs/STATIC_FILES_README.md)** - Solução de problemas com assets
+
 ### 👥 Sistema de Permissões
 
 O sistema utiliza 4 tipos de usuários com diferentes níveis de acesso:
@@ -164,8 +175,9 @@ python setup_static_files.py
 
 #### 📚 Documentação Adicional
 
-- **`SETUP_RAPIDO.md`**: Guia rápido de instalação
-- **`STATIC_FILES_README.md`**: Documentação completa sobre arquivos estáticos
+- **[docs/SETUP_RAPIDO.md](./docs/SETUP_RAPIDO.md)**: Guia rápido de instalação
+- **[docs/STATIC_FILES_README.md](./docs/STATIC_FILES_README.md)**: Documentação completa sobre arquivos estáticos
+- **[Toda a documentação](./docs/README.md)**: Índice completo da documentação técnica
 
 > 💡 **Dica**: Se você acabou de baixar o projeto, execute `python setup_projeto.py` para configurar tudo automaticamente! 
 
@@ -250,8 +262,9 @@ python setup_static_files.py
 
 #### 📋 Documentação Adicional
 
-- **`SETUP_RAPIDO.md`**: Instruções rápidas para instalação
-- **`STATIC_FILES_README.md`**: Documentação detalhada sobre arquivos estáticos
+- **[docs/SETUP_RAPIDO.md](./docs/SETUP_RAPIDO.md)**: Instruções rápidas para instalação
+- **[docs/STATIC_FILES_README.md](./docs/STATIC_FILES_README.md)**: Documentação detalhada sobre arquivos estáticos
+- **[Documentação completa](./docs/README.md)**: Todos os manuais e práticas de desenvolvimento
 
 ### �🖼️ Problemas com Carregamento de Imagens/Arquivos Estáticos
 

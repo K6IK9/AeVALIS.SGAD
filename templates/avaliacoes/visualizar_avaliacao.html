@@ -29,8 +29,7 @@
         <div class="header">
           <h1>Visualizar Avaliação</h1>
           <p>
-            {{ avaliacao.disciplina.disciplina_nome }} - {{
-            avaliacao.turma.codigo_turma }}
+            {{ avaliacao.disciplina.disciplina_nome }} - {{ avaliacao.turma.codigo_turma }}
           </p>
         </div>
 
@@ -51,16 +50,14 @@
               <div class="avaliacao-info">
                 <h3>{{ titulo }}</h3>
                 <p>
-                  <strong>Disciplina:</strong> {{
-                  avaliacao.disciplina.disciplina_nome }}
+                  <strong>Disciplina:</strong> {{ avaliacao.disciplina.disciplina_nome }}
                 </p>
                 <p>
                   <strong>Turma:</strong> {{ avaliacao.turma.codigo_turma }}
                 </p>
                 <p><strong>Ciclo:</strong> {{ avaliacao.ciclo.nome }}</p>
                 <p>
-                  <strong>Questionário:</strong> {{
-                  avaliacao.ciclo.questionario.titulo }}
+                  <strong>Questionário:</strong> {{ avaliacao.ciclo.questionario.titulo }}
                 </p>
               </div>
               <div class="avaliacao-status">
@@ -84,8 +81,7 @@
           <div class="pergunta-card">
             <div class="pergunta-header">
               <h6 class="pergunta-titulo">
-                {{ resposta.pergunta.enunciado }} {% if
-                resposta.pergunta.obrigatoria %}
+                {{ resposta.pergunta.enunciado }} {% if resposta.pergunta.obrigatoria %}
                 <span style="color: var(--cor08)">*</span>
                 {% endif %}
               </h6>
@@ -146,9 +142,7 @@
               <div
                 class="resposta-binaria {% if resposta.valor_boolean %}resposta-true{% elif resposta.valor_boolean is not None %}resposta-false{% else %}resposta-indefinida{% endif %}"
               >
-                {% if resposta.valor_boolean is not None %} {% if
-                resposta.valor_boolean %}✓ Sim{% else %}✗ Não{% endif %} {% else
-                %} {{ resposta.valor_texto|default:"-" }} {% endif %}
+                {% if resposta.valor_boolean is not None %} {% if resposta.valor_boolean %}✓ Sim{% else %}✗ Não{% endif %} {% else %} {{ resposta.valor_texto|default:"-" }} {% endif %}
               </div>
 
               {% elif resposta.pergunta.tipo == 'multipla_escolha' %}
