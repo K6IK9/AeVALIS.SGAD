@@ -66,6 +66,32 @@ urlpatterns = [
         name="matricular_alunos_massa",
     ),
     path("admin-hub/", views.AdminHubView.as_view(), name="admin_hub"),
+    # URLs para exportação CSV do admin hub
+    path(
+        "admin-hub/exportar-usuarios-csv/",
+        views.exportar_usuarios_csv,
+        name="exportar_usuarios_csv",
+    ),
+    path(
+        "admin-hub/exportar-cursos-csv/",
+        views.exportar_cursos_csv,
+        name="exportar_cursos_csv",
+    ),
+    path(
+        "admin-hub/exportar-disciplinas-csv/",
+        views.exportar_disciplinas_csv,
+        name="exportar_disciplinas_csv",
+    ),
+    path(
+        "admin-hub/exportar-turmas-csv/",
+        views.exportar_turmas_csv,
+        name="exportar_turmas_csv",
+    ),
+    path(
+        "admin-hub/exportar-periodos-csv/",
+        views.exportar_periodos_csv,
+        name="exportar_periodos_csv",
+    ),
     # URLs para Avaliação Docente
     path("avaliacoes/", views.listar_avaliacoes, name="listar_avaliacoes"),
     path("minhas-avaliacoes/", views.minhas_avaliacoes, name="minhas_avaliacoes"),

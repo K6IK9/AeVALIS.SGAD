@@ -65,7 +65,7 @@
         <div class="admin-card">
           <div class="card-content">
             <h3>
-              <span class="icon">👥</span> Gestão de Usuários (100% configurado)
+              <span class="icon">👥</span> Gestão de Usuários
             </h3>
             <p>
               Gerencie usuários, permissões e roles do sistema. Cadastre novos
@@ -74,10 +74,13 @@
           </div>
           <div class="card-actions">
             <a href="{% url 'gerenciar_roles' %}" class="btn"
-              >Gerenciar permissões (OK)</a
+              >Gerenciar permissões</a
             >
             <a href="{% url 'gerenciar_usuarios' %}" class="btn"
-              >Gerenciar Usuários (OK)</a
+              >Gerenciar Usuários</a
+            >
+            <a href="{% url 'exportar_usuarios_csv' %}" class="btn btn-secondary"
+              >📥 Relatório CSV</a
             >
           </div>
         </div>
@@ -86,7 +89,7 @@
         <div class="admin-card">
           <div class="card-content">
             <h3>
-              <span class="icon">🎓</span> Gestão de Cursos (80% configurado)
+              <span class="icon">🎓</span> Gestão de Cursos
             </h3>
             <p>
               Cadastre e gerencie cursos oferecidos pela instituição. Configure
@@ -95,10 +98,10 @@
           </div>
           <div class="card-actions">
             <a href="{% url 'gerenciar_cursos' %}" class="btn"
-              >Gerenciar Curso (OK)</a
+              >Gerenciar Curso</a
             >
-            <a href="#" class="btn btn-secondary"
-              >Relatórios (não implementado)</a
+            <a href="{% url 'exportar_cursos_csv' %}" class="btn btn-secondary"
+              >📥 Relatório CSV</a
             >
           </div>
         </div>
@@ -107,7 +110,7 @@
         <div class="admin-card">
           <div class="card-content">
             <h3>
-              <span class="icon">📚</span> Gestão de Disciplinas (50% configurado)
+              <span class="icon">📚</span> Gestão de Disciplinas
             </h3>
             <p>
               Administre disciplinas, vincule professores e defina cargas
@@ -115,8 +118,8 @@
             </p>
           </div>
           <div class="card-actions">
-            <a href="{% url 'gerenciar_disciplinas' %}" class="btn">Gerenciar Disciplinas (OK)</a>
-            <a href="#" class="btn btn-secondary">Relatórios (não implementado)</a>
+            <a href="{% url 'gerenciar_disciplinas' %}" class="btn">Gerenciar Disciplinas</a>
+            <a href="{% url 'exportar_disciplinas_csv' %}" class="btn btn-secondary">📥 Relatório CSV</a>
           </div>
         </div>
 
@@ -124,7 +127,7 @@
         <div class="admin-card">
           <div class="card-content">
             <h3>
-              <span class="icon">📅</span> Gestão de Períodos (50% configurado)
+              <span class="icon">📅</span> Gestão de Períodos
             </h3>
             <p>
               Configure períodos letivos, calendário acadêmico e organize
@@ -132,8 +135,8 @@
             </p>
           </div>
           <div class="card-actions">
-            <a href="{% url 'gerenciar_periodos' %}" class="btn">Gerenciar Períodos (OK)</a>
-            <a href="#" class="btn btn-secondary">Calendário (não implementado)</a>
+            <a href="{% url 'gerenciar_periodos' %}" class="btn">Gerenciar Períodos</a>
+            <a href="{% url 'exportar_periodos_csv' %}" class="btn btn-secondary">📥 Relatório CSV</a>
           </div>
         </div>
 
@@ -141,7 +144,7 @@
         <div class="admin-card">
           <div class="card-content">
             <h3>
-              <span class="icon">🏫</span> Gestão de Turmas (70% configurado)
+              <span class="icon">🏫</span> Gestão de Turmas
             </h3>
             <p>
               Crie e gerencie turmas, matrículas de alunos e alocação de
@@ -150,27 +153,9 @@
           </div>
           <div class="card-actions">
             <a href="{% url 'gerenciar_turmas' %}" class="btn"
-              >Gerenciar Turmas (OK)</a
+              >Gerenciar Turmas</a
             >
-            <a href="#" class="btn btn-secondary">Relatórios (não implementado)</a>
-          </div>
-        </div>
-
-        <!-- Configurações do Sistema -->
-        <div class="admin-card">
-          <div class="card-content">
-            <h3>
-              <span class="icon">⚙️</span> Configurações (Não configurado)
-            </h3>
-            <p>
-              Configure parâmetros gerais do sistema, backup, logs e manutenção
-              preventiva.
-            </p>
-          </div>
-          <div class="card-actions">
-            <a href="#" class="btn btn-secondary">Parâmetros</a>
-            <a href="#" class="btn btn-secondary">Backup</a>
-            <a href="#" class="btn btn-danger">Logs do Sistema</a>
+            <a href="{% url 'exportar_turmas_csv' %}" class="btn btn-secondary">📥 Relatório CSV</a>
           </div>
         </div>
       </div>

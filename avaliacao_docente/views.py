@@ -2785,3 +2785,381 @@ def encerrar_avaliacao(request, avaliacao_id):
         return redirect("listar_avaliacoes")
     messages.error(request, "Método inválido.")
     return redirect("listar_avaliacoes")
+
+
+# ============ FUNÇÕES DE EXPORTAÇÃO CSV PARA ADMIN HUB ============
+
+
+@login_required
+def exportar_usuarios_csv(request):
+    """
+    Exporta lista de usuários em formato CSV
+    """
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(request, "Você não tem permissão para acessar esta página.")
+        return redirect("inicio")
+
+    # Preparar resposta HTTP para CSV
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    nome_arquivo = f"usuarios_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
+
+    # Escrever BOM para UTF-8 (compatibilidade com Excel)
+    response.write("\ufeff")
+
+    # Criar writer CSV
+    writer = csv.writer(response)
+
+    # Cabeçalhos
+    writer.writerow(
+        [
+            "ID",
+            "Nome Completo",
+            "Email",
+            "Username",
+            "Role Principal",
+            "É Professor",
+            "É Aluno",
+            "Data de Cadastro",
+            "Último Login",
+            "Ativo",
+        ]
+    )
+
+    # Buscar usuários com prefetch das roles
+    usuarios = (
+        User.objects.select_related()
+        .prefetch_related("perfil_professor", "perfil_aluno")
+        .order_by("date_joined")
+    )
+
+    for usuario in usuarios:
+        # Determinar role principal
+        role_principal = "N/A"
+        if hasattr(usuario, "perfil_professor") and usuario.perfil_professor:
+            role_principal = "Professor"
+        elif hasattr(usuario, "perfil_aluno") and usuario.perfil_aluno:
+            role_principal = "Aluno"
+
+        # Verificar se é admin ou coordenador usando has_role
+        from rolepermissions.checkers import has_role
+
+        if has_role(usuario, "admin"):
+            role_principal = "Admin"
+        elif has_role(usuario, "coordenador"):
+            role_principal = "Coordenador"
+
+        writer.writerow(
+            [
+                usuario.id,
+                usuario.get_full_name()
+                or f"{usuario.first_name} {usuario.last_name}".strip(),
+                usuario.email,
+                usuario.username,
+                role_principal,
+                (
+                    "Sim"
+                    if hasattr(usuario, "perfil_professor") and usuario.perfil_professor
+                    else "Não"
+                ),
+                (
+                    "Sim"
+                    if hasattr(usuario, "perfil_aluno") and usuario.perfil_aluno
+                    else "Não"
+                ),
+                (
+                    usuario.date_joined.strftime("%d/%m/%Y %H:%M")
+                    if usuario.date_joined
+                    else ""
+                ),
+                (
+                    usuario.last_login.strftime("%d/%m/%Y %H:%M")
+                    if usuario.last_login
+                    else "Nunca"
+                ),
+                "Sim" if usuario.is_active else "Não",
+            ]
+        )
+
+    return response
+
+
+@login_required
+def exportar_cursos_csv(request):
+    """
+    Exporta lista de cursos em formato CSV
+    """
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(request, "Você não tem permissão para acessar esta página.")
+        return redirect("inicio")
+
+    # Preparar resposta HTTP para CSV
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    nome_arquivo = f"cursos_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
+
+    # Escrever BOM para UTF-8
+    response.write("\ufeff")
+
+    # Criar writer CSV
+    writer = csv.writer(response)
+
+    # Cabeçalhos
+    writer.writerow(
+        [
+            "ID",
+            "Nome do Curso",
+            "Sigla",  # Corrigido
+            "Coordenador",
+            "Email Coordenador",
+            "Total de Disciplinas",
+            "Total de Turmas",
+            "Observações",  # Corrigido
+            "Informações Adicionais",  # Corrigido
+        ]
+    )
+
+    # Buscar cursos com related data
+    cursos = (
+        Curso.objects.select_related("coordenador_curso__user")
+        .prefetch_related("disciplinas", "disciplinas__turmas")
+        .order_by("curso_nome")
+    )
+
+    for curso in cursos:
+        # Contar disciplinas e turmas
+        total_disciplinas = curso.disciplinas.count()
+        total_turmas = sum(
+            disciplina.turmas.count() for disciplina in curso.disciplinas.all()
+        )
+
+        writer.writerow(
+            [
+                curso.id,
+                curso.curso_nome,
+                curso.curso_sigla,  # Corrigido: era codigo_curso
+                (
+                    curso.coordenador_curso.user.get_full_name()  # Corrigido: era coordenador
+                    if curso.coordenador_curso
+                    else "Não definido"
+                ),
+                (
+                    curso.coordenador_curso.user.email
+                    if curso.coordenador_curso
+                    else ""
+                ),  # Corrigido: era coordenador
+                total_disciplinas,
+                total_turmas,
+                "N/A",  # Não há campo ativo no modelo Curso
+                "N/A",  # Não há campo data_criacao no modelo Curso
+            ]
+        )
+
+    return response
+
+
+@login_required
+def exportar_disciplinas_csv(request):
+    """
+    Exporta lista de disciplinas em formato CSV
+    """
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(request, "Você não tem permissão para acessar esta página.")
+        return redirect("inicio")
+
+    # Preparar resposta HTTP para CSV
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    nome_arquivo = f"disciplinas_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
+
+    # Escrever BOM para UTF-8
+    response.write("\ufeff")
+
+    # Criar writer CSV
+    writer = csv.writer(response)
+
+    # Cabeçalhos
+    writer.writerow(
+        [
+            "ID",
+            "Nome da Disciplina",
+            "Sigla",  # Corrigido
+            "Curso",
+            "Tipo",  # Corrigido
+            "Total de Turmas",
+            "Professores Atuais",
+            "Observações",  # Corrigido
+        ]
+    )
+
+    # Buscar disciplinas com related data
+    disciplinas = (
+        Disciplina.objects.select_related("curso")
+        .prefetch_related("turmas__professor__user")
+        .order_by("curso__curso_nome", "disciplina_nome")
+    )
+
+    for disciplina in disciplinas:
+        # Contar turmas
+        total_turmas = disciplina.turmas.count()
+
+        # Listar professores únicos
+        professores = set()
+        for turma in disciplina.turmas.all():
+            if turma.professor:
+                professores.add(turma.professor.user.get_full_name())
+
+        professores_str = ", ".join(sorted(professores)) if professores else "Nenhum"
+
+        writer.writerow(
+            [
+                disciplina.id,
+                disciplina.disciplina_nome,
+                disciplina.disciplina_sigla,  # Corrigido: era disciplina_codigo
+                disciplina.curso.curso_nome,
+                disciplina.disciplina_tipo,  # Adicionado: tipo da disciplina
+                total_turmas,
+                professores_str,
+                "N/A",  # Observações
+            ]
+        )
+
+    return response
+
+
+@login_required
+def exportar_turmas_csv(request):
+    """
+    Exporta lista de turmas em formato CSV
+    """
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(request, "Você não tem permissão para acessar esta página.")
+        return redirect("inicio")
+
+    # Preparar resposta HTTP para CSV
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    nome_arquivo = f"turmas_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
+
+    # Escrever BOM para UTF-8
+    response.write("\ufeff")
+
+    # Criar writer CSV
+    writer = csv.writer(response)
+
+    # Cabeçalhos
+    writer.writerow(
+        [
+            "ID",
+            "Código da Turma",
+            "Disciplina",
+            "Curso",
+            "Professor",
+            "Email Professor",
+            "Período Letivo",
+            "Total de Alunos",
+            "Alunos Ativos",
+            "Ativa",
+        ]
+    )
+
+    # Buscar turmas com related data
+    turmas = (
+        Turma.objects.select_related(
+            "disciplina__curso", "professor__user", "periodo_letivo"
+        )
+        .prefetch_related("matriculas")
+        .order_by(
+            "periodo_letivo__nome", "disciplina__curso__curso_nome", "codigo_turma"
+        )
+    )
+
+    for turma in turmas:
+        # Contar alunos
+        total_alunos = turma.matriculas.count()
+        alunos_ativos = turma.matriculas.filter(status="ativa").count()
+
+        writer.writerow(
+            [
+                turma.id,
+                turma.codigo_turma,
+                turma.disciplina.disciplina_nome,
+                turma.disciplina.curso.curso_nome,
+                (
+                    turma.professor.user.get_full_name()
+                    if turma.professor
+                    else "Não definido"
+                ),
+                turma.professor.user.email if turma.professor else "",
+                turma.periodo_letivo.nome,
+                total_alunos,
+                alunos_ativos,
+                (
+                    "Ativa" if turma.status == "ativa" else "Finalizada"
+                ),  # Corrigido: era turma.ativa
+            ]
+        )
+
+    return response
+
+
+@login_required
+def exportar_periodos_csv(request):
+    """
+    Exporta lista de períodos letivos em formato CSV
+    """
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(request, "Você não tem permissão para acessar esta página.")
+        return redirect("inicio")
+
+    # Preparar resposta HTTP para CSV
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    nome_arquivo = f"periodos_letivos_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
+
+    # Escrever BOM para UTF-8
+    response.write("\ufeff")
+
+    # Criar writer CSV
+    writer = csv.writer(response)
+
+    # Cabeçalhos
+    writer.writerow(
+        [
+            "ID",
+            "Nome do Período",
+            "Ano/Semestre",  # Corrigido
+            "Informações",  # Corrigido
+            "Total de Turmas",
+            "Total de Avaliações",
+            "Observações",  # Corrigido
+        ]
+    )
+
+    # Buscar períodos com related data
+    periodos = PeriodoLetivo.objects.prefetch_related(
+        "turmas", "ciclos_avaliacao"
+    ).order_by(
+        "-ano", "-semestre"
+    )  # Corrigido: era data_inicio
+
+    for periodo in periodos:
+        # Contar turmas e avaliações
+        total_turmas = periodo.turmas.count()
+        total_avaliacoes = sum(
+            ciclo.avaliacoes.count() for ciclo in periodo.ciclos_avaliacao.all()
+        )
+
+        writer.writerow(
+            [
+                periodo.id,
+                periodo.nome,
+                f"{periodo.ano}.{periodo.semestre}",  # Corrigido: não há data_inicio
+                "Período letivo acadêmico",  # Informações descritivas
+                total_turmas,
+                total_avaliacoes,
+                "N/A",  # Observações
+            ]
+        )
+
+    return response
