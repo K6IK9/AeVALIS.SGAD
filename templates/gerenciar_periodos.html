@@ -279,19 +279,10 @@
           }
         });
 
-      document
-        .getElementById("deleteModal")
-        .addEventListener("click", function (e) {
-          if (e.target === this) {
-            closeDeleteModal();
-          }
-        });
-
       // Fechar modais com tecla Escape
       document.addEventListener("keydown", function (e) {
         if (e.key === "Escape") {
           closeEditModal();
-          closeDeleteModal();
         }
       });
 

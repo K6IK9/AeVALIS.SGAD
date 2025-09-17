@@ -12,11 +12,11 @@
 10. tela de gerenciar curso, não da para apagar curso OK TESTAR
 11. tela de gerenciar turma, não da para apagar turma OK TESTAR
 12. tela de gerenciar periodos, não da para apagar periodos OK TESTAR
+14 . tela de gerenciar questionario tem esitlos quebrados okkk
+13. Relatório de avaliação tem comentario com nome do respondente, não deveria ter, pois é para ser anonimo. okkkk
 
 
 ----
-13. Relatório de avaliação tem comentario com nome do respondente, não deveria ter, pois é para ser anonimo.
-
 
 # Novidades a implementar
 1. O sistema deve permitir que o administrator faça o relatorio de cada gerenciamento

@@ -3,6 +3,7 @@ import json
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 from .models import (
     Curso,
     PerfilProfessor,
@@ -17,6 +18,25 @@ from .models import (
     CicloAvaliacao,
     RespostaAvaliacao,
 )
+
+
+class DateTimeLocalInput(forms.DateTimeInput):
+    """
+    Widget customizado para campos datetime-local que formata corretamente o valor inicial
+    """
+
+    input_type = "datetime-local"
+
+    def format_value(self, value):
+        if value is None:
+            return ""
+        if hasattr(value, "strftime"):
+            # Converte para timezone local se necessário
+            if timezone.is_aware(value):
+                value = timezone.localtime(value)
+            # Formato exigido pelo input datetime-local: YYYY-MM-DDTHH:MM
+            return value.strftime("%Y-%m-%dT%H:%M")
+        return value
 
 
 class RegistroForm(UserCreationForm):
@@ -457,12 +477,8 @@ class CicloAvaliacaoForm(forms.ModelForm):
             ),
             "periodo_letivo": forms.Select(attrs={"class": "form-control"}),
             "questionario": forms.Select(attrs={"class": "form-control"}),
-            "data_inicio": forms.DateTimeInput(
-                attrs={"class": "form-control", "type": "datetime-local"}
-            ),
-            "data_fim": forms.DateTimeInput(
-                attrs={"class": "form-control", "type": "datetime-local"}
-            ),
+            "data_inicio": DateTimeLocalInput(attrs={"class": "form-control"}),
+            "data_fim": DateTimeLocalInput(attrs={"class": "form-control"}),
             "enviar_lembrete_email": forms.CheckboxInput(
                 attrs={"class": "form-check-input"}
             ),

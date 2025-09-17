@@ -2,285 +2,192 @@
 
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Responder Avaliação - IF SADD</title>
 
-    <!-- Bootstrap Icons -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Responder Avaliação - IF SADD</title>
 
-    <!-- Google Fonts -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Vidaloka&display=swap"
-      rel="stylesheet"
-    />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet" />
 
-    <!-- CSS Files -->
-    <link rel="stylesheet" href="{% static 'css/global.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/responder_avaliacao.css' %}" />
-  </head>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Vidaloka&display=swap"
+    rel="stylesheet" />
 
-  <body>
-    <main>
-      <div class="container">
-        <a href="{% url 'inicio' %}" class="back-button">← Voltar</a>
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="{% static 'css/global.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/responder_avaliacao.css' %}" />
+</head>
 
-        <!-- Header da página -->
-        <div class="header">
-          <h1>Responder Avaliação</h1>
-          <p>{{ avaliacao.disciplina.disciplina_nome }} - {{ avaliacao.turma.codigo_turma }}</p>
+<body>
+  <main>
+    <div class="container">
+      <a href="{% url 'inicio' %}" class="back-button">← Voltar</a>
+
+      <!-- Header da página -->
+      <div class="header">
+        <h1>Responder Avaliação</h1>
+        <p>{{ avaliacao.disciplina.disciplina_nome }} - {{ avaliacao.turma.codigo_turma }}</p>
+      </div>
+
+      <!-- Mensagens -->
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Conteúdo principal -->
+      <div class="form-section">
+        <!-- Informações da Avaliação -->
+        <div class="avaliacao-card">
+          <div style="text-align: center">
+            <h3>{{ titulo }}</h3>
+            <p style="color: #666; margin: 10px 0">
+              {{ avaliacao.disciplina.disciplina_nome }} - {{ avaliacao.turma.codigo_turma }}
+            </p>
+            <p style="color: #666">{{ avaliacao.ciclo.nome }}</p>
+
+            {% if avaliacao.ciclo.anonimo %}
+            <div class="message info">
+              🔒 <strong>Avaliação Anônima:</strong> Suas respostas serão
+              mantidas em sigilo.
+            </div>
+            {% endif %}
+          </div>
         </div>
 
-        <!-- Mensagens -->
-        {% if messages %}
-        <div class="messages">
-          {% for message in messages %}
-          <div class="message {{ message.tags }}">{{ message }}</div>
-          {% endfor %}
-        </div>
-        {% endif %}
-
-        <!-- Conteúdo principal -->
-        <div class="form-section">
-          <!-- Informações da Avaliação -->
-          <div class="avaliacao-card">
-            <div style="text-align: center">
-              <h3>{{ titulo }}</h3>
-              <p style="color: #666; margin: 10px 0">
-                {{ avaliacao.disciplina.disciplina_nome }} - {{ avaliacao.turma.codigo_turma }}
-              </p>
-              <p style="color: #666">{{ avaliacao.ciclo.nome }}</p>
-
-              {% if avaliacao.ciclo.anonimo %}
-              <div class="message info">
-                🔒 <strong>Avaliação Anônima:</strong> Suas respostas serão
-                mantidas em sigilo.
-              </div>
+        <!-- Formulário de Avaliação -->
+        <form method="post" id="form-avaliacao">
+          {% csrf_token %} {% for qp in perguntas_questionario %}
+          <div class="pergunta-card">
+            <div class="pergunta-header">
+              <h6 class="pergunta-numero">
+                Pergunta {{ qp.ordem }} {% if qp.pergunta.obrigatoria %}
+                <span class="obrigatorio">*</span>
+                {% endif %}
+              </h6>
+              {% if qp.pergunta.categoria %}
+              <span class="badge bg-secondary">{{ qp.pergunta.categoria.nome }}</span>
               {% endif %}
             </div>
-          </div>
 
-          <!-- Formulário de Avaliação -->
-          <form method="post" id="form-avaliacao">
-            {% csrf_token %} {% for qp in perguntas_questionario %}
-            <div class="pergunta-card">
-              <div class="pergunta-header">
-                <h6 class="pergunta-numero">
-                  Pergunta {{ qp.ordem }} {% if qp.pergunta.obrigatoria %}
-                  <span class="obrigatorio">*</span>
-                  {% endif %}
-                </h6>
-                {% if qp.pergunta.categoria %}
-                <span class="badge bg-secondary"
-                  >{{ qp.pergunta.categoria.nome }}</span
-                >
-                {% endif %}
+            <p class="pergunta-titulo">{{ qp.pergunta.enunciado }}</p>
+
+            {% if qp.pergunta.tipo == 'likert' %}
+            <!-- Escala Likert -->
+            <div class="likert-scale">
+              <div class="likert-labels">
+                <small>Discordo Totalmente</small>
+                <small>Concordo Totalmente</small>
               </div>
-
-              <p class="pergunta-titulo">{{ qp.pergunta.enunciado }}</p>
-
-              {% if qp.pergunta.tipo == 'likert' %}
-              <!-- Escala Likert -->
-              <div class="likert-scale">
-                <div class="likert-labels">
-                  <small>Discordo Totalmente</small>
-                  <small>Concordo Totalmente</small>
-                </div>
-                <div class="likert-options">
-                  {% for i in "12345"|make_list %}
-                  <div class="form-check">
-                    <input
-                      class="form-check-input"
-                      type="radio"
-                      name="pergunta_{{ qp.pergunta.id }}"
-                      id="likert_{{ qp.pergunta.id }}_{{ i }}"
-                      value="{{ i }}"
-                      {%
-                      if
-                      qp.pergunta.obrigatoria
-                      %}required{%
-                      endif
-                      %}
-                    />
-                    <label
-                      class="form-check-label"
-                      for="likert_{{ qp.pergunta.id }}_{{ i }}"
-                    >
-                      {{ i }}
-                    </label>
-                  </div>
-                  {% endfor %}
-                </div>
-              </div>
-
-              {% elif qp.pergunta.tipo == 'nps' %}
-              <!-- Net Promoter Score -->
-              <div class="rating-container">
-                <div
-                  style="
-                    width: 100%;
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 10px;
-                  "
-                >
-                  <small style="color: #666">0 - Nunca recomendaria</small>
-                  <small style="color: #666"
-                    >10 - Certamente recomendaria</small
-                  >
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    justify-content: center;
-                    flex-wrap: wrap;
-                    gap: 10px;
-                  "
-                >
-                  {% nps_scale as escala %} {% for i in escala %}
-                  <div class="rating-option">
-                    <input
-                      type="radio"
-                      name="pergunta_{{ qp.pergunta.id }}"
-                      id="nps_{{ qp.pergunta.id }}_{{ i }}"
-                      value="{{ i }}"
-                      {%
-                      if
-                      qp.pergunta.obrigatoria
-                      %}required{%
-                      endif
-                      %}
-                    />
-                    <label for="nps_{{ qp.pergunta.id }}_{{ i }}">
-                      <div class="rating-value">{{ i }}</div>
-                    </label>
-                  </div>
-                  {% endfor %}
-                </div>
-              </div>
-
-              {% elif qp.pergunta.tipo == 'multipla_escolha' %}
-              <!-- Múltipla Escolha -->
-              <div class="multipla-escolha">
-                {% for opcao in qp.pergunta.opcoes_multipla_escolha %}
+              <div class="likert-options">
+                {% for i in "12345"|make_list %}
                 <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="pergunta_{{ qp.pergunta.id }}"
-                    id="multipla_{{ qp.pergunta.id }}_{{ forloop.counter }}"
-                    value="{{ opcao }}"
-                    {%
-                    if
-                    qp.pergunta.obrigatoria
-                    %}required{%
-                    endif
-                    %}
-                  />
-                  <label
-                    class="form-check-label"
-                    for="multipla_{{ qp.pergunta.id }}_{{ forloop.counter }}"
-                  >
-                    {{ opcao }}
+                  <input class="form-check-input" type="radio" name="pergunta_{{ qp.pergunta.id }}"
+                    id="likert_{{ qp.pergunta.id }}_{{ i }}" value="{{ i }}" {% if qp.pergunta.obrigatoria %}required{% endif %} />
+                  <label class="form-check-label" for="likert_{{ qp.pergunta.id }}_{{ i }}">
+                    {{ i }}
                   </label>
                 </div>
                 {% endfor %}
               </div>
+            </div>
 
-              {% elif qp.pergunta.tipo == 'sim_nao' %}
-              <!-- Sim/Não -->
-              <div class="sim-nao">
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="pergunta_{{ qp.pergunta.id }}"
-                    id="sim_{{ qp.pergunta.id }}"
-                    value="Sim"
-                    {%
-                    if
-                    qp.pergunta.obrigatoria
-                    %}required{%
-                    endif
-                    %}
-                  />
-                  <label
-                    class="form-check-label option-yes"
-                    for="sim_{{ qp.pergunta.id }}"
-                  >
-                    ✅ Sim
+            {% elif qp.pergunta.tipo == 'nps' %}
+            <!-- Net Promoter Score -->
+            <div class="rating-container">
+              <div style="
+                    width: 100%;
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 10px;
+                  ">
+                <small style="color: #666">0 - Nunca recomendaria</small>
+                <small style="color: #666">10 - Certamente recomendaria</small>
+              </div>
+              <div style="
+                    display: flex;
+                    justify-content: center;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                  ">
+                {% nps_scale as escala %} {% for i in escala %}
+                <div class="rating-option">
+                  <input type="radio" name="pergunta_{{ qp.pergunta.id }}" id="nps_{{ qp.pergunta.id }}_{{ i }}"
+                    value="{{ i }}" {% if qp.pergunta.obrigatoria %}required{% endif %} />
+                  <label for="nps_{{ qp.pergunta.id }}_{{ i }}">
+                    <div class="rating-value">{{ i }}</div>
                   </label>
                 </div>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="pergunta_{{ qp.pergunta.id }}"
-                    id="nao_{{ qp.pergunta.id }}"
-                    value="Não"
-                    {%
-                    if
-                    qp.pergunta.obrigatoria
-                    %}required{%
-                    endif
-                    %}
-                  />
-                  <label
-                    class="form-check-label option-no"
-                    for="nao_{{ qp.pergunta.id }}"
-                  >
-                    ❌ Não
-                  </label>
-                </div>
+                {% endfor %}
               </div>
-
-              {% elif qp.pergunta.tipo == 'texto_livre' %}
-              <!-- Texto Livre -->
-              <div class="texto-livre">
-                <textarea
-                  class="form-control"
-                  name="pergunta_{{ qp.pergunta.id }}"
-                  id="texto_{{ qp.pergunta.id }}"
-                  rows="4"
-                  placeholder="Digite sua resposta..."
-                  {%
-                  if
-                  qp.pergunta.obrigatoria
-                  %}required{%
-                  endif
-                  %}
-                ></textarea>
-              </div>
-              {% endif %}
             </div>
-            {% endfor %}
 
-            <!-- Navegação e Envio -->
-            <div class="pergunta-navegacao">
-              <a href="{% url 'listar_avaliacoes' %}" class="btn btn-secondary">
-                ← Voltar
-              </a>
-
-              <div class="pergunta-numero">
-                {{ perguntas_questionario|length }} pergunta{{
-                perguntas_questionario|length|pluralize }}
+            {% elif qp.pergunta.tipo == 'multipla_escolha' %}
+            <!-- Múltipla Escolha -->
+            <div class="multipla-escolha">
+              {% for opcao in qp.pergunta.opcoes_multipla_escolha %}
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="pergunta_{{ qp.pergunta.id }}"
+                  id="multipla_{{ qp.pergunta.id }}_{{ forloop.counter }}" value="{{ opcao }}" {% if qp.pergunta.obrigatoria %}required{% endif %} />
+                <label class="form-check-label" for="multipla_{{ qp.pergunta.id }}_{{ forloop.counter }}">
+                  {{ opcao }}
+                </label>
               </div>
-
-              <button
-                type="submit"
-                class="btn"
-                onclick="return confirm('Tem certeza que deseja enviar sua avaliação? Após o envio não será possível alterar as respostas.')"
-              >
-                Enviar Avaliação ✓
-              </button>
+              {% endfor %}
             </div>
-          </form>
-        </div>
+
+            {% elif qp.pergunta.tipo == 'sim_nao' %}
+            <!-- Sim/Não -->
+            <div class="sim-nao">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="pergunta_{{ qp.pergunta.id }}"
+                  id="sim_{{ qp.pergunta.id }}" value="Sim" {% if qp.pergunta.obrigatoria %}required{% endif %} />
+                <label class="form-check-label option-yes" for="sim_{{ qp.pergunta.id }}">
+                  ✅ Sim
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="pergunta_{{ qp.pergunta.id }}"
+                  id="nao_{{ qp.pergunta.id }}" value="Não" {% if qp.pergunta.obrigatoria %}required{% endif %} />
+                <label class="form-check-label option-no" for="nao_{{ qp.pergunta.id }}">
+                  ❌ Não
+                </label>
+              </div>
+            </div>
+
+            {% elif qp.pergunta.tipo == 'texto_livre' %}
+            <!-- Texto Livre -->
+            <div class="texto-livre">
+              <textarea class="form-control" name="pergunta_{{ qp.pergunta.id }}" id="texto_{{ qp.pergunta.id }}" rows="4" placeholder="Digite sua resposta..." {% if qp.pergunta.obrigatoria %}required{% endif %}></textarea>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+
+          <!-- Navegação e Envio -->
+          <div class="pergunta-navegacao">
+            <a href="{% url 'listar_avaliacoes' %}" class="btn btn-secondary">
+              ← Voltar
+            </a>
+
+            <div class="pergunta-numero">
+              {{ perguntas_questionario|length }} pergunta{{ perguntas_questionario|length|pluralize }}
+            </div>
+
+            <button type="submit" class="btn"
+              onclick="return confirm('Tem certeza que deseja enviar sua avaliação? Após o envio não será possível alterar as respostas.')">
+              Enviar Avaliação ✓
+            </button>
+          </div>
+        </form>
       </div>
-    </main>
-  </body>
+    </div>
+  </main>
+</body>
+
 </html>

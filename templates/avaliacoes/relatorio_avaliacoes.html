@@ -118,7 +118,7 @@
                             </div>
                             <div class="info-item">
                                 <span>Alunos:</span>
-                                <strong>{{ avaliacao.turma.alunos.count }}</strong>
+                                <strong>{{ avaliacao.total_alunos }}</strong>
                             </div>
                             <div class="info-item">
                                 <span>Respondentes:</span>
@@ -160,8 +160,8 @@
                             {% for comentario in avaliacao.comentarios %}
                             <div class="comentario-card">
                                 <div class="comentario-header">
-                                    <span class="comentario-aluno">{{ comentario.aluno.user.get_full_name|default:"Anônimo" }}</span>
-                                    <span class="comentario-data">{{ comentario.data_submissao|date:"d/m/Y H:i" }}</span>
+                                    <span class="comentario-aluno">Avaliação Anônima</span>
+                                    <span class="comentario-data">{{ comentario.data_resposta|date:"d/m/Y H:i" }}</span>
                                 </div>
                                 <div class="comentario-texto">{{ comentario.valor_texto }}</div>
                             </div>
@@ -257,43 +257,110 @@
     function criarGrafico(canvasId, pergunta){
         const ctx = document.getElementById(canvasId);
         if(!ctx) return;
-        const labels = Object.keys(pergunta.contagens).sort((a,b)=>Number(a)-Number(b));
+        
+        let labels = Object.keys(pergunta.contagens);
         const dados = labels.map(k => pergunta.contagens[k]);
         const cores = labels.map((_,i)=>gerarCor(i, labels.length));
-        const tipoGrafico = pergunta.tipo === 'nps' ? 'line' : 'bar';
-        const datasetCfg = {
-            label: 'Qtd',
+        
+        // Definir tipo de gráfico e configurações baseado no tipo da pergunta
+        let tipoGrafico = 'bar';
+        let datasetCfg = {
+            label: 'Quantidade',
             data: dados,
-            backgroundColor: tipoGrafico==='bar'? cores : 'rgba(0,253,148,0.4)',
-            borderColor: tipoGrafico==='bar'? cores : 'var(--cor02)',
-            borderWidth: 2,
-            tension: 0.3,
-            fill: pergunta.tipo === 'nps'
+            backgroundColor: cores,
+            borderColor: cores,
+            borderWidth: 2
         };
+        
+        // Configurações específicas por tipo de pergunta
+        switch(pergunta.tipo) {
+            case 'nps':
+                // Para NPS, ordenar numericamente e usar gráfico de linha
+                labels = labels.sort((a,b)=>Number(a)-Number(b));
+                tipoGrafico = 'line';
+                datasetCfg = {
+                    label: 'Quantidade',
+                    data: labels.map(k => pergunta.contagens[k]),
+                    backgroundColor: 'rgba(0,253,148,0.4)',
+                    borderColor: 'var(--cor02)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                };
+                break;
+                
+            case 'likert':
+                // Para Likert, ordenar numericamente
+                labels = labels.sort((a,b)=>Number(a)-Number(b));
+                break;
+                
+            case 'sim_nao':
+                // Para Sim/Não, usar gráfico de rosca
+                tipoGrafico = 'doughnut';
+                datasetCfg = {
+                    data: dados,
+                    backgroundColor: ['#28a745', '#dc3545'],
+                    borderWidth: 2
+                };
+                break;
+                
+            case 'multipla_escolha':
+                // Para múltipla escolha, usar gráfico de barras horizontais
+                tipoGrafico = 'bar';
+                datasetCfg.backgroundColor = cores;
+                break;
+                
+            case 'texto_livre':
+                // Para texto livre, usar gráfico de barras simples
+                tipoGrafico = 'bar';
+                datasetCfg.backgroundColor = ['#17a2b8'];
+                break;
+        }
+        
+        // Configurações específicas para escalas
+        let scalesConfig = {
+            y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Quantidade' },
+                ticks: { precision: 0 }
+            }
+        };
+        
+        // Para gráficos de rosca, não mostrar escalas
+        if (tipoGrafico === 'doughnut') {
+            scalesConfig = {};
+        } else {
+            scalesConfig.x = {
+                title: { display: true, text: pergunta.tipo === 'multipla_escolha' ? 'Opções' : 'Valores' },
+                ticks: { 
+                    font: { size: 11 },
+                    maxRotation: 45 
+                }
+            };
+        }
+        
         new Chart(ctx, {
             type: tipoGrafico,
             data: { labels: labels, datasets: [datasetCfg] },
             options: {
-                responsive:true,
-                plugins:{
-                    legend:{display:false},
-                    tooltip:{
-                        callbacks:{
-                            label:(ctx)=>`Valor ${ctx.label}: ${ctx.parsed.y}`
+                responsive: true,
+                plugins: {
+                    legend: { 
+                        display: tipoGrafico === 'doughnut',
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                if (tipoGrafico === 'doughnut') {
+                                    return `${ctx.label}: ${ctx.parsed}`;
+                                }
+                                return `${ctx.label}: ${ctx.parsed.y}`;
+                            }
                         }
                     }
                 },
-                scales:{
-                    x:{
-                        title:{display:true, text:'Valor'},
-                        ticks:{font:{size:11}}
-                    },
-                    y:{
-                        beginAtZero:true,
-                        title:{display:true, text:'Quantidade'},
-                        ticks:{precision:0}
-                    }
-                }
+                scales: scalesConfig
             }
         });
     }

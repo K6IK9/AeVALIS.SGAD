@@ -6,6 +6,10 @@ from django.views.generic import TemplateView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import login
 from django.db.models import Q
+from django.http import JsonResponse, HttpResponse
+from django.db.models import Q, Avg
+import csv
+from datetime import datetime
 from .models import (
     PerfilAluno,
     PerfilProfessor,
@@ -26,9 +30,6 @@ from .models import (
     QuestionarioPergunta,
 )
 from django.contrib.auth.models import User
-
-from django.http import JsonResponse
-from django.db.models import Q, Avg
 from django.utils import timezone
 from rolepermissions.roles import assign_role, remove_role
 from rolepermissions.checkers import has_role
@@ -1797,6 +1798,9 @@ def relatorio_avaliacoes(request):
         messages.error(request, "Você não tem permissão para acessar relatórios.")
         return redirect("listar_avaliacoes")
 
+    # Verificar se é solicitação de exportação CSV
+    formato = request.GET.get("formato")
+
     ciclos = CicloAvaliacao.objects.all().order_by("-data_inicio")
     professores = PerfilProfessor.objects.all().order_by("user__first_name")
 
@@ -1813,6 +1817,12 @@ def relatorio_avaliacoes(request):
     if professor_selecionado:
         avaliacoes = avaliacoes.filter(professor_id=professor_selecionado)
 
+    # Se for solicitação de exportação CSV, gerar e retornar o arquivo
+    if formato == "csv":
+        return gerar_csv_avaliacoes(
+            avaliacoes, ciclo_selecionado, professor_selecionado
+        )
+
     # Estatísticas
     total_avaliacoes = avaliacoes.count()
 
@@ -1820,18 +1830,21 @@ def relatorio_avaliacoes(request):
     avaliacoes_com_stats = []
     for avaliacao in avaliacoes:
         # Contar respondentes únicos
-        respondentes = RespostaAvaliacao.objects.filter(
-            avaliacao=avaliacao
-        ).values('aluno').distinct().count()
-        
+        respondentes = (
+            RespostaAvaliacao.objects.filter(avaliacao=avaliacao)
+            .values("aluno")
+            .distinct()
+            .count()
+        )
+
         # Calcular taxa de resposta
-        total_alunos = avaliacao.turma.matriculas.filter(status='ativa').count()
+        total_alunos = avaliacao.turma.matriculas.filter(status="ativa").count()
         taxa_resposta = (respondentes / total_alunos * 100) if total_alunos > 0 else 0
-        
+
         # Calcular estatísticas por pergunta
         pergunta_stats = []
         perguntas_questionario = avaliacao.ciclo.questionario.perguntas.all()
-        
+
         for pergunta_questionario in perguntas_questionario:
             pergunta = pergunta_questionario.pergunta
             respostas_pergunta = RespostaAvaliacao.objects.filter(
@@ -1839,42 +1852,52 @@ def relatorio_avaliacoes(request):
                 avaliacao__professor=avaliacao.professor,
                 avaliacao__turma=avaliacao.turma,
                 pergunta=pergunta,
-                valor_numerico__isnull=False
+                valor_numerico__isnull=False,
             )
-            
+
             if respostas_pergunta.exists():
                 # Calcular média
-                media = respostas_pergunta.aggregate(media=Avg('valor_numerico'))['media'] or 0
-                
+                media = (
+                    respostas_pergunta.aggregate(media=Avg("valor_numerico"))["media"]
+                    or 0
+                )
+
                 # Calcular moda (valor mais frequente)
-                valores = respostas_pergunta.values('valor_numerico').annotate(
-                    count=Count('valor_numerico')
-                ).order_by('-count')
-                moda = valores[0]['valor_numerico'] if valores else 0
-                
+                valores = (
+                    respostas_pergunta.values("valor_numerico")
+                    .annotate(count=Count("valor_numerico"))
+                    .order_by("-count")
+                )
+                moda = valores[0]["valor_numerico"] if valores else 0
+
                 # Contar respostas
                 respostas_count = respostas_pergunta.count()
-                
-                pergunta_stats.append({
-                    'pergunta': pergunta,
-                    'media': round(media, 1),
-                    'moda': moda,
-                    'respostas_count': respostas_count
-                })
-        
-        # Buscar comentários da avaliação
-        comentarios = RespostaAvaliacao.objects.filter(
-            avaliacao=avaliacao,
-            valor_texto__isnull=False,
-            valor_texto__gt=''
-        ).exclude(valor_texto='').select_related('aluno__user')
-        
+
+                pergunta_stats.append(
+                    {
+                        "pergunta": pergunta,
+                        "media": round(media, 1),
+                        "moda": moda,
+                        "respostas_count": respostas_count,
+                    }
+                )
+
+        # Buscar comentários da avaliação (anônimos)
+        comentarios = (
+            RespostaAvaliacao.objects.filter(
+                avaliacao=avaliacao, valor_texto__isnull=False, valor_texto__gt=""
+            )
+            .exclude(valor_texto="")
+            .only("valor_texto", "data_resposta")
+        )
+
         # Adicionar dados calculados à avaliação
         avaliacao.respondentes = respondentes
+        avaliacao.total_alunos = total_alunos
         avaliacao.taxa_resposta = round(taxa_resposta, 1)
         avaliacao.pergunta_stats = pergunta_stats
         avaliacao.comentarios = comentarios
-        
+
         avaliacoes_com_stats.append(avaliacao)
 
     # Calcular média simples das respostas numéricas
@@ -1902,11 +1925,9 @@ def relatorio_avaliacoes(request):
         )
 
     for ciclo in ciclos_iter:
-        # Base de respostas numéricas (Likert / NPS) dentro do ciclo e filtros de professor se houver
+        # Base de todas as respostas dentro do ciclo e filtros de professor se houver
         respostas_base = RespostaAvaliacao.objects.filter(
             avaliacao__ciclo=ciclo,
-            pergunta__tipo__in=["likert", "nps"],
-            valor_numerico__isnull=False,
         )
         if professor_selecionado:
             respostas_base = respostas_base.filter(
@@ -1916,22 +1937,68 @@ def relatorio_avaliacoes(request):
         if not respostas_base.exists():
             continue
 
-        # Contagens por pergunta e valor
-        contagens = respostas_base.values(
+        # Separar respostas por tipo para processamento específico
+        respostas_numericas = respostas_base.filter(
+            pergunta__tipo__in=["likert", "nps"],
+            valor_numerico__isnull=False,
+        )
+
+        respostas_multipla_escolha = respostas_base.filter(
+            pergunta__tipo="multipla_escolha",
+            valor_texto__isnull=False,
+        ).exclude(valor_texto="")
+
+        respostas_sim_nao = respostas_base.filter(
+            pergunta__tipo="sim_nao",
+            valor_boolean__isnull=False,
+        )
+
+        respostas_texto_livre = respostas_base.filter(
+            pergunta__tipo="texto_livre",
+            valor_texto__isnull=False,
+        ).exclude(valor_texto="")
+
+        # Processar perguntas numéricas (Likert e NPS)
+        contagens_numericas = respostas_numericas.values(
             "pergunta_id",
             "pergunta__enunciado",
             "pergunta__tipo",
             "valor_numerico",
         ).annotate(qtd=Count("id"))
 
-        # Médias por pergunta
-        medias = respostas_base.values("pergunta_id").annotate(
+        # Processar perguntas de múltipla escolha
+        contagens_multipla = respostas_multipla_escolha.values(
+            "pergunta_id",
+            "pergunta__enunciado",
+            "pergunta__tipo",
+            "valor_texto",
+        ).annotate(qtd=Count("id"))
+
+        # Processar perguntas sim/não
+        contagens_sim_nao = respostas_sim_nao.values(
+            "pergunta_id",
+            "pergunta__enunciado",
+            "pergunta__tipo",
+            "valor_boolean",
+        ).annotate(qtd=Count("id"))
+
+        # Processar perguntas de texto livre (apenas contagem)
+        contagens_texto = respostas_texto_livre.values(
+            "pergunta_id",
+            "pergunta__enunciado",
+            "pergunta__tipo",
+        ).annotate(qtd=Count("id"))
+
+        # Médias para perguntas numéricas
+        medias_numericas = respostas_numericas.values("pergunta_id").annotate(
             media=Avg("valor_numerico")
         )
-        medias_map = {m["pergunta_id"]: m["media"] for m in medias}
+        medias_map = {m["pergunta_id"]: m["media"] for m in medias_numericas}
 
         perguntas_data = {}
-        for item in contagens:
+
+        # Processar perguntas numéricas (Likert e NPS)
+        for item in contagens_numericas:
             pid = item["pergunta_id"]
             if pid not in perguntas_data:
                 # Inicializa estrutura conforme o tipo
@@ -1947,6 +2014,50 @@ def relatorio_avaliacoes(request):
                     "media": round(medias_map.get(pid) or 0, 2),
                 }
             perguntas_data[pid]["contagens"][str(item["valor_numerico"])] = item["qtd"]
+
+        # Processar perguntas de múltipla escolha
+        for item in contagens_multipla:
+            pid = item["pergunta_id"]
+            if pid not in perguntas_data:
+                perguntas_data[pid] = {
+                    "id": pid,
+                    "enunciado": item["pergunta__enunciado"],
+                    "tipo": item["pergunta__tipo"],
+                    "contagens": {},
+                    "media": "N/A",
+                }
+            valor = (
+                item["valor_texto"][:30] + "..."
+                if len(item["valor_texto"]) > 30
+                else item["valor_texto"]
+            )
+            perguntas_data[pid]["contagens"][valor] = item["qtd"]
+
+        # Processar perguntas sim/não
+        for item in contagens_sim_nao:
+            pid = item["pergunta_id"]
+            if pid not in perguntas_data:
+                perguntas_data[pid] = {
+                    "id": pid,
+                    "enunciado": item["pergunta__enunciado"],
+                    "tipo": item["pergunta__tipo"],
+                    "contagens": {"Sim": 0, "Não": 0},
+                    "media": "N/A",
+                }
+            valor = "Sim" if item["valor_boolean"] else "Não"
+            perguntas_data[pid]["contagens"][valor] = item["qtd"]
+
+        # Processar perguntas de texto livre
+        for item in contagens_texto:
+            pid = item["pergunta_id"]
+            if pid not in perguntas_data:
+                perguntas_data[pid] = {
+                    "id": pid,
+                    "enunciado": item["pergunta__enunciado"],
+                    "tipo": item["pergunta__tipo"],
+                    "contagens": {"Total de respostas": item["qtd"]},
+                    "media": "N/A",
+                }
 
         ciclos_para_graficos.append(
             {
@@ -1968,6 +2079,200 @@ def relatorio_avaliacoes(request):
         "ciclos_graficos_json": json.dumps(ciclos_para_graficos),
     }
     return render(request, "avaliacoes/relatorio_avaliacoes.html", context)
+
+
+def gerar_csv_avaliacoes(
+    avaliacoes, ciclo_selecionado=None, professor_selecionado=None
+):
+    """
+    Função para gerar arquivo CSV com dados das avaliações
+    """
+    from django.db.models import Avg, Count
+
+    # Preparar resposta HTTP para CSV
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+
+    # Nome do arquivo com filtros aplicados
+    nome_arquivo = "relatorio_avaliacoes"
+    if ciclo_selecionado:
+        ciclo = CicloAvaliacao.objects.get(id=ciclo_selecionado)
+        nome_arquivo += f"_ciclo_{ciclo.nome.replace(' ', '_')}"
+    if professor_selecionado:
+        professor = PerfilProfessor.objects.get(id=professor_selecionado)
+        nome_professor = (
+            f"{professor.user.first_name}_{professor.user.last_name}".replace(" ", "_")
+        )
+        nome_arquivo += f"_prof_{nome_professor}"
+
+    nome_arquivo += f"_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
+
+    # Criar writer CSV
+    writer = csv.writer(response)
+
+    # Escrever BOM para UTF-8 (compatibilidade com Excel)
+    response.write("\ufeff")
+
+    # Cabeçalhos principais
+    writer.writerow(
+        [
+            "Disciplina",
+            "Professor",
+            "Turma",
+            "Período Letivo",
+            "Ciclo",
+            "Total Alunos",
+            "Respondentes",
+            "Taxa de Resposta (%)",
+            "Pergunta",
+            "Tipo Pergunta",
+            "Categoria",
+            "Média",
+            "Moda",
+            "Total Respostas",
+            "Comentários",
+        ]
+    )
+
+    # Processar cada avaliação
+    for avaliacao in avaliacoes:
+        # Dados básicos da avaliação
+        disciplina = avaliacao.turma.disciplina.disciplina_nome
+        professor = avaliacao.professor.user.get_full_name()
+        turma = avaliacao.turma.codigo_turma
+        periodo = avaliacao.turma.periodo_letivo.nome
+        ciclo = avaliacao.ciclo.nome
+
+        # Contar respondentes únicos
+        respondentes = (
+            RespostaAvaliacao.objects.filter(avaliacao=avaliacao)
+            .values("aluno")
+            .distinct()
+            .count()
+        )
+
+        # Calcular taxa de resposta
+        total_alunos = avaliacao.turma.matriculas.filter(status="ativa").count()
+        taxa_resposta = (
+            round((respondentes / total_alunos * 100), 1) if total_alunos > 0 else 0
+        )
+
+        # Buscar comentários da avaliação
+        comentarios = RespostaAvaliacao.objects.filter(
+            avaliacao=avaliacao, valor_texto__isnull=False, valor_texto__gt=""
+        ).exclude(valor_texto="")
+
+        comentarios_texto = " | ".join(
+            [c.valor_texto for c in comentarios[:5]]
+        )  # Máximo 5 comentários
+        if comentarios.count() > 5:
+            comentarios_texto += f" | ... (+{comentarios.count() - 5} comentários)"
+
+        # Processar estatísticas por pergunta
+        perguntas_questionario = avaliacao.ciclo.questionario.perguntas.all()
+
+        if not perguntas_questionario.exists():
+            # Se não há perguntas, escrever linha básica
+            writer.writerow(
+                [
+                    disciplina,
+                    professor,
+                    turma,
+                    periodo,
+                    ciclo,
+                    total_alunos,
+                    respondentes,
+                    taxa_resposta,
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    comentarios_texto,
+                ]
+            )
+        else:
+            # Para cada pergunta do questionário
+            for pergunta_questionario in perguntas_questionario:
+                pergunta = pergunta_questionario.pergunta
+                respostas_pergunta = RespostaAvaliacao.objects.filter(
+                    avaliacao=avaliacao,
+                    pergunta=pergunta,
+                    valor_numerico__isnull=False,
+                )
+
+                if respostas_pergunta.exists():
+                    # Calcular estatísticas
+                    media = (
+                        respostas_pergunta.aggregate(media=Avg("valor_numerico"))[
+                            "media"
+                        ]
+                        or 0
+                    )
+
+                    # Calcular moda (valor mais frequente)
+                    valores = (
+                        respostas_pergunta.values("valor_numerico")
+                        .annotate(count=Count("valor_numerico"))
+                        .order_by("-count")
+                    )
+                    moda = valores[0]["valor_numerico"] if valores else 0
+
+                    respostas_count = respostas_pergunta.count()
+
+                    writer.writerow(
+                        [
+                            disciplina,
+                            professor,
+                            turma,
+                            periodo,
+                            ciclo,
+                            total_alunos,
+                            respondentes,
+                            taxa_resposta,
+                            pergunta.enunciado,
+                            pergunta.get_tipo_display(),
+                            pergunta.categoria.nome if pergunta.categoria else "N/A",
+                            round(media, 2),
+                            moda,
+                            respostas_count,
+                            (
+                                comentarios_texto
+                                if pergunta_questionario
+                                == perguntas_questionario.first()
+                                else ""
+                            ),
+                        ]
+                    )
+                else:
+                    # Pergunta sem respostas
+                    writer.writerow(
+                        [
+                            disciplina,
+                            professor,
+                            turma,
+                            periodo,
+                            ciclo,
+                            total_alunos,
+                            respondentes,
+                            taxa_resposta,
+                            pergunta.enunciado,
+                            pergunta.get_tipo_display(),
+                            pergunta.categoria.nome if pergunta.categoria else "N/A",
+                            0,
+                            "N/A",
+                            0,
+                            (
+                                comentarios_texto
+                                if pergunta_questionario
+                                == perguntas_questionario.first()
+                                else ""
+                            ),
+                        ]
+                    )
+
+    return response
 
 
 # ============ CRUD CATEGORIAS DE PERGUNTA ============

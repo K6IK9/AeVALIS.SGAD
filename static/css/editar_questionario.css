@@ -275,6 +275,13 @@
     margin-bottom: 0.125rem;
 }
 
+.filter-group label {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--cor03);
+    margin-bottom: 5px;
+}
+
 .form-check-input {
     width: 1em;
     height: 1em;
