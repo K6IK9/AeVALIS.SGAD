@@ -162,6 +162,7 @@ Este arquivo centraliza todas as funcionalidades JavaScript comuns das páginas 
 - ✅ **Consistência:** Comportamento uniforme em todas as páginas
 - ✅ **Performance:** Menos código para carregar e executar
 - ✅ **Facilidade:** Desenvolvimento mais rápido de novas páginas
+- ✅ **UX Limpa:** Removidas dicas de scroll desnecessárias
 
 ## 🔍 Debugging
 
@@ -184,8 +185,8 @@ Ao adicionar novas funcionalidades:
 ## ✅ Status da Migração
 
 ### Templates Migrados (4/9):
-- ✅ **gerenciar_turmas.html** - Script global, drag scroll, filtros
-- ✅ **gerenciar_usuarios.html** - Script global, drag scroll, filtros  
+- ✅ **gerenciar_turmas.html** - Script global, drag scroll, filtros, UI limpa
+- ✅ **gerenciar_usuarios.html** - Script global, drag scroll, filtros, UI limpa  
 - ✅ **gerenciar_ciclos.html** - Script global, drag scroll, filtros, confirmação exclusão
 - ✅ **gerenciar_categorias.html** - Script global, drag scroll, filtros
 
@@ -195,6 +196,11 @@ Ao adicionar novas funcionalidades:
 - ⏳ **gerenciar_periodos.html**
 - ⏳ **gerenciar_questionarios.html**
 - ⏳ **gerenciar_alunos_turma.html**
+
+### 🎨 Melhorias de UX Aplicadas:
+- 🗑️ **Dicas de scroll removidas** - Interface mais limpa
+- 🎯 **Drag scroll automático** - Funcionalidade intuitiva sem instruções
+- 🔄 **Filtros padronizados** - Experiência consistente
 
 **Progresso: 44% concluído**
 3. **Documente:** Atualize este guia com a nova funcionalidade

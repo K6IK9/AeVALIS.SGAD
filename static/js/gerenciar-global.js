@@ -268,32 +268,10 @@ function filterTable(filters = {}, tableSelector = '.data-table tbody tr', count
 // DICAS DE SCROLL
 // =================================
 
+
 /**
- * Verifica se a tabela precisa de scroll e mostra/esconde a dica
- * @param {string} tableSelector - Seletor do container da tabela
- * @param {string} hintSelector - Seletor da dica de scroll
+ * Configuração global executada quando o DOM está pronto
  */
-function verificarScroll(tableSelector = '.table-responsive', hintSelector = '.table-scroll-hint') {
-  const wrapper = document.querySelector(tableSelector);
-  const scrollHint = document.querySelector(hintSelector);
-
-  if (!wrapper) return;
-
-  if (wrapper.scrollWidth > wrapper.clientWidth) {
-    if (scrollHint) {
-      scrollHint.style.display = 'block';
-
-      // Esconder dica quando começar a fazer scroll
-      wrapper.addEventListener('scroll', function () {
-        if (this.scrollLeft > 10 && scrollHint) {
-          scrollHint.style.display = 'none';
-        }
-      });
-    }
-  } else if (scrollHint) {
-    scrollHint.style.display = 'none';
-  }
-}
 
 // =================================
 // UTILITÁRIOS
@@ -405,9 +383,6 @@ function initGlobalFeatures() {
   // Configurar eventos de modais
   setupModalEvents();
 
-  // Verificar necessidade de scroll
-  verificarScroll();
-
   // Adicionar animações de mensagens
   addMessageAnimations();
 
@@ -439,7 +414,6 @@ window.closeModal = closeModal;
 window.aplicarFiltros = aplicarFiltros;
 window.limparFiltros = limparFiltros;
 window.filterTable = filterTable;
-window.verificarScroll = verificarScroll;
 window.confirmarAcao = confirmarAcao;
 window.mostrarMensagem = mostrarMensagem;
 window.setupAutoSearch = setupAutoSearch;

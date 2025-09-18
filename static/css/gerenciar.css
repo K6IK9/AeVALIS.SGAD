@@ -174,29 +174,6 @@
     text-decoration: none;
 }
 
-/* Table scroll hint */
-.table-scroll-hint {
-    text-align: center;
-    margin-bottom: 10px;
-    padding: 8px;
-    background: #e3f2fd;
-    border-left: 4px solid var(--cor03);
-    border-radius: var(--border-radius-small);
-    color: #1565c0;
-}
-
-.table-scroll-hint small {
-    font-size: 0.875em;
-    font-weight: 500;
-}
-
-/* Hide hint on larger screens where scrolling isn't needed */
-@media (min-width: 1200px) {
-    .table-scroll-hint {
-        display: none;
-    }
-}
-
 /* Table styles */
 .table-responsive {
     overflow-x: auto;
