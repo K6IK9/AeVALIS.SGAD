@@ -132,7 +132,11 @@
                         </label>
                         {{ form.opcoes_multipla_escolha }}
                         <small class="form-text text-muted">
-                            Insira uma opção por linha. Também aceitamos CSV (vírgulas) ou JSON (ex.: ["A", "B"]). Itens duplicados e vazios serão ignorados.
+                            <strong>Como inserir opções:</strong><br>
+                            • <strong>Uma por linha:</strong> Digite uma opção em cada linha<br>
+                            • <strong>Separadas por vírgula:</strong> Opção A, Opção B, Opção C<br>
+                            • <strong>JSON:</strong> ["Opção A", "Opção B", "Opção C"]<br>
+                            <em>Opções duplicadas e vazias serão ignoradas automaticamente.</em>
                         </small>
                         {% if form.opcoes_multipla_escolha.errors %}
                         <div class="text-danger">

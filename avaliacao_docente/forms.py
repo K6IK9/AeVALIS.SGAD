@@ -601,6 +601,20 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
     Formulário para criar/editar perguntas de avaliação
     """
 
+    # Sobrescrever o campo opcoes_multipla_escolha para usar CharField em vez de JSONField
+    opcoes_multipla_escolha = forms.CharField(
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-control",
+                "rows": 3,
+                "placeholder": 'Para múltipla escolha, insira uma opção por linha. Também aceitamos CSV (separado por vírgula) ou JSON (ex.: ["A", "B"]).',
+            }
+        ),
+        label="Opções de Múltipla Escolha",
+        help_text='Insira uma opção por linha. Também aceitamos CSV (vírgulas) ou JSON (ex.: ["A", "B"]). Itens duplicados e vazios serão ignorados.',
+    )
+
     class Meta:
         model = PerguntaAvaliacao
         fields = [
@@ -625,13 +639,6 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
             "ordem": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
             "obrigatoria": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "ativa": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-            "opcoes_multipla_escolha": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "rows": 3,
-                    "placeholder": 'Para múltipla escolha, insira uma opção por linha. Também aceitamos CSV (separado por vírgula) ou JSON (ex.: ["A", "B"]).',
-                }
-            ),
         }
 
     def __init__(self, *args, **kwargs):
@@ -643,91 +650,95 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
             self.fields["ativa"].initial = True
 
         # Exibir as opções de múltipla escolha (se existentes) como linhas no textarea
-        try:
-            opcoes = self.instance.opcoes_multipla_escolha
-            if opcoes and isinstance(opcoes, (list, tuple)):
-                self.fields["opcoes_multipla_escolha"].initial = "\n".join(
-                    [str(o) for o in opcoes]
-                )
-        except Exception:
-            pass
+        if self.instance.pk and hasattr(self.instance, "opcoes_multipla_escolha"):
+            try:
+                opcoes = self.instance.opcoes_multipla_escolha
+                if opcoes and isinstance(opcoes, (list, tuple)):
+                    self.fields["opcoes_multipla_escolha"].initial = "\n".join(
+                        [str(o) for o in opcoes]
+                    )
+            except Exception:
+                pass
 
     def clean_opcoes_multipla_escolha(self):
         opcoes = self.cleaned_data.get("opcoes_multipla_escolha")
         tipo = self.cleaned_data.get("tipo")
 
-        if tipo == "multipla_escolha":
-            if not opcoes:
-                raise forms.ValidationError(
-                    "Opções são obrigatórias para perguntas de múltipla escolha."
-                )
+        # Se não for múltipla escolha, limpar o campo
+        if tipo != "multipla_escolha":
+            return None
 
-            # Normaliza opções vindas como string (linhas, CSV ou JSON)
-            normalized = []
-            
-            if isinstance(opcoes, str):
-                text = opcoes.strip()
-                parsed = None
-                
-                # Tenta JSON primeiro se parecer um array
-                if text.startswith("[") and text.endswith("]"):
-                    try:
-                        parsed = json.loads(text)
-                        if not isinstance(parsed, list):
-                            parsed = None
-                    except (json.JSONDecodeError, ValueError):
+        # Se for múltipla escolha, as opções são obrigatórias
+        if not opcoes or not opcoes.strip():
+            raise forms.ValidationError(
+                "Opções são obrigatórias para perguntas de múltipla escolha."
+            )
+
+        # Normaliza opções vindas como string (linhas, CSV ou JSON)
+        normalized = []
+
+        if isinstance(opcoes, str):
+            text = opcoes.strip()
+            parsed = None
+
+            # Tenta JSON primeiro se parecer um array
+            if text.startswith("[") and text.endswith("]"):
+                try:
+                    parsed = json.loads(text)
+                    if not isinstance(parsed, list):
                         parsed = None
-                
-                if parsed is None:
-                    # Considera quebras de linha como principal separador
-                    parts = []
-                    for line in text.split("\n"):
-                        line = line.strip()
-                        if not line:
-                            continue
-                        # Também quebra por vírgulas se houver
-                        if "," in line:
-                            parts.extend([p.strip() for p in line.split(",") if p.strip()])
-                        else:
-                            parts.append(line)
-                    parsed = parts
+                except (json.JSONDecodeError, ValueError):
+                    parsed = None
 
-                # Processa itens parseados
-                normalized = self._deduplicate_options(parsed)
-                
-            elif isinstance(opcoes, (list, tuple)):
-                normalized = self._deduplicate_options(opcoes)
-            else:
-                raise forms.ValidationError("Formato inválido para as opções.")
+            if parsed is None:
+                # Considera quebras de linha como principal separador
+                parts = []
+                for line in text.split("\n"):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    # Também quebra por vírgulas se houver
+                    if "," in line:
+                        parts.extend([p.strip() for p in line.split(",") if p.strip()])
+                    else:
+                        parts.append(line)
+                parsed = parts
 
-            if len(normalized) < 2:
-                raise forms.ValidationError(
-                    "É necessário pelo menos 2 opções para múltipla escolha."
-                )
-            return normalized
+            # Processa itens parseados
+            normalized = self._deduplicate_options(parsed)
 
-        return opcoes
+        elif isinstance(opcoes, (list, tuple)):
+            normalized = self._deduplicate_options(opcoes)
+        else:
+            raise forms.ValidationError("Formato inválido para as opções.")
+
+        if len(normalized) < 2:
+            raise forms.ValidationError(
+                "É necessário pelo menos 2 opções para múltipla escolha."
+            )
+
+        return normalized
 
     def _deduplicate_options(self, items):
         """
         Remove duplicatas preservando ordem e remove itens vazios
-        
+
         Args:
             items: Lista de itens para deduplificar
-            
+
         Returns:
             Lista com itens únicos e não vazios
         """
         seen = set()
         normalized = []
-        
+
         for item in items:
             s = str(item).strip()
             if not s or s in seen:
                 continue
             seen.add(s)
             normalized.append(s)
-            
+
         return normalized
 
 
