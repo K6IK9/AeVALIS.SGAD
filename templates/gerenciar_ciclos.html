@@ -245,23 +245,45 @@
         </div>
 
         {% if ciclos %}
-        <div class="data-table-container">
-          <table class="data-table">
+        <div class="table-responsive">
+          <table class="table">
             <thead>
               <tr>
-                <th class="col-nome">Nome</th>
-                <th class="col-periodo">Período Letivo</th>
+                <th class="col-nome">
+                  <input type="text" id="searchCicloNome" placeholder="Nome do Ciclo" />
+                </th>
+                <th class="col-periodo">
+                  <select id="filterPeriodo">
+                    <option value="">Período</option>
+                    {% for periodo in periodos %}
+                    <option value="{{ periodo.id }}">{{ periodo.nome }}</option>
+                    {% endfor %}
+                  </select>
+                </th>
                 <th class="col-questionario">Questionário</th>
                 <th class="col-data">Início</th>
                 <th class="col-data">Fim</th>
-                <th class="col-status">Status</th>
-                <th class="col-ativo">Ativo</th>
+                <th class="col-status">
+                  <select id="filterStatus">
+                    <option value="">Status</option>
+                    <option value="Não Iniciado">Não Iniciado</option>
+                    <option value="Em Andamento">Em Andamento</option>
+                    <option value="Finalizado">Finalizado</option>
+                  </select>
+                </th>
+                <th class="col-ativo">
+                  <select id="filterAtivo">
+                    <option value="">Ativo</option>
+                    <option value="true">Sim</option>
+                    <option value="false">Não</option>
+                  </select>
+                </th>
                 <th class="col-acoes">Ações</th>
               </tr>
             </thead>
             <tbody>
               {% for ciclo in ciclos %}
-              <tr>
+              <tr data-periodo="{{ ciclo.periodo_letivo.id }}">
                 <td class="col-nome"><strong>{{ ciclo.nome }}</strong></td>
                 <td class="col-periodo">{{ ciclo.periodo_letivo.nome }}</td>
                 <td class="col-questionario">
@@ -321,32 +343,7 @@
       </div>
       {% endif %}
 
-      <script>
-        document.addEventListener("DOMContentLoaded", function () {
-          document
-            .querySelectorAll(".form-excluir-ciclo")
-            .forEach(function (form) {
-              form.addEventListener("submit", function (e) {
-                const hidden = form.querySelector(
-                  'input[name="confirm_cascade"]'
-                );
-                if (hidden.value === "0") {
-                  const nome = form.getAttribute("data-ciclo");
-                  const msg = `Você está prestes a excluir o ciclo "${nome}".\n\nSe ele possuir avaliações e respostas elas serão EXCLUÍDAS EM CASCATA.\n\nConfirme para continuar.`;
-                  if (!confirm(msg)) {
-                    e.preventDefault();
-                    return false;
-                  }
-                  // Primeira confirmação: marca para cascata se necessário.
-                  hidden.value = "1";
-                  // Permite envio; servidor validará se precisa da segunda etapa (warning prévio já tratado por messages).
-                } else {
-                  // Segunda submissão já confirmada
-                }
-              });
-            });
-        });
-      </script>
+
 
       <div class="form-section info-sidebar">
         <h2 class="info-title">📅 Informações sobre Ciclos</h2>
@@ -395,68 +392,32 @@
         </div>
       </div>
 
+    <script src="{% static 'js/gerenciar-global.js' %}"></script>
     <script>
-        // Função para filtrar a tabela
-        function filterTable() {
-          const nomeFilter = document.getElementById('searchCicloNome').value.toLowerCase();
-          const periodoFilter = document.getElementById('filterPeriodo').value.toLowerCase();
-          const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
-          const ativoFilter = document.getElementById('filterAtivo').value.toLowerCase();
-          
-          const tableRows = document.querySelectorAll('.data-table tbody tr');
-          let visibleCount = 0;
-
-          tableRows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            
-            // Verifica se a linha tem células (não é a linha "Nenhum ciclo encontrado")
-            if (cells.length > 1) {
-              const cicloNome = cells[0].textContent.toLowerCase(); // Nome
-              const cicloPeriodo = cells[1].textContent.toLowerCase(); // Período
-              const cicloStatus = cells[5].textContent.toLowerCase(); // Status
-              const cicloAtivo = cells[6].textContent.toLowerCase(); // Ativo
-
-              const nomeMatch = !nomeFilter || cicloNome.includes(nomeFilter);
-              const periodoMatch = !periodoFilter || cicloPeriodo.includes(periodoFilter);
-              const statusMatch = !statusFilter || cicloStatus.includes(statusFilter);
-              const ativoMatch = !ativoFilter || cicloAtivo.includes(ativoFilter);
-
-              if (nomeMatch && periodoMatch && statusMatch && ativoMatch) {
-                row.style.display = '';
-                visibleCount++;
-              } else {
-                row.style.display = 'none';
-              }
-            }
-          });
-
-          // Atualiza o contador
-          const itemCount = document.querySelector('.info-section strong');
-          if (itemCount) {
-            itemCount.textContent = `Ciclos encontrados: ${visibleCount}`;
-          }
-        }
-
-        // Função para limpar filtros
-        function clearFilters() {
-          document.getElementById('searchCicloNome').value = '';
-          document.getElementById('filterPeriodo').value = '';
-          document.getElementById('filterStatus').value = '';
-          document.getElementById('filterAtivo').value = '';
-          filterTable();
-        }
-
-        // Adiciona event listeners aos campos de filtro
-        document.addEventListener('DOMContentLoaded', function() {
-          const searchCicloNome = document.getElementById('searchCicloNome');
-          const filterPeriodo = document.getElementById('filterPeriodo');
-          const filterStatus = document.getElementById('filterStatus');
-          const filterAtivo = document.getElementById('filterAtivo');
-
-          if (searchCicloNome) searchCicloNome.addEventListener('input', filterTable);
-          if (filterPeriodo) filterPeriodo.addEventListener('change', filterTable);
-          if (filterStatus) filterStatus.addEventListener('change', filterTable);
-          if (filterAtivo) filterAtivo.addEventListener('change', filterTable);
+        // Script específico para ciclos - confirmação de exclusão
+        document.addEventListener("DOMContentLoaded", function () {
+          document
+            .querySelectorAll(".form-excluir-ciclo")
+            .forEach(function (form) {
+              form.addEventListener("submit", function (e) {
+                const hidden = form.querySelector(
+                  'input[name="confirm_cascade"]'
+                );
+                if (hidden.value === "0") {
+                  const nome = form.getAttribute("data-ciclo");
+                  const msg = `Você está prestes a excluir o ciclo "${nome}".\n\nSe ele possuir avaliações e respostas elas serão EXCLUÍDAS EM CASCATA.\n\nConfirme para continuar.`;
+                  if (!confirm(msg)) {
+                    e.preventDefault();
+                    return false;
+                  }
+                  // Primeira confirmação: marca para cascata se necessário.
+                  hidden.value = "1";
+                  // Permite envio; servidor validará se precisa da segunda etapa (warning prévio já tratado por messages).
+                } else {
+                  // Segunda submissão já confirmada
+                }
+              });
+            });
         });
     </script>
     </div>

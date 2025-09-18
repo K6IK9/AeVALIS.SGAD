@@ -1,0 +1,445 @@
+/**
+ * gerenciar-global.js
+ * Arquivo JavaScript global para funcionalidades comuns das páginas de gerenciamento
+ * 
+ * Funcionalidades incluídas:
+ * - Drag scroll em tabelas
+ * - Gerenciamento de modais
+ * - Filtros e busca
+ * - Dicas de scroll
+ * - Utilitários comuns
+ */
+
+// =================================
+// DRAG SCROLL FUNCTIONALITY
+// =================================
+
+/**
+ * Habilita a funcionalidade de arrastar para fazer scroll em tabelas
+ * Funciona tanto em desktop (mouse) quanto em mobile (touch)
+ */
+function enableDragScroll() {
+  const tableContainer = document.querySelector('.table-responsive');
+  if (!tableContainer) return;
+
+  let isDown = false;
+  let startX;
+  let scrollLeft;
+
+  // Mouse events
+  tableContainer.addEventListener('mousedown', (e) => {
+    // Evitar drag em elementos interativos
+    if (e.target.tagName === 'INPUT' ||
+      e.target.tagName === 'BUTTON' ||
+      e.target.tagName === 'A' ||
+      e.target.closest('button') ||
+      e.target.closest('a')) {
+      return;
+    }
+
+    isDown = true;
+    tableContainer.classList.add('grabbing');
+    startX = e.pageX - tableContainer.offsetLeft;
+    scrollLeft = tableContainer.scrollLeft;
+    e.preventDefault();
+  });
+
+  tableContainer.addEventListener('mouseleave', () => {
+    isDown = false;
+    tableContainer.classList.remove('grabbing');
+  });
+
+  tableContainer.addEventListener('mouseup', () => {
+    isDown = false;
+    tableContainer.classList.remove('grabbing');
+  });
+
+  tableContainer.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - tableContainer.offsetLeft;
+    const walk = (x - startX) * 2;
+    tableContainer.scrollLeft = scrollLeft - walk;
+  });
+
+  // Touch events for mobile
+  tableContainer.addEventListener('touchstart', (e) => {
+    if (e.target.tagName === 'INPUT' ||
+      e.target.tagName === 'BUTTON' ||
+      e.target.tagName === 'A') {
+      return;
+    }
+
+    isDown = true;
+    startX = e.touches[0].pageX - tableContainer.offsetLeft;
+    scrollLeft = tableContainer.scrollLeft;
+  });
+
+  tableContainer.addEventListener('touchmove', (e) => {
+    if (!isDown) return;
+    const x = e.touches[0].pageX - tableContainer.offsetLeft;
+    const walk = (x - startX) * 2;
+    tableContainer.scrollLeft = scrollLeft - walk;
+  });
+
+  tableContainer.addEventListener('touchend', () => {
+    isDown = false;
+  });
+
+  // Scroll smooth behavior
+  tableContainer.style.scrollBehavior = 'auto';
+}
+
+// =================================
+// MODAL MANAGEMENT
+// =================================
+
+/**
+ * Abre um modal pelo ID
+ * @param {string} modalId - ID do modal a ser aberto
+ */
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.classList.add('show', 'active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+/**
+ * Fecha um modal pelo ID
+ * @param {string} modalId - ID do modal a ser fechado
+ */
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.style.display = 'none';
+    modal.classList.remove('show', 'active');
+    document.body.style.overflow = '';
+  }
+}
+
+/**
+ * Configura event listeners para modais
+ * - Fechar ao clicar fora
+ * - Fechar com tecla Escape
+ */
+function setupModalEvents() {
+  // Fechar modal ao clicar fora
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('modal') ||
+      e.target.classList.contains('modal-overlay')) {
+      const modal = e.target;
+      closeModal(modal.id);
+    }
+  });
+
+  // Fechar modal com tecla Escape
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      const openModal = document.querySelector('.modal.show, .modal.active, .modal-overlay.active');
+      if (openModal) {
+        closeModal(openModal.id);
+      }
+    }
+  });
+}
+
+// =================================
+// FILTROS E BUSCA
+// =================================
+
+/**
+ * Configura busca automática com delay
+ * @param {string} inputId - ID do campo de busca
+ * @param {Function} callback - Função a ser executada na busca
+ * @param {number} delay - Delay em ms (padrão: 500ms)
+ */
+function setupAutoSearch(inputId, callback, delay = 500) {
+  const searchInput = document.getElementById(inputId);
+  if (!searchInput) return;
+
+  let searchTimeout;
+  searchInput.addEventListener('input', function () {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      callback();
+    }, delay);
+  });
+}
+
+/**
+ * Função genérica para aplicar filtros via submit do formulário
+ */
+function aplicarFiltros() {
+  const form = document.getElementById('filtros-form');
+  if (form) {
+    form.submit();
+  }
+}
+
+/**
+ * Função genérica para limpar todos os filtros de um formulário
+ * @param {Array} fieldIds - Array com IDs dos campos a serem limpos
+ * @param {string} formId - ID do formulário (padrão: 'filtros-form')
+ */
+function limparFiltros(fieldIds = [], formId = 'filtros-form') {
+  // Limpar campos específicos se fornecidos
+  fieldIds.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (field) {
+      field.value = '';
+    }
+  });
+
+  // Se não foram especificados campos, limpar todos os inputs e selects do formulário
+  if (fieldIds.length === 0) {
+    const form = document.getElementById(formId);
+    if (form) {
+      const inputs = form.querySelectorAll('input[type="text"], input[type="search"], select');
+      inputs.forEach(input => {
+        input.value = '';
+      });
+    }
+  }
+
+  // Submeter formulário
+  const form = document.getElementById(formId);
+  if (form) {
+    form.submit();
+  }
+}
+
+/**
+ * Filtra uma tabela em tempo real baseado em critérios
+ * @param {Object} filters - Objeto com os filtros {fieldId: attributeName}
+ * @param {string} tableSelector - Seletor da tabela (padrão: '.data-table tbody tr')
+ * @param {string} counterId - ID do elemento contador (opcional)
+ */
+function filterTable(filters = {}, tableSelector = '.data-table tbody tr', counterId = null) {
+  const rows = document.querySelectorAll(tableSelector);
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    let shouldShow = true;
+
+    // Aplicar cada filtro
+    Object.entries(filters).forEach(([fieldId, attribute]) => {
+      const filterValue = document.getElementById(fieldId)?.value.toLowerCase() || '';
+      if (!filterValue) return;
+
+      let rowValue = '';
+      if (attribute.startsWith('data-')) {
+        // Para atributos data-*
+        rowValue = row.getAttribute(attribute) || '';
+      } else {
+        // Para texto dentro de células
+        const cells = row.querySelectorAll('td');
+        const cellIndex = parseInt(attribute);
+        if (!isNaN(cellIndex) && cells[cellIndex]) {
+          rowValue = cells[cellIndex].textContent || '';
+        } else {
+          // Buscar em todo o texto da linha
+          rowValue = row.textContent || '';
+        }
+      }
+
+      if (!rowValue.toLowerCase().includes(filterValue)) {
+        shouldShow = false;
+      }
+    });
+
+    // Mostrar/esconder linha
+    row.style.display = shouldShow ? '' : 'none';
+    if (shouldShow) visibleCount++;
+  });
+
+  // Atualizar contador se fornecido
+  if (counterId) {
+    const counter = document.getElementById(counterId);
+    if (counter) {
+      counter.textContent = `Resultados encontrados: ${visibleCount}`;
+    }
+  }
+}
+
+// =================================
+// DICAS DE SCROLL
+// =================================
+
+/**
+ * Verifica se a tabela precisa de scroll e mostra/esconde a dica
+ * @param {string} tableSelector - Seletor do container da tabela
+ * @param {string} hintSelector - Seletor da dica de scroll
+ */
+function verificarScroll(tableSelector = '.table-responsive', hintSelector = '.table-scroll-hint') {
+  const wrapper = document.querySelector(tableSelector);
+  const scrollHint = document.querySelector(hintSelector);
+
+  if (!wrapper) return;
+
+  if (wrapper.scrollWidth > wrapper.clientWidth) {
+    if (scrollHint) {
+      scrollHint.style.display = 'block';
+
+      // Esconder dica quando começar a fazer scroll
+      wrapper.addEventListener('scroll', function () {
+        if (this.scrollLeft > 10 && scrollHint) {
+          scrollHint.style.display = 'none';
+        }
+      });
+    }
+  } else if (scrollHint) {
+    scrollHint.style.display = 'none';
+  }
+}
+
+// =================================
+// UTILITÁRIOS
+// =================================
+
+/**
+ * Confirma uma ação antes de executar
+ * @param {string} message - Mensagem de confirmação
+ * @param {Function} callback - Função a ser executada se confirmado
+ */
+function confirmarAcao(message, callback) {
+  if (confirm(message)) {
+    callback();
+  }
+}
+
+/**
+ * Mostra uma mensagem temporária
+ * @param {string} message - Mensagem a ser exibida
+ * @param {string} type - Tipo da mensagem (success, error, warning, info)
+ * @param {number} duration - Duração em ms (padrão: 3000ms)
+ */
+function mostrarMensagem(message, type = 'info', duration = 3000) {
+  // Criar elemento da mensagem
+  const messageEl = document.createElement('div');
+  messageEl.className = `message ${type}`;
+  messageEl.textContent = message;
+  messageEl.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease;
+    `;
+
+  // Cores por tipo
+  const colors = {
+    success: '#28a745',
+    error: '#dc3545',
+    warning: '#ffc107',
+    info: '#17a2b8'
+  };
+
+  messageEl.style.backgroundColor = colors[type] || colors.info;
+
+  // Adicionar ao DOM
+  document.body.appendChild(messageEl);
+
+  // Remover após o tempo especificado
+  setTimeout(() => {
+    messageEl.style.animation = 'slideOutRight 0.3s ease';
+    setTimeout(() => {
+      if (messageEl.parentNode) {
+        messageEl.parentNode.removeChild(messageEl);
+      }
+    }, 300);
+  }, duration);
+}
+
+/**
+ * Adiciona CSS para animações das mensagens
+ */
+function addMessageAnimations() {
+  if (document.getElementById('message-animations')) return;
+
+  const style = document.createElement('style');
+  style.id = 'message-animations';
+  style.textContent = `
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    `;
+  document.head.appendChild(style);
+}
+
+// =================================
+// INICIALIZAÇÃO GLOBAL
+// =================================
+
+/**
+ * Inicializa todas as funcionalidades globais
+ */
+function initGlobalFeatures() {
+  // Habilitar drag scroll em tabelas
+  enableDragScroll();
+
+  // Configurar eventos de modais
+  setupModalEvents();
+
+  // Verificar necessidade de scroll
+  verificarScroll();
+
+  // Adicionar animações de mensagens
+  addMessageAnimations();
+
+  console.log('✅ Funcionalidades globais de gerenciamento inicializadas');
+}
+
+// =================================
+// AUTO-INICIALIZAÇÃO
+// =================================
+
+// Inicializar quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', initGlobalFeatures);
+
+// Também inicializar se o script for carregado após o DOM estar pronto
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initGlobalFeatures);
+} else {
+  initGlobalFeatures();
+}
+
+// =================================
+// EXPORTAR PARA ESCOPO GLOBAL
+// =================================
+
+// Disponibilizar funções no escopo global para compatibilidade
+window.enableDragScroll = enableDragScroll;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.aplicarFiltros = aplicarFiltros;
+window.limparFiltros = limparFiltros;
+window.filterTable = filterTable;
+window.verificarScroll = verificarScroll;
+window.confirmarAcao = confirmarAcao;
+window.mostrarMensagem = mostrarMensagem;
+window.setupAutoSearch = setupAutoSearch;

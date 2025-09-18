@@ -161,12 +161,12 @@
 
       <!-- Tabela de Turmas -->
       <div class="table-container">
-        <div class="scroll-hint">
-          ← Role para o lado para ver mais informações →
+        <div class="table-scroll-hint">
+          <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
         </div>
 
-        <div class="table-wrapper">
-          <table class="turmas-table" id="tabela-turmas">
+        <div class="table-responsive">
+          <table class="turmas-table data-table" id="tabela-turmas">
             <thead>
               <tr>
                 <th>Código</th>
@@ -237,75 +237,6 @@
 
   </div>
 
-  <script>
-    // Função para filtrar turmas
-    function filtrarTurmas() {
-      const periodo = document.getElementById("filtro-periodo").value;
-      const disciplina = document.getElementById("filtro-disciplina").value;
-      const professor = document.getElementById("filtro-professor").value;
-
-      const linhas = document.querySelectorAll("#tabela-turmas tbody tr");
-
-      linhas.forEach((linha) => {
-        let mostrar = true;
-
-        if (periodo && linha.getAttribute("data-periodo") !== periodo) {
-          mostrar = false;
-        }
-
-        if (disciplina && linha.getAttribute("data-disciplina") !== disciplina) {
-          mostrar = false;
-        }
-
-        if (professor && linha.getAttribute("data-professor") !== professor) {
-          mostrar = false;
-        }
-
-        linha.style.display = mostrar ? "" : "none";
-      });
-    }
-
-    // Função para aplicar filtros (equivalente a filtrarTurmas)
-    function aplicarFiltros() {
-      filtrarTurmas();
-    }
-
-    // Função para limpar filtros
-    function limparFiltros() {
-      document.getElementById("filtro-periodo").value = "";
-      document.getElementById("filtro-disciplina").value = "";
-      document.getElementById("filtro-professor").value = "";
-      filtrarTurmas();
-    }
-
-    // Função para mostrar/esconder dica de scroll
-    function verificarScroll() {
-      const wrapper = document.querySelector(".table-wrapper");
-      const scrollHint = document.querySelector(".scroll-hint");
-
-      if (wrapper.scrollWidth > wrapper.clientWidth) {
-        scrollHint.style.display = "block";
-        wrapper.addEventListener("scroll", function () {
-          if (this.scrollLeft > 10) {
-            scrollHint.style.display = "none";
-          }
-        });
-      }
-    }
-
-    // Inicializar verificação de scroll quando a página carrega
-    document.addEventListener("DOMContentLoaded", verificarScroll);
-
-    // Event listener para fechar modal clicando fora
-    document.addEventListener("click", function (event) {
-      const modals = document.querySelectorAll(".modal-overlay");
-      modals.forEach((modal) => {
-        if (event.target === modal) {
-          modal.classList.remove("active");
-        }
-      });
-    });
-  </script>
   <script>
     let turmaAtualId = null;
     let alunosData = [];
@@ -512,6 +443,64 @@
       // Recarregar a página para atualizar contadores
       location.reload();
     }
+  </script>
+
+  <!-- Script global de gerenciamento -->
+  <script src="{% static 'js/gerenciar-global.js' %}"></script>
+
+  <!-- Scripts específicos da página -->
+  <script>
+    // Usar as funções globais, mantendo apenas as específicas da página
+    
+    // Função para filtrar turmas - específica desta página
+    function filtrarTurmas() {
+      const periodo = document.getElementById("filtro-periodo").value;
+      const disciplina = document.getElementById("filtro-disciplina").value;
+      const professor = document.getElementById("filtro-professor").value;
+
+      const linhas = document.querySelectorAll("#tabela-turmas tbody tr");
+
+      linhas.forEach((linha) => {
+        let mostrar = true;
+
+        if (periodo && linha.getAttribute("data-periodo") !== periodo) {
+          mostrar = false;
+        }
+
+        if (disciplina && linha.getAttribute("data-disciplina") !== disciplina) {
+          mostrar = false;
+        }
+
+        if (professor && linha.getAttribute("data-professor") !== professor) {
+          mostrar = false;
+        }
+
+        linha.style.display = mostrar ? "" : "none";
+      });
+    }
+
+    // Função para aplicar filtros - usando a global aplicarFiltros como fallback
+    function aplicarFiltros() {
+      filtrarTurmas();
+    }
+
+    // Função para limpar filtros específica da página
+    function limparFiltros() {
+      document.getElementById("filtro-periodo").value = "";
+      document.getElementById("filtro-disciplina").value = "";
+      document.getElementById("filtro-professor").value = "";
+      filtrarTurmas();
+    }
+
+    // Event listener para fechar modal clicando fora - mantendo para compatibilidade
+    document.addEventListener("click", function (event) {
+      const modals = document.querySelectorAll(".modal-overlay");
+      modals.forEach((modal) => {
+        if (event.target === modal) {
+          modal.classList.remove("active");
+        }
+      });
+    });
   </script>
 
 </body>

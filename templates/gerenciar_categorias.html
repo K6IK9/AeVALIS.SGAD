@@ -108,17 +108,26 @@
       <div class="item-count">
         Total de categorias: {{ categorias.count }}
       </div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Descrição</th>
-            <th>Ordem</th>
-            <th>Status</th>
-            <th>Perguntas</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>
+                <input type="text" id="searchCategoriaNome" placeholder="Nome da Categoria" />
+              </th>
+              <th>Descrição</th>
+              <th>Ordem</th>
+              <th>
+                <select id="filterStatus">
+                  <option value="">Status</option>
+                  <option value="Ativa">Ativa</option>
+                  <option value="Inativa">Inativa</option>
+                </select>
+              </th>
+              <th>Perguntas</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
         <tbody>
           {% for categoria in categorias %}
           <tr>
@@ -165,5 +174,14 @@
     </div>
     {% endif %}
   </div>
+
+  <script src="{% static 'js/gerenciar-global.js' %}"></script>
+  <script>
+    // Script específico para categorias - confirmação de exclusão customizada
+    document.addEventListener("DOMContentLoaded", function () {
+      // Interceptar alertas customizados do template (já estão inline, manter como estão)
+      console.log("Página de categorias carregada com script global");
+    });
+  </script>
 </body>
 </html>

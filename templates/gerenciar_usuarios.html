@@ -361,142 +361,26 @@
   </div>
   {% endif %}
 
-  <!-- Scripts -->
+  <!-- Script global de gerenciamento -->
+  <script src="{% static 'js/gerenciar-global.js' %}"></script>
+
+  <!-- Scripts específicos da página -->
   {% if not editing %}
   <script>
-    // Modal functions (only when not editing)
-    function openModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-      }
-    }
-
-    function closeModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.style.display = 'none';
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-      }
-    }
-
-    // Close modal when clicking outside
-    document.addEventListener('click', function(e) {
-      if (e.target.classList.contains('modal')) {
-        closeModal(e.target.id);
-      }
-    });
-
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        const openModal = document.querySelector('.modal.show');
-        if (openModal) {
-          closeModal(openModal.id);
-        }
-      }
-    });
-
-    // Drag scroll functionality
-    function enableDragScroll() {
-      const tableContainer = document.querySelector('.table-responsive');
-      if (!tableContainer) return;
-      
-      let isDown = false;
-      let startX;
-      let scrollLeft;
-
-      tableContainer.addEventListener('mousedown', (e) => {
-        // Evitar drag em elementos interativos
-        if (e.target.tagName === 'INPUT' || 
-            e.target.tagName === 'BUTTON' || 
-            e.target.tagName === 'A' ||
-            e.target.closest('button') ||
-            e.target.closest('a')) {
-          return;
-        }
-        
-        isDown = true;
-        tableContainer.classList.add('grabbing');
-        startX = e.pageX - tableContainer.offsetLeft;
-        scrollLeft = tableContainer.scrollLeft;
-        e.preventDefault();
-      });
-
-      tableContainer.addEventListener('mouseleave', () => {
-        isDown = false;
-        tableContainer.classList.remove('grabbing');
-      });
-
-      tableContainer.addEventListener('mouseup', () => {
-        isDown = false;
-        tableContainer.classList.remove('grabbing');
-      });
-
-      tableContainer.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - tableContainer.offsetLeft;
-        const walk = (x - startX) * 2;
-        tableContainer.scrollLeft = scrollLeft - walk;
-      });
-
-      // Touch events for mobile
-      tableContainer.addEventListener('touchstart', (e) => {
-        if (e.target.tagName === 'INPUT' || 
-            e.target.tagName === 'BUTTON' || 
-            e.target.tagName === 'A') {
-          return;
-        }
-        
-        isDown = true;
-        startX = e.touches[0].pageX - tableContainer.offsetLeft;
-        scrollLeft = tableContainer.scrollLeft;
-      });
-
-      tableContainer.addEventListener('touchmove', (e) => {
-        if (!isDown) return;
-        const x = e.touches[0].pageX - tableContainer.offsetLeft;
-        const walk = (x - startX) * 2;
-        tableContainer.scrollLeft = scrollLeft - walk;
-      });
-
-      tableContainer.addEventListener('touchend', () => {
-        isDown = false;
-      });
-
-      // Scroll smooth behavior
-      tableContainer.style.scrollBehavior = 'auto';
-    }
-
-    // Auto-pesquisa com delay
+    // Auto-pesquisa com delay - usando função global setupAutoSearch
     function setupSearch() {
-      const searchInput = document.getElementById('search');
-      if (!searchInput) return;
-      
-      let searchTimeout;
-      searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-          this.form.submit();
-        }, 500);
+      setupAutoSearch('search', function() {
+        document.getElementById('filtros-form').submit();
       });
     }
 
-    // Função para limpar filtros
+    // Função para limpar filtros - usando a função global como base
     function limparFiltros() {
-      document.getElementById('search').value = '';
-      document.getElementById('role').value = '';
-      document.getElementById('status').value = '';
-      document.getElementById('filtros-form').submit();
+      limparFiltros(['search', 'role', 'status'], 'filtros-form');
     }
 
     // Initialize when page loads
     document.addEventListener('DOMContentLoaded', function() {
-      enableDragScroll();
       setupSearch();
     });
   </script>
