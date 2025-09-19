@@ -1550,6 +1550,7 @@ def editar_questionario_perguntas(request, questionario_id):
             if not QuestionarioPergunta.objects.filter(
                 questionario=questionario, pergunta=pergunta_editando
             ).exists():
+                messages.error(request, "Pergunta não encontrada neste questionário.")
                 return redirect(
                     "editar_questionario_perguntas", questionario_id=questionario.id
                 )
