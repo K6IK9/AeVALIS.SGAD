@@ -263,7 +263,7 @@
                 <td>{{ ciclo.questionario.titulo }}</td>
                 <td>{{ ciclo.data_inicio|date:"d/m/Y H:i" }}</td>
                 <td>{{ ciclo.data_fim|date:"d/m/Y H:i" }}</td>
-                <td>
+                <td class="status-column">
                   {% if ciclo.status == 'agendado' %}
                     <span class="status-badge status-warning">📅 Agendado</span>
                   {% elif ciclo.status == 'em_andamento' %}
@@ -272,7 +272,7 @@
                     <span class="status-badge status-active">✅ Finalizado</span>
                   {% endif %}
                 </td>
-                <td>
+                <td class="status-column">
                   {% if ciclo.ativo %}
                     <span class="status-badge status-active">✅ Ativo</span>
                   {% else %}

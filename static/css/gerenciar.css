@@ -1930,6 +1930,19 @@ input[type="checkbox"] {
     color: var(--cor04);
 }
 
+/* Evitar quebra de linha nos badges de status */
+.status-badge {
+    white-space: nowrap;
+    display: inline-block;
+}
+
+/* Colunas de status não devem quebrar */
+.data-table .status-column {
+    white-space: nowrap;
+    min-width: max-content;
+    width: 1%;
+}
+
 /* Responsividade para gerenciar alunos */
 @media (max-width: 768px) {
     .turma-info {
