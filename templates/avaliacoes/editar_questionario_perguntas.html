@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
     <!-- CSS de Gerenciamento -->
     <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}">
+    <!-- CSS específico desta página -->
+    <link rel="stylesheet" href="{% static 'css/editar_questionario.css' %}">>
 
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -205,9 +207,9 @@
                 </thead>
                 <tbody>
                     {% for qp in perguntas_existentes %}
-                    <tr {% if editando and pergunta_editando.id == qp.pergunta.id %}class="row-highlight" {% endif %}>
+                    <tr {% if editando and pergunta_editando.id==qp.pergunta.id %}class="row-highlight" {% endif %}>
                         <td style="text-align: center;">
-                            <span class="category-order-number">{{ qp.ordem }}</span>
+                            <span class="category-order-number">{{ qp.ordem_no_questionario }}</span>
                         </td>
                         <td>
                             <strong>{{ qp.pergunta.enunciado|truncatechars:80 }}</strong>
@@ -226,10 +228,16 @@
                         <td>
                             {% if qp.pergunta.tipo == 'multipla_escolha' %}
                             <span class="badge type-multiple">📋 Múltipla Escolha</span>
-                            {% elif qp.pergunta.tipo == 'texto' %}
+                            {% elif qp.pergunta.tipo == 'texto_livre' %}
                             <span class="badge type-text">📝 Texto Livre</span>
-                            {% elif qp.pergunta.tipo == 'escala' %}
-                            <span class="badge type-scale">📊 Escala</span>
+                            {% elif qp.pergunta.tipo == 'likert' %}
+                            <span class="badge type-scale">📊 Escala Likert</span>
+                            {% elif qp.pergunta.tipo == 'nps' %}
+                            <span class="badge type-nps">⭐ NPS (0-10)</span>
+                            {% elif qp.pergunta.tipo == 'sim_nao' %}
+                            <span class="badge type-binary">☑️ Sim/Não</span>
+                            {% else %}
+                            <span class="badge type-other">❓ {{ qp.pergunta.get_tipo_display }}</span>
                             {% endif %}
                         </td>
                         <td>
