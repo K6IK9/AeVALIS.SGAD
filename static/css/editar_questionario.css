@@ -28,23 +28,45 @@
     padding-right: 15px;
 }
 
+/* Responsividade */
 @media (max-width: 768px) {
+
+    /* Layout geral */
     .col-md-4,
     .col-md-8 {
         flex: 0 0 100%;
         max-width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+        margin-bottom: 1rem;
     }
-    
+
     .row {
         margin-left: 0;
         margin-right: 0;
     }
-    
-    .col-md-4,
-    .col-md-8 {
-        padding-left: 0;
-        padding-right: 0;
-        margin-bottom: 1rem;
+
+    /* Perguntas específicas */
+    .pergunta-header {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .pergunta-acoes {
+        align-self: flex-end;
+    }
+
+    .opcoes-lista {
+        grid-template-columns: 1fr;
+    }
+
+    .pergunta-badges {
+        gap: 0.25rem;
+    }
+
+    .pergunta-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.6rem;
     }
 }
 
@@ -91,7 +113,55 @@
 }
 
 .mb-3 {
-    margin-bottom: 1rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+/* Garantir espaçamento adequado entre campos */
+.form-select,
+.form-control {
+    margin-bottom: 0.5rem;
+}
+
+/* Espaçamento para texto de ajuda */
+.form-text {
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.875em;
+    color: #6c757d;
+}
+
+/* Correção específica para campos de tipo e categoria */
+#id_tipo,
+#id_categoria {
+    position: relative;
+    z-index: 1;
+    clear: both;
+}
+
+/* Garantir que os containers dos campos tenham espaçamento adequado */
+.mb-3:has(#id_tipo),
+.mb-3:has(#id_categoria) {
+    position: relative;
+    z-index: 1;
+}
+
+/* Texto de erro sem sobreposição */
+.text-danger {
+    color: var(--cor08) !important;
+    display: block;
+    clear: both;
+    margin-top: 0.25rem;
+}
+
+/* Espaçamento para campos aninhados */
+.form-check {
+    display: block;
+    min-height: 1.5rem;
+    padding-left: 1.5em;
+    margin-bottom: 0.125rem;
+    clear: both;
+    margin-top: 1rem;
 }
 
 .mt-2 {
@@ -174,74 +244,220 @@
     transform: translateY(-1px);
 }
 
-/* Button Groups */
-.btn-group {
-    position: relative;
-    display: inline-flex;
-    vertical-align: middle;
-}
 
-.btn-group-sm .btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    border-radius: 0.2rem;
-}
-
-/* Lista de perguntas */
-.list-group {
+/* === LISTA DE PERGUNTAS === */
+.perguntas-lista {
     display: flex;
     flex-direction: column;
-    padding-left: 0;
-    margin-bottom: 0;
-    border-radius: 0.25rem;
+    gap: 1rem;
 }
 
-.list-group-item {
-    position: relative;
-    display: block;
-    padding: 0.75rem 1rem;
-    color: #212529;
-    text-decoration: none;
-    background-color: var(--cor07);
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
-    margin-bottom: 0.5rem;
-    transition: all var(--transition-fast) ease;
+.pergunta-item {
+    background: var(--cor07);
+    border: 2px solid var(--cor01);
+    border-radius: var(--border-radius-medium);
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
 }
 
-.list-group-item:hover {
-    background-color: #f8f9fa;
+.pergunta-item:hover {
     border-color: var(--cor03);
-    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
 }
 
-/* Badges customizados */
-/* Badge variations específicas */
-.badge.bg-secondary {
-    background-color: var(--cor03);
+.pergunta-editando {
+    border-color: var(--cor02) !important;
+    background: linear-gradient(135deg, var(--cor07) 0%, rgba(0, 253, 148, 0.05) 100%);
+    box-shadow: 0 0 20px rgba(0, 253, 148, 0.2);
 }
 
-.badge.bg-warning {
-    background-color: #ffc107;
+.pergunta-status-editar {
+    background: var(--cor02);
+    color: var(--cor07);
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-small);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.pergunta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.pergunta-info {
+    flex: 1;
+}
+
+.pergunta-badges {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.pergunta-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--border-radius-small);
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pergunta-obrigatoria {
+    background: var(--cor02);
     color: var(--cor05);
 }
 
-.badge.bg-info {
-    background-color: var(--cor06);
-    color: var(--cor05);
+.pergunta-tipo {
+    background: var(--cor06);
+    color: var(--cor07);
 }
 
-.badge.bg-success,
-.badge.bg-primary {
-    background-color: var(--cor02);
+.pergunta-enunciado {
+    font-size: 1rem;
+    font-weight: 600;
     color: var(--cor05);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.pergunta-categoria {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--cor03);
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+.pergunta-categoria i {
+    font-size: 0.75rem;
+}
+
+.pergunta-acoes {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.btn-pergunta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 2px solid;
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+}
+
+.btn-pergunta i {
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.btn-pergunta:hover i {
+    transform: scale(1.1);
+}
+
+.btn-editar {
+    background: var(--cor03);
+    border-color: var(--cor03);
+    color: var(--cor07);
+}
+
+.btn-editar i {
+    color: var(--cor07);
+}
+
+.btn-editar:hover {
+    background: rgba(55, 111, 108, 0.1);
+    border-color: var(--cor03);
+    color: var(--cor03);
+    transform: scale(1.05);
+    box-shadow: var(--shadow-hover);
+}
+
+.btn-editar:hover i {
+    color: var(--cor03);
+}
+
+.btn-remover {
+    background: var(--cor08);
+    border-color: var(--cor08);
+    color: var(--cor07);
+}
+
+.btn-remover i {
+    color: var(--cor07);
+}
+
+.btn-remover:hover {
+    background: rgba(255, 60, 60, 0.1);
+    border-color: var(--cor08);
+    color: var(--cor08);
+    transform: scale(1.05);
+    box-shadow: var(--shadow-hover);
+}
+
+.btn-remover:hover i {
+    color: var(--cor08);
+}
+
+.pergunta-opcoes {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--cor01);
+}
+
+.opcoes-titulo {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--cor03);
+    margin-bottom: 0.5rem;
+}
+
+.opcoes-lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.5rem;
+}
+
+.opcao-item {
+    background: var(--cor01);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius-small);
+    font-size: 0.875rem;
+    color: var(--cor05);
+    border-left: 3px solid var(--cor06);
 }
 
 /* Forms */
 .form-label {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     font-weight: 600;
     color: var(--cor04);
+    display: block;
+    clear: both;
 }
 
 .form-select {
@@ -260,19 +476,21 @@
     border: 1px solid #ced4da;
     border-radius: 0.25rem;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    appearance: none;
+    /* Remove setas do browser */
+    -webkit-appearance: none;
+    /* Remove setas do webkit */
+    -moz-appearance: none;
+    /* Remove setas do firefox */
 }
 
 .form-select:focus {
     border-color: var(--cor02);
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(0, 253, 148, 0.25);
-}
-
-.form-check {
-    display: block;
-    min-height: 1.5rem;
-    padding-left: 1.5em;
-    margin-bottom: 0.125rem;
 }
 
 .filter-group label {
@@ -323,12 +541,6 @@
     cursor: pointer;
 }
 
-.form-text {
-    margin-top: 0.25rem;
-    font-size: 0.875em;
-    color: #6c757d;
-}
-
 /* Alerts customizados */
 .alert {
     position: relative;
@@ -345,9 +557,29 @@
     border-left: 4px solid var(--cor08);
 }
 
-/* Text utilities */
-.text-danger {
-    color: var(--cor08) !important;
+/* Garantir que não há múltiplas setas */
+select.form-select::after,
+select.form-select::before {
+    display: none !important;
+}
+
+/* Remover qualquer seta nativa do browser */
+select.form-select::-ms-expand {
+    display: none;
+}
+
+/* Remover estilos antigos não utilizados */
+
+.btn.gap-2 {
+    gap: 0.5rem;
+}
+
+.d-flex.gap-2 {
+    gap: 0.5rem;
+}
+
+.btn.flex-fill {
+    flex: 1 1 auto;
 }
 
 /* Components */

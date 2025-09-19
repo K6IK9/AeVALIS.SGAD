@@ -1539,6 +1539,26 @@ def editar_questionario_perguntas(request, questionario_id):
 
     categorias = CategoriaPergunta.objects.all()
 
+    # Verificar se está editando uma pergunta existente
+    editando_pergunta_id = request.GET.get("editar_pergunta")
+    pergunta_editando = None
+
+    if editando_pergunta_id:
+        try:
+            pergunta_editando = PerguntaAvaliacao.objects.get(id=editando_pergunta_id)
+            # Verificar se a pergunta pertence a este questionário
+            if not QuestionarioPergunta.objects.filter(
+                questionario=questionario, pergunta=pergunta_editando
+            ).exists():
+                return redirect(
+                    "editar_questionario_perguntas", questionario_id=questionario.id
+                )
+        except PerguntaAvaliacao.DoesNotExist:
+            messages.error(request, "Pergunta não encontrada.")
+            return redirect(
+                "editar_questionario_perguntas", questionario_id=questionario.id
+            )
+
     if request.method == "POST":
         print(f"DEBUG: POST data: {request.POST}")
         if "adicionar_pergunta" in request.POST:
@@ -1564,6 +1584,25 @@ def editar_questionario_perguntas(request, questionario_id):
             else:
                 print(f"DEBUG: Form inválido - erros: {form.errors}")
                 messages.error(request, f"Erro ao adicionar pergunta: {form.errors}")
+        elif "editar_pergunta" in request.POST:
+            print("DEBUG: Tentando editar pergunta")
+            pergunta_id = request.POST.get("pergunta_id")
+            try:
+                pergunta_para_editar = PerguntaAvaliacao.objects.get(id=pergunta_id)
+                form = PerguntaAvaliacaoForm(
+                    request.POST, instance=pergunta_para_editar
+                )
+                if form.is_valid():
+                    pergunta = form.save()
+                    messages.success(request, "Pergunta atualizada com sucesso!")
+                    return redirect(
+                        "editar_questionario_perguntas", questionario_id=questionario.id
+                    )
+                else:
+                    messages.error(request, f"Erro ao editar pergunta: {form.errors}")
+                    pergunta_editando = pergunta_para_editar  # Manter no modo de edição
+            except PerguntaAvaliacao.DoesNotExist:
+                messages.error(request, "Pergunta não encontrada.")
 
         elif "remover_pergunta" in request.POST:
             pergunta_id = request.POST.get("pergunta_id")
@@ -1582,7 +1621,11 @@ def editar_questionario_perguntas(request, questionario_id):
                 "editar_questionario_perguntas", questionario_id=questionario.id
             )
     else:
-        form = PerguntaAvaliacaoForm()
+        # Inicializar formulário para adicionar ou editar
+        if pergunta_editando:
+            form = PerguntaAvaliacaoForm(instance=pergunta_editando)
+        else:
+            form = PerguntaAvaliacaoForm()
 
     context = {
         "questionario": questionario,
@@ -1590,6 +1633,8 @@ def editar_questionario_perguntas(request, questionario_id):
         "form": form,
         "categorias": categorias,
         "titulo": f"Editar Perguntas - {questionario.titulo}",
+        "pergunta_editando": pergunta_editando,
+        "editando": bool(pergunta_editando),
     }
     return render(request, "avaliacoes/editar_questionario_perguntas.html", context)
 
