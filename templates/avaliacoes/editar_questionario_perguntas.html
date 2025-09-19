@@ -45,18 +45,6 @@
             margin-top: 4px;
             font-size: 0.8rem;
         }
-        
-        .main-container {
-            display: block;
-        }
-        
-        @media (min-width: 1024px) {
-            .main-container {
-                display: grid;
-                grid-template-columns: 1fr 2fr;
-                gap: 24px;
-            }
-        }
     </style>
 </head>
 
@@ -64,8 +52,8 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>📝 Editar Perguntas do Questionário</h1>
-            <p>{{ questionario.titulo }}</p>
+            <h1>Gerenciamento de Perguntas</h1>
+            <p>Editar perguntas do questionário: {{ questionario.titulo }}</p>
         </div>
 
         <!-- Navegação Breadcrumb -->
@@ -86,157 +74,148 @@
             </div>
         {% endif %}
 
-        <!-- Conteúdo principal -->
-        <div class="main-container">
-            <!-- Formulário de Pergunta -->
-            <div class="form-section">
-                <h2>
-                    {% if editando %}
-                        ✏️ Editar Pergunta
-                    {% else %}
-                        ➕ Nova Pergunta
-                    {% endif %}
-                </h2>
-                
-                <form method="post" class="question-form">
-                    {% csrf_token %}
-                    
-                    {% if form.errors %}
-                        <div class="error-message">
-                            <strong>Erros no formulário:</strong>
-                            {{ form.errors }}
-                        </div>
-                    {% endif %}
-                    
-                    <div class="form-group">
-                        <label for="{{ form.enunciado.id_for_label }}">
-                            {{ form.enunciado.label }} <span class="required">*</span>
-                        </label>
-                        {{ form.enunciado }}
-                        {% if form.enunciado.errors %}
-                            <div class="field-error">
-                                {% for error in form.enunciado.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="{{ form.tipo.id_for_label }}">
-                            {{ form.tipo.label }} <span class="required">*</span>
-                        </label>
-                        {{ form.tipo }}
-                        {% if form.tipo.errors %}
-                            <div class="field-error">
-                                {% for error in form.tipo.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="form-group" id="opcoes-container" style="display: none;">
-                        <label for="{{ form.opcoes_multipla_escolha.id_for_label }}">{{ form.opcoes_multipla_escolha.label }}</label>
-                        {{ form.opcoes_multipla_escolha }}
-                        <small class="form-help">Digite uma opção por linha</small>
-                        {% if form.opcoes_multipla_escolha.errors %}
-                            <div class="field-error">
-                                {% for error in form.opcoes_multipla_escolha.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="{{ form.categoria.id_for_label }}">
-                            {{ form.categoria.label }}
-                        </label>
-                        {{ form.categoria }}
-                        {% if form.categoria.errors %}
-                            <div class="field-error">
-                                {% for error in form.categoria.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="form-group">
-                        <div class="checkbox-group">
-                            {{ form.obrigatoria }}
-                            <label for="{{ form.obrigatoria.id_for_label }}">{{ form.obrigatoria.label }}</label>
-                        </div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        {% if editando %}
-                            <button type="submit" name="salvar_edicao" class="btn">
-                                ✓ Salvar
-                            </button>
-                            <a href="{% url 'editar_questionario_perguntas' questionario.id %}" class="btn btn-secondary">
-                                ← Cancelar
-                            </a>
-                        {% else %}
-                            <button type="submit" name="adicionar_pergunta" class="btn">
-                                ➕ Adicionar
-                            </button>
-                        {% endif %}
-                    </div>
-                </form>
-            </div>
+        <!-- Formulário de Nova/Editar Pergunta -->
+        <div class="form-section">
+            <h2>
+                {% if editando %}Editar Pergunta{% else %}Criar Nova Pergunta{% endif %}
+            </h2>
             
-            <!-- Lista de Perguntas -->
-            <div class="form-section">
-                <h2>📋 Perguntas do Questionário</h2>
+            <form method="post" class="question-form">
+                {% csrf_token %}
                 
-                <!-- Seção de Filtros -->
-                <div class="filters-section" id="filtersSection">
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <label for="searchPerguntaTexto">Buscar por Texto:</label>
-                            <input type="text" 
-                                   id="searchPerguntaTexto" 
-                                   placeholder="Digite parte do enunciado da pergunta"
-                                   autocomplete="off">
-                        </div>
-                        
-                        <div class="filter-group">
-                            <label for="filterTipo">Tipo:</label>
-                            <select id="filterTipo">
-                                <option value="">Todos os tipos</option>
-                                <option value="multipla_escolha">Múltipla Escolha</option>
-                                <option value="texto">Texto Livre</option>
-                                <option value="escala">Escala de Avaliação</option>
-                            </select>
-                        </div>
+                {% if form.errors %}
+                    <div class="error-message">
+                        <strong>Erros no formulário:</strong>
+                        {{ form.errors }}
                     </div>
-
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <label for="filterObrigatoria">Obrigatória:</label>
-                            <select id="filterObrigatoria">
-                                <option value="">Todas</option>
-                                <option value="sim">Obrigatórias</option>
-                                <option value="nao">Opcionais</option>
-                            </select>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="{{ form.enunciado.id_for_label }}">
+                        {{ form.enunciado.label }}
+                    </label>
+                    {{ form.enunciado }}
+                    {% if form.enunciado.errors %}
+                        <div class="form-error">
+                            {% for error in form.enunciado.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
                         </div>
-
-                        <div class="filter-group">
-                            <button type="button" 
-                                    onclick="clearFilters()" 
-                                    class="btn btn-clear"
-                                    title="Limpar todos os filtros">
-                                🧹 Limpar Filtros
-                            </button>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.tipo.id_for_label }}">
+                        {{ form.tipo.label }}
+                    </label>
+                    {{ form.tipo }}
+                    {% if form.tipo.errors %}
+                        <div class="form-error">
+                            {% for error in form.tipo.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
                         </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group" id="opcoes-container" style="display: none;">
+                    <label for="{{ form.opcoes_multipla_escolha.id_for_label }}">{{ form.opcoes_multipla_escolha.label }}</label>
+                    {{ form.opcoes_multipla_escolha }}
+                    <small class="form-help">Digite uma opção por linha</small>
+                    {% if form.opcoes_multipla_escolha.errors %}
+                        <div class="form-error">
+                            {% for error in form.opcoes_multipla_escolha.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.categoria.id_for_label }}">
+                        {{ form.categoria.label }}
+                    </label>
+                    {{ form.categoria }}
+                    {% if form.categoria.errors %}
+                        <div class="form-error">
+                            {% for error in form.categoria.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        {{ form.obrigatoria }}
+                        <label for="{{ form.obrigatoria.id_for_label }}">{{ form.obrigatoria.label }}</label>
                     </div>
                 </div>
 
-                <div class="item-count">
-                    Total de perguntas: {{ perguntas_existentes.count }}
+                {% if form.non_field_errors %}
+                <div class="error-text-bottom">
+                    {% for error in form.non_field_errors %}
+                    {{ error }}
+                    {% endfor %}
                 </div>
+                {% endif %}
+                
+                <div class="form-actions">
+                    {% if editando %}
+                        <button type="submit" name="salvar_edicao" class="btn btn-success">
+                            Salvar Alterações
+                        </button>
+                        <a href="{% url 'editar_questionario_perguntas' questionario.id %}" class="btn btn-secondary">
+                            Cancelar
+                        </a>
+                    {% else %}
+                        <button type="submit" name="adicionar_pergunta" class="btn btn-success">
+                            Adicionar Pergunta
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <!-- Filtros e Busca -->
+        {% if not editando %}
+        <div class="filters-section">
+            <h3 class="filters-title">Filtros e Busca</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="searchPerguntaTexto">Buscar por Texto:</label>
+                    <div class="search-box">
+                        <input type="text" id="searchPerguntaTexto" class="form-control"
+                               placeholder="Digite parte do enunciado da pergunta..." autocomplete="off">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label for="filterTipo">Filtrar por Tipo:</label>
+                    <select id="filterTipo" class="form-control">
+                        <option value="">Todos os tipos</option>
+                        <option value="multipla_escolha">Múltipla Escolha</option>
+                        <option value="texto">Texto Livre</option>
+                        <option value="escala">Escala de Avaliação</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterObrigatoria">Filtrar por Obrigatória:</label>
+                    <select id="filterObrigatoria" class="form-control">
+                        <option value="">Todas</option>
+                        <option value="sim">Obrigatórias</option>
+                        <option value="nao">Opcionais</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button type="button" class="btn-filter" onclick="clearFilters()">Limpar Filtros</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Lista de Perguntas -->
+        <div class="form-section">
+            <h2>📋 Perguntas do Questionário</h2>
                 
                 {% if perguntas_existentes %}
                     <table class="data-table">
@@ -320,7 +299,6 @@
                         <p>Adicione a primeira pergunta ao questionário usando o formulário acima.</p>
                     </div>
                 {% endif %}
-            </div>
         </div>
     </div>
 

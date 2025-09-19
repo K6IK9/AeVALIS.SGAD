@@ -43,46 +43,6 @@
         </div>
         {% endif %}
 
-        <!-- Filtros e Busca -->
-        {% if not editing %}
-        <div class="filters-section">
-            <h3 class="filters-title">Filtros e Busca</h3>
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label for="searchQuestionarioTitulo">Buscar por Título:</label>
-                    <div class="search-box">
-                        <input type="text" id="searchQuestionarioTitulo" class="form-control"
-                            placeholder="Digite o título do questionário..." autocomplete="off">
-                    </div>
-                </div>
-                <div class="filter-group">
-                    <label for="filterStatus">Filtrar por Status:</label>
-                    <select id="filterStatus" class="form-control">
-                        <option value="">Todos os status</option>
-                        <option value="ativo">Ativo</option>
-                        <option value="inativo">Inativo</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="filterCriador">Filtrar por Criador:</label>
-                    <select id="filterCriador" class="form-control">
-                        <option value="">Todos os criadores</option>
-                        {% regroup questionarios by criado_por as criadores_agrupados %}
-                        {% for criador_group in criadores_agrupados %}
-                        <option
-                            value="{{ criador_group.grouper.get_full_name|default:criador_group.grouper.username }}">
-                            {{ criador_group.grouper.get_full_name|default:criador_group.grouper.username }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <button type="button" class="btn-filter" onclick="clearFilters()">Limpar Filtros</button>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
         <!-- Formulário de Criação/Edição -->
         <div class="form-section">
             <h2>
@@ -178,6 +138,46 @@
                 <a href="{% url 'editar_questionario_perguntas' questionario_editando.id %}" class="btn">
                     📝 Gerenciar Perguntas
                 </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Filtros e Busca -->
+        {% if not editing %}
+        <div class="filters-section">
+            <h3 class="filters-title">Filtros e Busca</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="searchQuestionarioTitulo">Buscar por Título:</label>
+                    <div class="search-box">
+                        <input type="text" id="searchQuestionarioTitulo" class="form-control"
+                            placeholder="Digite o título do questionário..." autocomplete="off">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label for="filterStatus">Filtrar por Status:</label>
+                    <select id="filterStatus" class="form-control">
+                        <option value="">Todos os status</option>
+                        <option value="ativo">Ativo</option>
+                        <option value="inativo">Inativo</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterCriador">Filtrar por Criador:</label>
+                    <select id="filterCriador" class="form-control">
+                        <option value="">Todos os criadores</option>
+                        {% regroup questionarios by criado_por as criadores_agrupados %}
+                        {% for criador_group in criadores_agrupados %}
+                        <option
+                            value="{{ criador_group.grouper.get_full_name|default:criador_group.grouper.username }}">
+                            {{ criador_group.grouper.get_full_name|default:criador_group.grouper.username }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button type="button" class="btn-filter" onclick="clearFilters()">Limpar Filtros</button>
+                </div>
             </div>
         </div>
         {% endif %}
