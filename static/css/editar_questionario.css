@@ -517,50 +517,17 @@
     color: #666;
 }
 
-/* ============ Estilos para exibição da ordem das perguntas ============ */
+/* ============ Numeração das perguntas por categoria ============ */
 
-.order-display {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-}
-
-.order-number {
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: var(--cor-principal);
-    background: var(--cor-branco);
-    border: 2px solid var(--cor-principal);
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.order-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.btn-order {
+.category-order-number {
     display: inline-block;
-    width: 20px;
-    height: 16px;
-    text-align: center;
-    text-decoration: none;
-    color: var(--cor-texto);
-    font-size: 10px;
-    line-height: 14px;
-    border-radius: 3px;
-    transition: all 0.2s ease;
-}
-
-.btn-order:hover {
+    padding: 8px 12px;
     background: var(--cor-principal);
     color: var(--cor-branco);
-    transform: scale(1.1);
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 35px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

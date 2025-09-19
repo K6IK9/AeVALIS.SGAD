@@ -205,25 +205,9 @@
                 </thead>
                 <tbody>
                     {% for qp in perguntas_existentes %}
-                    <tr {% if editando and pergunta_editando.id == qp.pergunta.id %}class="row-highlight" {% endif %}>
+                    <tr {% if editando and pergunta_editando.id==qp.pergunta.id %}class="row-highlight" {% endif %}>
                         <td style="text-align: center;">
-                            <div class="order-display">
-                                <span class="order-number">{{ qp.ordem }}º</span>
-                                <div class="order-controls">
-                                    {% if not forloop.first %}
-                                    <a href="?mover_pergunta={{ qp.pergunta.id }}&direcao=up" class="btn-order"
-                                        title="Mover para cima">
-                                        ▲
-                                    </a>
-                                    {% endif %}
-                                    {% if not forloop.last %}
-                                    <a href="?mover_pergunta={{ qp.pergunta.id }}&direcao=down" class="btn-order"
-                                        title="Mover para baixo">
-                                        ▼
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </div>
+                            <span class="category-order-number">{{ qp.ordem }}</span>
                         </td>
                         <td>
                             <strong>{{ qp.pergunta.enunciado|truncatechars:80 }}</strong>
