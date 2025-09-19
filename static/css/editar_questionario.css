@@ -1,12 +1,18 @@
 /* Editar Questionário - Seguindo padrão do sistema usando cores globais */
 :root {
     /* Usando cores do global.css - CORRIGIDO */
-    --cor-principal: #376f6c;       /* cor03 - verde escuro - COR PRINCIPAL */
-    --cor-destaque: #00fd94;        /* cor02 - verde claro - COR DE DESTAQUE */
-    --cor-texto: #1e3231;           /* cor04 - texto escuro */
-    --cor-branco: #ffffff;          /* cor07 - branco */
-    --cor-cinza: #f0f0f0;           /* cor01 - cinza claro */
-    --cor-erro: #ff3c3c;            /* cor08 - vermelho */
+    --cor-principal: #376f6c;
+    /* cor03 - verde escuro - COR PRINCIPAL */
+    --cor-destaque: #00fd94;
+    /* cor02 - verde claro - COR DE DESTAQUE */
+    --cor-texto: #1e3231;
+    /* cor04 - texto escuro */
+    --cor-branco: #ffffff;
+    /* cor07 - branco */
+    --cor-cinza: #f0f0f0;
+    /* cor01 - cinza claro */
+    --cor-erro: #ff3c3c;
+    /* cor08 - vermelho */
 }
 
 /* Container principal seguindo padrão */
@@ -436,31 +442,31 @@
     .main-container {
         gap: 20px;
     }
-    
+
     .header h1 {
         font-size: 2rem;
     }
-    
+
     .question-header {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .question-actions,
     .question-options {
         padding-left: 0;
     }
-    
+
     .form-actions {
         flex-direction: column;
     }
-    
+
     .section-header {
         flex-direction: column;
         gap: 15px;
         text-align: center;
     }
-    
+
     .question-meta {
         flex-direction: column;
         align-items: flex-start;
@@ -471,17 +477,90 @@
     .container {
         padding: 15px;
     }
-    
+
     .header {
         padding: 20px 15px;
     }
-    
+
     .header h1 {
         font-size: 1.8rem;
     }
-    
+
     .questions-section,
     .form-section {
         padding: 20px;
     }
+}
+
+/* ============ Estilos específicos para tipos de pergunta ============ */
+
+/* Extensões do badge base para tipos específicos */
+.type-multiple {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.type-text {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.type-scale {
+    background-color: #e8f5e8;
+    color: #388e3c;
+}
+
+/* Preview de opções das perguntas */
+.question-options-preview {
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+/* ============ Estilos para exibição da ordem das perguntas ============ */
+
+.order-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.order-number {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--cor-principal);
+    background: var(--cor-branco);
+    border: 2px solid var(--cor-principal);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.order-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.btn-order {
+    display: inline-block;
+    width: 20px;
+    height: 16px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--cor-texto);
+    font-size: 10px;
+    line-height: 14px;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.btn-order:hover {
+    background: var(--cor-principal);
+    color: var(--cor-branco);
+    transform: scale(1.1);
 }
