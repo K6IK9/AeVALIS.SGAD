@@ -205,7 +205,7 @@
                 </thead>
                 <tbody>
                     {% for questionario in questionarios %}
-                    <tr {% if editing and questionario_editando.id==questionario.id %}class="row-highlight" {% endif %}>
+                    <tr {% if editing and questionario_editando.id == questionario.id %}class="row-highlight" {% endif %}>
                         <td>
                             <strong>{{ questionario.titulo }}</strong>
                         </td>
