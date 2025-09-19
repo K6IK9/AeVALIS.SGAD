@@ -63,7 +63,7 @@
 
                 <div class="form-group">
                     <label for="{{ form.enunciado.id_for_label }}">
-                        {{ form.enunciado.label }}
+                        Enunciado da Pergunta
                     </label>
                     {{ form.enunciado }}
                     {% if form.enunciado.errors %}
@@ -77,7 +77,7 @@
 
                 <div class="form-group">
                     <label for="{{ form.tipo.id_for_label }}">
-                        {{ form.tipo.label }}
+                        Tipo de Pergunta
                     </label>
                     {{ form.tipo }}
                     {% if form.tipo.errors %}
@@ -90,8 +90,7 @@
                 </div>
 
                 <div class="form-group" id="opcoes-container" style="display: none;">
-                    <label for="{{ form.opcoes_multipla_escolha.id_for_label }}">{{ form.opcoes_multipla_escolha.label
-                        }}</label>
+                    <label for="{{ form.opcoes_multipla_escolha.id_for_label }}">Opções de Resposta</label>
                     {{ form.opcoes_multipla_escolha }}
                     <small class="form-help">Digite uma opção por linha</small>
                     {% if form.opcoes_multipla_escolha.errors %}
@@ -105,7 +104,7 @@
 
                 <div class="form-group">
                     <label for="{{ form.categoria.id_for_label }}">
-                        {{ form.categoria.label }}
+                        Categoria da Pergunta
                     </label>
                     {{ form.categoria }}
                     {% if form.categoria.errors %}
@@ -120,7 +119,7 @@
                 <div class="form-group">
                     <div class="checkbox-group">
                         {{ form.obrigatoria }}
-                        <label for="{{ form.obrigatoria.id_for_label }}">{{ form.obrigatoria.label }}</label>
+                        <label for="{{ form.obrigatoria.id_for_label }}">Pergunta obrigatória</label>
                     </div>
                 </div>
 
