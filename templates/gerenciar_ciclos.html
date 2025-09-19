@@ -240,87 +240,61 @@
           </div>
         </div>
 
-        <div class="info-section">
-          <strong>Total de ciclos:</strong> {{ ciclos.count }}
+        <div class="item-count">
+          Total de ciclos: {{ ciclos.count }}
         </div>
 
         {% if ciclos %}
-        <div class="table-responsive">
-          <table class="table">
+          <table class="data-table">
             <thead>
               <tr>
-                <th class="col-nome">
-                  <input type="text" id="searchCicloNome" placeholder="Nome do Ciclo" />
-                </th>
-                <th class="col-periodo">
-                  <select id="filterPeriodo">
-                    <option value="">Período</option>
-                    {% for periodo in periodos %}
-                    <option value="{{ periodo.id }}">{{ periodo.nome }}</option>
-                    {% endfor %}
-                  </select>
-                </th>
-                <th class="col-questionario">Questionário</th>
-                <th class="col-data">Início</th>
-                <th class="col-data">Fim</th>
-                <th class="col-status">
-                  <select id="filterStatus">
-                    <option value="">Status</option>
-                    <option value="Não Iniciado">Não Iniciado</option>
-                    <option value="Em Andamento">Em Andamento</option>
-                    <option value="Finalizado">Finalizado</option>
-                  </select>
-                </th>
-                <th class="col-ativo">
-                  <select id="filterAtivo">
-                    <option value="">Ativo</option>
-                    <option value="true">Sim</option>
-                    <option value="false">Não</option>
-                  </select>
-                </th>
-                <th class="col-acoes">Ações</th>
+                <th>Nome</th>
+                <th>Período Letivo</th>
+                <th>Questionário</th>
+                <th>Início</th>
+                <th>Fim</th>
+                <th>Status</th>
+                <th>Ativo</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
               {% for ciclo in ciclos %}
               <tr data-periodo="{{ ciclo.periodo_letivo.id }}">
-                <td class="col-nome"><strong>{{ ciclo.nome }}</strong></td>
-                <td class="col-periodo">{{ ciclo.periodo_letivo.nome }}</td>
-                <td class="col-questionario">
-                  {{ ciclo.questionario.titulo }}
-                </td>
-                <td class="col-data">
-                  {{ ciclo.data_inicio|date:"d/m/Y H:i" }}
-                </td>
-                <td class="col-data">
-                  {{ ciclo.data_fim|date:"d/m/Y H:i" }}
-                </td>
-                <td class="col-status">
+                <td><strong>{{ ciclo.nome }}</strong></td>
+                <td>{{ ciclo.periodo_letivo.nome }}</td>
+                <td>{{ ciclo.questionario.titulo }}</td>
+                <td>{{ ciclo.data_inicio|date:"d/m/Y H:i" }}</td>
+                <td>{{ ciclo.data_fim|date:"d/m/Y H:i" }}</td>
+                <td>
                   {% if ciclo.status == 'agendado' %}
-                  <span class="badge bg-warning">📅 Agendado</span>
+                    <span class="status-badge status-warning">📅 Agendado</span>
                   {% elif ciclo.status == 'em_andamento' %}
-                  <span class="badge bg-info">⏳ Em Andamento</span>
+                    <span class="status-badge status-info">⏳ Em Andamento</span>
                   {% elif ciclo.status == 'finalizado' %}
-                  <span class="badge bg-success">✅ Finalizado</span>
+                    <span class="status-badge status-active">✅ Finalizado</span>
                   {% endif %}
                 </td>
-                <td class="col-ativo">
+                <td>
                   {% if ciclo.ativo %}
-                  <span class="badge bg-success">✅ Ativo</span>
+                    <span class="status-badge status-active">✅ Ativo</span>
                   {% else %}
-                  <span class="badge bg-secondary">❌ Inativo</span>
+                    <span class="status-badge status-inactive">❌ Inativo</span>
                   {% endif %}
                 </td>
-                <td class="col-acoes">
-                  <div class="action-buttons">
-                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-sm" title="Visualizar">
+                <td>
+                  <div class="btn-group">
+                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" 
+                       class="btn btn-sm btn-secondary" title="Visualizar">
                       👁️ Ver
                     </a>
-                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-sm btn-secondary" title="Editar">
+                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" 
+                       class="btn btn-sm btn-secondary" title="Editar">
                       ✏️ Editar
                     </a>
                     <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}"
-                      class="inline-form form-excluir-ciclo" data-ciclo="{{ ciclo.nome }}">
+                          class="inline-form form-excluir-ciclo" data-ciclo="{{ ciclo.nome }}"
+                          onsubmit="return confirm('Tem certeza que deseja excluir o ciclo \'{{ ciclo.nome|escapejs }}\'?')">
                       {% csrf_token %}
                       <input type="hidden" name="confirm_cascade" value="0" />
                       <button type="submit" class="btn btn-sm btn-danger" title="Excluir">
@@ -333,12 +307,11 @@
               {% endfor %}
             </tbody>
           </table>
-        </div>
         {% else %}
-        <div class="empty-state">
-          <p class="empty-message">Nenhum ciclo de avaliação encontrado.</p>
-          <p>Crie o primeiro ciclo para começar a gerenciar avaliações.</p>
-        </div>
+          <div class="empty-state">
+            <h3>📅 Nenhum ciclo de avaliação cadastrado</h3>
+            <p>Crie o primeiro ciclo para começar a gerenciar avaliações.</p>
+          </div>
         {% endif %}
       </div>
       {% endif %}
@@ -394,8 +367,71 @@
 
     <script src="{% static 'js/gerenciar-global.js' %}"></script>
     <script>
+        // Função para filtrar a tabela
+        function filterTable() {
+          const nomeFilter = document.getElementById('searchCicloNome').value.toLowerCase();
+          const periodoFilter = document.getElementById('filterPeriodo').value.toLowerCase();
+          const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
+          const ativoFilter = document.getElementById('filterAtivo').value.toLowerCase();
+          
+          const tableRows = document.querySelectorAll('.data-table tbody tr');
+          let visibleCount = 0;
+
+          tableRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            
+            if (cells.length > 1) {
+              const cicloNome = cells[0].textContent.toLowerCase().trim();
+              const cicloPeriodo = cells[1].textContent.toLowerCase().trim();
+              const cicloStatus = cells[5].textContent.toLowerCase().trim();
+              const cicloAtivo = cells[6].textContent.toLowerCase().trim();
+
+              const nomeMatch = !nomeFilter || cicloNome.includes(nomeFilter);
+              const periodoMatch = !periodoFilter || cicloPeriodo.includes(periodoFilter);
+              const statusMatch = !statusFilter || cicloStatus.includes(statusFilter);
+              const ativoMatch = !ativoFilter || 
+                (ativoFilter === 'sim' && cicloAtivo.includes('ativo')) ||
+                (ativoFilter === 'não' && cicloAtivo.includes('inativo'));
+
+              if (nomeMatch && periodoMatch && statusMatch && ativoMatch) {
+                row.style.display = '';
+                visibleCount++;
+              } else {
+                row.style.display = 'none';
+              }
+            }
+          });
+
+          // Atualiza o contador
+          const itemCount = document.querySelector('.item-count');
+          if (itemCount) {
+            itemCount.textContent = `Ciclos encontrados: ${visibleCount}`;
+          }
+        }
+
+        // Função para limpar filtros
+        function clearFilters() {
+          document.getElementById('searchCicloNome').value = '';
+          document.getElementById('filterPeriodo').value = '';
+          document.getElementById('filterStatus').value = '';
+          document.getElementById('filterAtivo').value = '';
+          filterTable();
+        }
+
         // Script específico para ciclos - confirmação de exclusão
         document.addEventListener("DOMContentLoaded", function () {
+          // Event listeners para filtros
+          const searchCicloNome = document.getElementById('searchCicloNome');
+          const filterPeriodo = document.getElementById('filterPeriodo');
+          const filterStatus = document.getElementById('filterStatus');
+          const filterAtivo = document.getElementById('filterAtivo');
+
+          if (searchCicloNome) searchCicloNome.addEventListener('input', filterTable);
+          if (filterPeriodo) filterPeriodo.addEventListener('change', filterTable);
+          if (filterStatus) filterStatus.addEventListener('change', filterTable);
+          if (filterAtivo) filterAtivo.addEventListener('change', filterTable);
+
+          // Confirmação de exclusão
           document
             .querySelectorAll(".form-excluir-ciclo")
             .forEach(function (form) {
@@ -410,11 +446,7 @@
                     e.preventDefault();
                     return false;
                   }
-                  // Primeira confirmação: marca para cascata se necessário.
                   hidden.value = "1";
-                  // Permite envio; servidor validará se precisa da segunda etapa (warning prévio já tratado por messages).
-                } else {
-                  // Segunda submissão já confirmada
                 }
               });
             });

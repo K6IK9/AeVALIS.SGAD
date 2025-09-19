@@ -10,11 +10,54 @@
     
     <!-- CSS Global -->
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
-    <!-- CSS Específico -->
-    <link rel="stylesheet" href="{% static 'css/editar_questionario.css' %}">
+    <!-- CSS de Gerenciamento -->
+    <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}">
     
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        /* Estilos específicos para tipos de pergunta */
+        .type-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .type-multiple {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .type-text {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .type-scale {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+        
+        .question-options-preview {
+            margin-top: 4px;
+            font-size: 0.8rem;
+        }
+        
+        .main-container {
+            display: block;
+        }
+        
+        @media (min-width: 1024px) {
+            .main-container {
+                display: grid;
+                grid-template-columns: 1fr 2fr;
+                gap: 24px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -47,15 +90,13 @@
         <div class="main-container">
             <!-- Formulário de Pergunta -->
             <div class="form-section">
-                <div class="form-header">
-                    <h2>
-                        {% if editando %}
-                            <i class="bi bi-pencil-square"></i> Editar Pergunta
-                        {% else %}
-                            <i class="bi bi-plus-circle"></i> Nova Pergunta
-                        {% endif %}
-                    </h2>
-                </div>
+                <h2>
+                    {% if editando %}
+                        ✏️ Editar Pergunta
+                    {% else %}
+                        ➕ Nova Pergunta
+                    {% endif %}
+                </h2>
                 
                 <form method="post" class="question-form">
                     {% csrf_token %}
@@ -68,24 +109,28 @@
                     {% endif %}
                     
                     <div class="form-group">
-                        <label for="{{ form.enunciado.id_for_label }}">{{ form.enunciado.label }}</label>
+                        <label for="{{ form.enunciado.id_for_label }}">
+                            {{ form.enunciado.label }} <span class="required">*</span>
+                        </label>
                         {{ form.enunciado }}
                         {% if form.enunciado.errors %}
                             <div class="field-error">
                                 {% for error in form.enunciado.errors %}
-                                    <span>{{ error }}</span>
+                                    {{ error }}
                                 {% endfor %}
                             </div>
                         {% endif %}
                     </div>
                     
                     <div class="form-group">
-                        <label for="{{ form.tipo.id_for_label }}">{{ form.tipo.label }}</label>
+                        <label for="{{ form.tipo.id_for_label }}">
+                            {{ form.tipo.label }} <span class="required">*</span>
+                        </label>
                         {{ form.tipo }}
                         {% if form.tipo.errors %}
                             <div class="field-error">
                                 {% for error in form.tipo.errors %}
-                                    <span>{{ error }}</span>
+                                    {{ error }}
                                 {% endfor %}
                             </div>
                         {% endif %}
@@ -94,23 +139,25 @@
                     <div class="form-group" id="opcoes-container" style="display: none;">
                         <label for="{{ form.opcoes_multipla_escolha.id_for_label }}">{{ form.opcoes_multipla_escolha.label }}</label>
                         {{ form.opcoes_multipla_escolha }}
-                        <small>Digite uma opção por linha</small>
+                        <small class="form-help">Digite uma opção por linha</small>
                         {% if form.opcoes_multipla_escolha.errors %}
                             <div class="field-error">
                                 {% for error in form.opcoes_multipla_escolha.errors %}
-                                    <span>{{ error }}</span>
+                                    {{ error }}
                                 {% endfor %}
                             </div>
                         {% endif %}
                     </div>
                     
                     <div class="form-group">
-                        <label for="{{ form.categoria.id_for_label }}">{{ form.categoria.label }}</label>
+                        <label for="{{ form.categoria.id_for_label }}">
+                            {{ form.categoria.label }}
+                        </label>
                         {{ form.categoria }}
                         {% if form.categoria.errors %}
                             <div class="field-error">
                                 {% for error in form.categoria.errors %}
-                                    <span>{{ error }}</span>
+                                    {{ error }}
                                 {% endfor %}
                             </div>
                         {% endif %}
@@ -125,15 +172,15 @@
                     
                     <div class="form-actions">
                         {% if editando %}
-                            <button type="submit" name="salvar_edicao" class="btn btn-primary">
-                                <i class="bi bi-check"></i> Salvar
+                            <button type="submit" name="salvar_edicao" class="btn">
+                                ✓ Salvar
                             </button>
                             <a href="{% url 'editar_questionario_perguntas' questionario.id %}" class="btn btn-secondary">
-                                <i class="bi bi-x"></i> Cancelar
+                                ← Cancelar
                             </a>
                         {% else %}
-                            <button type="submit" name="adicionar_pergunta" class="btn btn-primary">
-                                <i class="bi bi-plus"></i> Adicionar
+                            <button type="submit" name="adicionar_pergunta" class="btn">
+                                ➕ Adicionar
                             </button>
                         {% endif %}
                     </div>
@@ -141,71 +188,136 @@
             </div>
             
             <!-- Lista de Perguntas -->
-            <div class="questions-section">
-                <div class="section-header">
-                    <h2>Perguntas do Questionário</h2>
-                    <span class="questions-count">{{ perguntas_existentes.count }} pergunta{{ perguntas_existentes.count|pluralize }}</span>
+            <div class="form-section">
+                <h2>📋 Perguntas do Questionário</h2>
+                
+                <!-- Seção de Filtros -->
+                <div class="filters-section" id="filtersSection">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="searchPerguntaTexto">Buscar por Texto:</label>
+                            <input type="text" 
+                                   id="searchPerguntaTexto" 
+                                   placeholder="Digite parte do enunciado da pergunta"
+                                   autocomplete="off">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="filterTipo">Tipo:</label>
+                            <select id="filterTipo">
+                                <option value="">Todos os tipos</option>
+                                <option value="multipla_escolha">Múltipla Escolha</option>
+                                <option value="texto">Texto Livre</option>
+                                <option value="escala">Escala de Avaliação</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="filterObrigatoria">Obrigatória:</label>
+                            <select id="filterObrigatoria">
+                                <option value="">Todas</option>
+                                <option value="sim">Obrigatórias</option>
+                                <option value="nao">Opcionais</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <button type="button" 
+                                    onclick="clearFilters()" 
+                                    class="btn btn-clear"
+                                    title="Limpar todos os filtros">
+                                🧹 Limpar Filtros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="item-count">
+                    Total de perguntas: {{ perguntas_existentes.count }}
                 </div>
                 
                 {% if perguntas_existentes %}
-                    <div class="questions-list">
-                        {% for qp in perguntas_existentes %}
-                            <div class="question-card {% if editando and pergunta_editando.id == qp.pergunta.id %}editing{% endif %}">
-                                <div class="question-header">
-                                    <span class="question-number">{{ qp.ordem }}</span>
-                                    <div class="question-content">
-                                        <h3>{{ qp.pergunta.enunciado }}</h3>
-                                        <div class="question-meta">
-                                            <span class="question-type">
-                                                {% if qp.pergunta.tipo == 'multipla_escolha' %}
-                                                    <i class="bi bi-ui-radios"></i> Múltipla Escolha
-                                                {% elif qp.pergunta.tipo == 'texto' %}
-                                                    <i class="bi bi-text-paragraph"></i> Texto Livre
-                                                {% elif qp.pergunta.tipo == 'escala' %}
-                                                    <i class="bi bi-bar-chart"></i> Escala de Avaliação
-                                                {% endif %}
-                                            </span>
-                                            {% if qp.pergunta.obrigatoria %}
-                                                <span class="question-required">
-                                                    <i class="bi bi-asterisk"></i> Obrigatória
-                                                </span>
-                                            {% endif %}
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Ordem</th>
+                                <th>Enunciado</th>
+                                <th>Tipo</th>
+                                <th>Categoria</th>
+                                <th>Obrigatória</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for qp in perguntas_existentes %}
+                                <tr {% if editando and pergunta_editando.id == qp.pergunta.id %}class="row-highlight"{% endif %}>
+                                    <td>
+                                        <span class="counter-badge">{{ qp.ordem }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ qp.pergunta.enunciado|truncatechars:80 }}</strong>
+                                        {% if qp.pergunta.opcoes_multipla_escolha %}
+                                            <div class="question-options-preview">
+                                                <small class="text-muted">
+                                                    Opções: 
+                                                    {% for opcao in qp.pergunta.opcoes_multipla_escolha|slice:":3" %}
+                                                        {{ opcao }}{% if not forloop.last %}, {% endif %}
+                                                    {% endfor %}
+                                                    {% if qp.pergunta.opcoes_multipla_escolha|length > 3 %}...{% endif %}
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if qp.pergunta.tipo == 'multipla_escolha' %}
+                                            <span class="type-badge type-multiple">📋 Múltipla Escolha</span>
+                                        {% elif qp.pergunta.tipo == 'texto' %}
+                                            <span class="type-badge type-text">📝 Texto Livre</span>
+                                        {% elif qp.pergunta.tipo == 'escala' %}
+                                            <span class="type-badge type-scale">📊 Escala</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if qp.pergunta.categoria %}
+                                            {{ qp.pergunta.categoria.nome }}
+                                        {% else %}
+                                            <em class="text-muted">Sem categoria</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if qp.pergunta.obrigatoria %}
+                                            <span class="status-badge status-active">✓ Obrigatória</span>
+                                        {% else %}
+                                            <span class="status-badge status-inactive">○ Opcional</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="?editar_pergunta={{ qp.pergunta.id }}" 
+                                               class="btn btn-sm btn-secondary" title="Editar Pergunta">
+                                                ✏️ Editar
+                                            </a>
+                                            <form method="post" class="inline-form"
+                                                  onsubmit="return confirm('Tem certeza que deseja remover esta pergunta?')">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="pergunta_id" value="{{ qp.pergunta.id }}">
+                                                <button type="submit" name="remover_pergunta" 
+                                                        class="btn btn-sm btn-danger" title="Remover Pergunta">
+                                                    🗑️ Remover
+                                                </button>
+                                            </form>
                                         </div>
-                                    </div>
-                                </div>
-                                
-                                {% if qp.pergunta.opcoes_multipla_escolha %}
-                                    <div class="question-options">
-                                        <div class="options-header">
-                                            <i class="bi bi-list-ul"></i>
-                                            <span>Opções de resposta:</span>
-                                        </div>
-                                        {% for opcao in qp.pergunta.opcoes_multipla_escolha %}
-                                            <div class="option">{{ forloop.counter }}. {{ opcao }}</div>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                                
-                                <div class="question-actions">
-                                    <a href="?editar_pergunta={{ qp.pergunta.id }}" class="btn-edit">
-                                        <i class="bi bi-pencil"></i> Editar
-                                    </a>
-                                    <form method="post" style="display: inline;">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="pergunta_id" value="{{ qp.pergunta.id }}">
-                                        <button type="submit" name="remover_pergunta" class="btn-remove">
-                                            <i class="bi bi-trash"></i> Remover
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 {% else %}
                     <div class="empty-state">
-                        <i class="bi bi-question-circle"></i>
-                        <h3>Nenhuma pergunta cadastrada</h3>
-                        <p>Adicione a primeira pergunta ao questionário usando o formulário ao lado.</p>
+                        <h3>📝 Nenhuma pergunta cadastrada</h3>
+                        <p>Adicione a primeira pergunta ao questionário usando o formulário acima.</p>
                     </div>
                 {% endif %}
             </div>
@@ -231,15 +343,67 @@
             
             // Verificar quando mudar
             tipoSelect.addEventListener('change', toggleOpcoes);
+        });
+
+        // Funções de filtro
+        function filterTable() {
+            const searchText = document.getElementById('searchPerguntaTexto').value.toLowerCase();
+            const filterTipo = document.getElementById('filterTipo').value;
+            const filterObrigatoria = document.getElementById('filterObrigatoria').value;
             
-            // Confirmação para remoção
-            document.querySelectorAll('.btn-remove').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    if (!confirm('Tem certeza que deseja remover esta pergunta?')) {
-                        e.preventDefault();
+            const table = document.querySelector('.data-table tbody');
+            const rows = table.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const enunciado = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const tipo = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                const obrigatoria = row.querySelector('td:nth-child(5)').textContent.toLowerCase();
+                
+                let showRow = true;
+                
+                // Filtro por texto do enunciado
+                if (searchText && !enunciado.includes(searchText)) {
+                    showRow = false;
+                }
+                
+                // Filtro por tipo
+                if (filterTipo) {
+                    const tipoMap = {
+                        'multipla_escolha': 'múltipla escolha',
+                        'texto': 'texto livre',
+                        'escala': 'escala'
+                    };
+                    if (!tipo.includes(tipoMap[filterTipo])) {
+                        showRow = false;
                     }
-                });
+                }
+                
+                // Filtro por obrigatória
+                if (filterObrigatoria) {
+                    if (filterObrigatoria === 'sim' && !obrigatoria.includes('obrigatória')) {
+                        showRow = false;
+                    }
+                    if (filterObrigatoria === 'nao' && !obrigatoria.includes('opcional')) {
+                        showRow = false;
+                    }
+                }
+                
+                row.style.display = showRow ? '' : 'none';
             });
+        }
+
+        function clearFilters() {
+            document.getElementById('searchPerguntaTexto').value = '';
+            document.getElementById('filterTipo').value = '';
+            document.getElementById('filterObrigatoria').value = '';
+            filterTable();
+        }
+
+        // Adicionar event listeners para filtros
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('searchPerguntaTexto').addEventListener('input', filterTable);
+            document.getElementById('filterTipo').addEventListener('change', filterTable);
+            document.getElementById('filterObrigatoria').addEventListener('change', filterTable);
         });
     </script>
 </body>

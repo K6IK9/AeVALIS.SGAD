@@ -2780,7 +2780,7 @@ def excluir_ciclo(request, ciclo_id):
         else:
             messages.success(
                 request,
-                f"Ciclo '{nome_ciclo}' excluído (contenha {total_avaliacoes} avaliação(ões) sem respostas).",
+                f"Ciclo '{nome_ciclo}' excluído (continha {total_avaliacoes} avaliação(ões) sem respostas).",
             )
         # Limpa a sessão de confirmação
         request.session.pop("confirm_delete_ciclo_id", None)

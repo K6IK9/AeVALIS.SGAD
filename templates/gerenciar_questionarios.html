@@ -243,28 +243,30 @@
                                 {% if questionario.ativo %}
                                     <span class="status-badge status-active">✓ Ativo</span>
                                 {% else %}
-                                    <span class="status-badge status-inactive">⏸ Inativo</span>
+                                    <span class="status-badge status-inactive">❌ Inativo</span>
                                 {% endif %}
                             </td>
                             <td>
                                 <span class="counter-badge">{{ questionario.perguntas.count }}</span>
                             </td>
                             <td>
-                                <div class="action-buttons">
+                                <div class="btn-group">
                                     <a href="{% url 'editar_questionario_perguntas' questionario.id %}" 
-                                       class="btn-action btn-edit" title="Gerenciar Perguntas">
+                                       class="btn btn-sm btn-secondary" title="Gerenciar Perguntas">
                                         📝 Perguntas
                                     </a>
                                     <a href="{% url 'editar_questionario_simples' questionario.id %}" 
-                                       class="btn-action btn-edit" title="Editar Questionário">
+                                       class="btn btn-sm btn-secondary" title="Editar Questionário">
                                         ✏️ Editar
                                     </a>
-                                    <a href="{% url 'excluir_questionario' questionario.id %}" 
-                                       class="btn-action btn-delete" 
-                                       title="Excluir Questionário"
-                                       onclick="return confirm('Tem certeza que deseja excluir o questionário \'{{ questionario.titulo }}\'?\n\nEsta ação não pode ser desfeita e removerá todas as perguntas associadas.')">
-                                        🗑️ Excluir
-                                    </a>
+                                    <form method="post" action="{% url 'excluir_questionario' questionario.id %}" 
+                                          class="inline-form"
+                                          onsubmit="return confirm('Tem certeza que deseja excluir o questionário \'{{ questionario.titulo|escapejs }}\'?\n\nEsta ação não pode ser desfeita e removerá todas as perguntas associadas.')">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Excluir Questionário">
+                                            🗑️ Excluir
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
