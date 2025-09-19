@@ -386,12 +386,12 @@
 }
 
 .btn-secondary {
-    background-color: var(--cor-texto);
+    background-color: var(--cor-principal);
     color: var(--cor-branco);
 }
 
 .btn-secondary:hover {
-    background-color: var(--cor-principal);
+    background-color: var(--cor-texto);
     transform: translateY(-2px);
 }
 

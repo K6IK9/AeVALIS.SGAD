@@ -193,51 +193,47 @@
       <div class="form-section">
         <h2>📋 Ciclos de Avaliação Cadastrados</h2>
 
-        <!-- Seção de Filtros -->
+        <!-- Filtros e Busca -->
         <div class="filters-section" id="filtersSection">
-          <div class="filter-row">
-            <div class="filter-group">
-              <label for="searchCicloNome">Buscar por Nome:</label>
-              <input type="text" id="searchCicloNome" placeholder="Digite o nome do ciclo">
+            <h3 class="filters-title">Filtros e Busca</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="searchCicloNome">Buscar por Nome:</label>
+                    <div class="search-box">
+                        <input type="text" id="searchCicloNome" class="form-control"
+                            placeholder="Digite o nome do ciclo..." autocomplete="off">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label for="filterPeriodo">Filtrar por Período:</label>
+                    <select id="filterPeriodo" class="form-control">
+                        <option value="">Todos os períodos</option>
+                        {% for ciclo in ciclos %}
+                        <option value="{{ ciclo.periodo_letivo.nome }}">{{ ciclo.periodo_letivo.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterStatus">Filtrar por Status:</label>
+                    <select id="filterStatus" class="form-control">
+                        <option value="">Todos os status</option>
+                        <option value="agendado">Agendado</option>
+                        <option value="ativo">Ativo</option>
+                        <option value="encerrado">Encerrado</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterAtivo">Filtrar por Ativo:</label>
+                    <select id="filterAtivo" class="form-control">
+                        <option value="">Todos</option>
+                        <option value="sim">Sim</option>
+                        <option value="não">Não</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button type="button" class="btn-filter" onclick="clearFilters()">Limpar Filtros</button>
+                </div>
             </div>
-            
-            <div class="filter-group">
-              <label for="filterPeriodo">Período Letivo:</label>
-              <select id="filterPeriodo">
-                <option value="">Todos os períodos</option>
-                {% for ciclo in ciclos %}
-                  <option value="{{ ciclo.periodo_letivo.nome }}">{{ ciclo.periodo_letivo.nome }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-
-          <div class="filter-row">
-            <div class="filter-group">
-              <label for="filterStatus">Status:</label>
-              <select id="filterStatus">
-                <option value="">Todos os status</option>
-                <option value="agendado">Agendado</option>
-                <option value="ativo">Ativo</option>
-                <option value="encerrado">Encerrado</option>
-              </select>
-            </div>
-
-            <div class="filter-group">
-              <label for="filterAtivo">Ativo:</label>
-              <select id="filterAtivo">
-                <option value="">Todos</option>
-                <option value="sim">Sim</option>
-                <option value="não">Não</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="filter-row">
-            <div class="filter-group">
-              <button type="button" onclick="clearFilters()" class="btn btn-clear">Limpar Filtros</button>
-            </div>
-          </div>
         </div>
 
         <div class="item-count">
