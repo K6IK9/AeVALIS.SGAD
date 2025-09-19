@@ -1,354 +1,246 @@
+{% load user_tags %}
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Perguntas do Questionário - IF SADD</title>
-
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">  <!-- CSS Global -->
+    <title>Editar Perguntas - {{ questionario.titulo }} - IF SADD</title>
+    
+    <!-- CSS Global -->
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
-    <!-- CSS específico desta página -->
+    <!-- CSS Específico -->
     <link rel="stylesheet" href="{% static 'css/editar_questionario.css' %}">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 
 <body>
-    <main>
-        <div class="container">
-            <a href="{% url 'gerenciar_questionarios' %}" class="back-button">← Voltar</a>
-
-            <!-- Header da página -->
-            <div class="header">
-                <h1>Editar Perguntas do Questionário</h1>
-                <p>Gerencie as perguntas do questionário</p>
-            </div>
-
-            <!-- Mensagens -->
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="message {{ message.tags }}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <!-- Conteúdo principal -->
-<div class="row">
-    <!-- Informações do Questionário -->
-    <div class="col-md-4">
-        <div class="card card-custom">
-            <div class="card-header">
-                <h6 class="card-title mb-0">
-                    <i class="bi bi-info-circle"></i> Informações do Questionário
-                </h6>
-            </div>
-            <div class="card-body">
-                <h5>{{ questionario.titulo }}</h5>
-                <p class="text-muted">{{ questionario.descricao }}</p>
-
-                <hr>
-
-                <div class="d-flex justify-content-between">
-                    <span><strong>Status:</strong></span>
-                    {% if questionario.ativo %}
-                    <span class="badge bg-success">Ativo</span>
-                    {% else %}
-                    <span class="badge bg-secondary">Inativo</span>
-                    {% endif %}
-                </div>
-
-                <div class="d-flex justify-content-between mt-2">
-                    <span><strong>Perguntas:</strong></span>
-                    <span class="badge bg-primary">{{ perguntas_existentes.count }}</span>
-                </div>
-
-                <div class="d-flex justify-content-between mt-2">
-                    <span><strong>Criado em:</strong></span>
-                    <small>{{ questionario.data_criacao|date:"d/m/Y" }}</small>
-                </div>
-
-                <hr>
-
-                <a href="{% url 'listar_avaliacoes' %}" class="btn btn-outline-secondary btn-sm w-100">
-                    <i class="bi bi-arrow-left"></i> Voltar
-                </a>
-            </div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📝 Editar Perguntas do Questionário</h1>
+            <p>{{ questionario.titulo }}</p>
         </div>
 
-        <!-- Adicionar Nova Pergunta -->
-        <div class="card card-custom mt-4">
-            <div class="card-header">
-                <h6 class="card-title mb-0">
-                    {% if editando %}
-                        <i class="bi bi-pencil-square"></i> Editar Pergunta
-                    {% else %}
-                        <i class="bi bi-plus-circle"></i> Adicionar Pergunta
-                    {% endif %}
-                </h6>
-                {% if editando %}
-                <small class="text-muted">Editando: {{ pergunta_editando.enunciado|truncatechars:50 }}</small>
-                {% endif %}
+        <!-- Navegação Breadcrumb -->
+        <div class="nav-breadcrumb">
+            <a href="{% url 'inicio' %}">🏠 Início</a>
+            <span>→</span>
+            <a href="{% url 'gerenciar_questionarios' %}">📝 Questionários</a>
+            <span>→</span>
+            <span>Editar Perguntas</span>
+        </div>
+
+        <!-- Mensagens -->
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
             </div>
-            <div class="card-body">
-                <form method="post">
+        {% endif %}
+
+        <!-- Conteúdo principal -->
+        <div class="main-container">
+            <!-- Formulário de Pergunta -->
+            <div class="form-section">
+                <div class="form-header">
+                    <h2>
+                        {% if editando %}
+                            <i class="bi bi-pencil-square"></i> Editar Pergunta
+                        {% else %}
+                            <i class="bi bi-plus-circle"></i> Nova Pergunta
+                        {% endif %}
+                    </h2>
+                </div>
+                
+                <form method="post" class="question-form">
                     {% csrf_token %}
-
-                    <!-- Debug info -->
+                    
                     {% if form.errors %}
-                    <div class="alert alert-danger">
-                        <strong>Erros no formulário:</strong>
-                        {{ form.errors }}
-                    </div>
+                        <div class="error-message">
+                            <strong>Erros no formulário:</strong>
+                            {{ form.errors }}
+                        </div>
                     {% endif %}
-
-                    <div class="mb-3">
-                        <label for="{{ form.enunciado.id_for_label }}" class="form-label">
-                            <strong>{{ form.enunciado.label }}</strong>
-                        </label>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.enunciado.id_for_label }}">{{ form.enunciado.label }}</label>
                         {{ form.enunciado }}
                         {% if form.enunciado.errors %}
-                        <div class="text-danger">
-                            {% for error in form.enunciado.errors %}
-                            <small>{{ error }}</small>
-                            {% endfor %}
-                        </div>
+                            <div class="field-error">
+                                {% for error in form.enunciado.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
                         {% endif %}
                     </div>
-
-                    <div class="mb-3">
-                        <label for="{{ form.tipo.id_for_label }}" class="form-label">
-                            <strong>{{ form.tipo.label }}</strong>
-                        </label>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.tipo.id_for_label }}">{{ form.tipo.label }}</label>
                         {{ form.tipo }}
                         {% if form.tipo.errors %}
-                        <div class="text-danger">
-                            {% for error in form.tipo.errors %}
-                            <small>{{ error }}</small>
-                            {% endfor %}
-                        </div>
+                            <div class="field-error">
+                                {% for error in form.tipo.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
                         {% endif %}
                     </div>
-
-                    <div class="mb-3" id="opcoes-container" style="display: none;">
-                        <label for="{{ form.opcoes_multipla_escolha.id_for_label }}" class="form-label">
-                            <strong>{{ form.opcoes_multipla_escolha.label }}</strong>
-                        </label>
+                    
+                    <div class="form-group" id="opcoes-container" style="display: none;">
+                        <label for="{{ form.opcoes_multipla_escolha.id_for_label }}">{{ form.opcoes_multipla_escolha.label }}</label>
                         {{ form.opcoes_multipla_escolha }}
-                        <small class="form-text text-muted">
-                            <strong>Como inserir opções:</strong><br>
-                            • <strong>Uma por linha:</strong> Digite uma opção em cada linha<br>
-                            • <strong>Separadas por vírgula:</strong> Opção A, Opção B, Opção C<br>
-                            • <strong>JSON:</strong> ["Opção A", "Opção B", "Opção C"]<br>
-                            <em>Opções duplicadas e vazias serão ignoradas automaticamente.</em>
-                        </small>
+                        <small>Digite uma opção por linha</small>
                         {% if form.opcoes_multipla_escolha.errors %}
-                        <div class="text-danger">
-                            {% for error in form.opcoes_multipla_escolha.errors %}
-                            <small>{{ error }}</small>
-                            {% endfor %}
-                        </div>
+                            <div class="field-error">
+                                {% for error in form.opcoes_multipla_escolha.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
                         {% endif %}
                     </div>
-
-                    <div class="mb-3">
-                        <label for="{{ form.categoria.id_for_label }}" class="form-label">
-                            <strong>{{ form.categoria.label }}</strong>
-                        </label>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.categoria.id_for_label }}">{{ form.categoria.label }}</label>
                         {{ form.categoria }}
                         {% if form.categoria.errors %}
-                        <div class="text-danger">
-                            {% for error in form.categoria.errors %}
-                            <small>{{ error }}</small>
-                            {% endfor %}
-                        </div>
+                            <div class="field-error">
+                                {% for error in form.categoria.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
                         {% endif %}
                     </div>
-
-                    <div class="form-check mb-3">
-                        {{ form.obrigatoria }}
-                        <label class="form-check-label" for="{{ form.obrigatoria.id_for_label }}">
-                            {{ form.obrigatoria.label }}
-                        </label>
+                    
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            {{ form.obrigatoria }}
+                            <label for="{{ form.obrigatoria.id_for_label }}">{{ form.obrigatoria.label }}</label>
+                        </div>
                     </div>
-
-                    <!-- Campos hidden necessários -->
-                    {% if editando %}
-                        <input type="hidden" name="pergunta_id" value="{{ pergunta_editando.id }}">
-                    {% endif %}
-                    <input type="hidden" name="ativa" value="true">
-
-                    <div class="d-flex gap-2">
+                    
+                    <div class="form-actions">
                         {% if editando %}
-                            <button type="submit" name="editar_pergunta" class="btn btn-success btn-sm flex-fill">
-                                <i class="bi bi-check-lg"></i> Salvar Alterações
+                            <button type="submit" name="salvar_edicao" class="btn btn-primary">
+                                <i class="bi bi-check"></i> Salvar
                             </button>
-                            <a href="{% url 'editar_questionario_perguntas' questionario.id %}" 
-                               class="btn btn-secondary btn-sm">
-                                <i class="bi bi-x-lg"></i> Cancelar
+                            <a href="{% url 'editar_questionario_perguntas' questionario.id %}" class="btn btn-secondary">
+                                <i class="bi bi-x"></i> Cancelar
                             </a>
                         {% else %}
-                            <button type="submit" name="adicionar_pergunta" class="btn btn-primary-custom btn-sm w-100">
-                                <i class="bi bi-plus-lg"></i> Adicionar Pergunta
+                            <button type="submit" name="adicionar_pergunta" class="btn btn-primary">
+                                <i class="bi bi-plus"></i> Adicionar
                             </button>
                         {% endif %}
                     </div>
                 </form>
             </div>
-        </div>
-    </div>
-
-    <!-- Lista de Perguntas -->
-    <div class="col-md-8">
-        <div class="card card-custom">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0">
-                    <i class="bi bi-list-ol"></i> Perguntas do Questionário
-                </h6>
-                <small class="text-muted">{{ perguntas_existentes.count }} pergunta(s)</small>
-            </div>
-            <div class="card-body">
+            
+            <!-- Lista de Perguntas -->
+            <div class="questions-section">
+                <div class="section-header">
+                    <h2>Perguntas do Questionário</h2>
+                    <span class="questions-count">{{ perguntas_existentes.count }} pergunta{{ perguntas_existentes.count|pluralize }}</span>
+                </div>
+                
                 {% if perguntas_existentes %}
-                <div class="perguntas-lista">
-                    {% for qp in perguntas_existentes %}
-                    <div class="pergunta-item {% if editando and pergunta_editando.id == qp.pergunta.id %}pergunta-editando{% endif %}">
-                        {% if editando and pergunta_editando.id == qp.pergunta.id %}
-                        <div class="pergunta-status-editar">
-                            <i class="bi bi-pencil"></i>
-                            <span>Editando esta pergunta</span>
-                        </div>
-                        {% endif %}
-                        
-                        <div class="pergunta-header">
-                            <div class="pergunta-info">
-                                <div class="pergunta-badges">
-                                    {% if qp.pergunta.obrigatoria %}
-                                    <span class="pergunta-badge pergunta-obrigatoria">
-                                        <i class="bi bi-exclamation-circle"></i> Obrigatória
-                                    </span>
-                                    {% endif %}
-                                    <span class="pergunta-badge pergunta-tipo">
-                                        {{ qp.pergunta.get_tipo_display }}
-                                    </span>
+                    <div class="questions-list">
+                        {% for qp in perguntas_existentes %}
+                            <div class="question-card {% if editando and pergunta_editando.id == qp.pergunta.id %}editing{% endif %}">
+                                <div class="question-header">
+                                    <span class="question-number">{{ qp.ordem }}</span>
+                                    <div class="question-content">
+                                        <h3>{{ qp.pergunta.enunciado }}</h3>
+                                        <div class="question-meta">
+                                            <span class="question-type">
+                                                {% if qp.pergunta.tipo == 'multipla_escolha' %}
+                                                    <i class="bi bi-ui-radios"></i> Múltipla Escolha
+                                                {% elif qp.pergunta.tipo == 'texto' %}
+                                                    <i class="bi bi-text-paragraph"></i> Texto Livre
+                                                {% elif qp.pergunta.tipo == 'escala' %}
+                                                    <i class="bi bi-bar-chart"></i> Escala de Avaliação
+                                                {% endif %}
+                                            </span>
+                                            {% if qp.pergunta.obrigatoria %}
+                                                <span class="question-required">
+                                                    <i class="bi bi-asterisk"></i> Obrigatória
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
                                 
-                                <h6 class="pergunta-enunciado">{{ qp.pergunta.enunciado }}</h6>
-                                
-                                {% if qp.pergunta.categoria %}
-                                <div class="pergunta-categoria">
-                                    <i class="bi bi-tag"></i>
-                                    <span>{{ qp.pergunta.categoria.nome }}</span>
-                                </div>
+                                {% if qp.pergunta.opcoes_multipla_escolha %}
+                                    <div class="question-options">
+                                        <div class="options-header">
+                                            <i class="bi bi-list-ul"></i>
+                                            <span>Opções de resposta:</span>
+                                        </div>
+                                        {% for opcao in qp.pergunta.opcoes_multipla_escolha %}
+                                            <div class="option">{{ forloop.counter }}. {{ opcao }}</div>
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
+                                
+                                <div class="question-actions">
+                                    <a href="?editar_pergunta={{ qp.pergunta.id }}" class="btn-edit">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="pergunta_id" value="{{ qp.pergunta.id }}">
+                                        <button type="submit" name="remover_pergunta" class="btn-remove">
+                                            <i class="bi bi-trash"></i> Remover
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
-                            
-                            <div class="pergunta-acoes">
-                                <a href="?editar_pergunta={{ qp.pergunta.id }}" 
-                                   class="btn-pergunta btn-editar"
-                                   title="Editar esta pergunta">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form method="post" style="display: inline;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="pergunta_id" value="{{ qp.pergunta.id }}">
-                                    <button type="submit" name="remover_pergunta" 
-                                            class="btn-pergunta btn-remover"
-                                            onclick="return confirm('Tem certeza que deseja remover esta pergunta?')"
-                                            title="Remover esta pergunta">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-
-                        {% if qp.pergunta.opcoes_multipla_escolha %}
-                        <div class="pergunta-opcoes">
-                            <div class="opcoes-titulo">Opções de resposta:</div>
-                            <div class="opcoes-lista">
-                                {% for opcao in qp.pergunta.opcoes_multipla_escolha %}
-                                <div class="opcao-item">{{ opcao }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>
                 {% else %}
-                <div class="text-center py-4">
-                    <i class="bi bi-question-circle" style="font-size: 3rem; color: #ccc;"></i>
-                    <p class="mt-3 text-muted">Nenhuma pergunta adicionada ainda.</p>
-                    <p class="text-muted">Use o formulário ao lado para adicionar a primeira pergunta.</p>
-                    {% if editando %}
-                    <div class="alert alert-warning mt-3">
-                        <strong>Modo de edição cancelado.</strong> Não há pergunta para editar.
+                    <div class="empty-state">
+                        <i class="bi bi-question-circle"></i>
+                        <h3>Nenhuma pergunta cadastrada</h3>
+                        <p>Adicione a primeira pergunta ao questionário usando o formulário ao lado.</p>
                     </div>
-                    {% endif %}
-                </div>
                 {% endif %}
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Adicionar classes customizadas aos campos do formulário
-        const inputs = document.querySelectorAll('input, textarea, select');
-        inputs.forEach(function (input) {
-            if (input.type !== 'checkbox') {
-                input.classList.add('form-control');
-                if (input.tagName === 'SELECT') {
-                    input.classList.add('form-select');
+    <script>
+        // Mostrar/ocultar opções múltipla escolha
+        document.addEventListener('DOMContentLoaded', function() {
+            const tipoSelect = document.getElementById('id_tipo');
+            const opcoesContainer = document.getElementById('opcoes-container');
+            
+            function toggleOpcoes() {
+                if (tipoSelect.value === 'multipla_escolha') {
+                    opcoesContainer.style.display = 'block';
+                } else {
+                    opcoesContainer.style.display = 'none';
                 }
             }
+            
+            // Verificar no carregamento
+            toggleOpcoes();
+            
+            // Verificar quando mudar
+            tipoSelect.addEventListener('change', toggleOpcoes);
+            
+            // Confirmação para remoção
+            document.querySelectorAll('.btn-remove').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if (!confirm('Tem certeza que deseja remover esta pergunta?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
         });
-
-        // Controlar exibição do campo opções baseado no tipo
-        const tipoSelect = document.querySelector('#id_tipo');
-        const opcoesContainer = document.querySelector('#opcoes-container');
-
-        function toggleOpcoes() {
-            const tipo = tipoSelect.value;
-            if (tipo === 'multipla_escolha') {
-                opcoesContainer.style.display = 'block';
-            } else {
-                opcoesContainer.style.display = 'none';
-            }
-        }
-
-        tipoSelect.addEventListener('change', toggleOpcoes);
-        toggleOpcoes(); // Executar na inicialização
-
-        // Ajustar textarea
-        const textareas = document.querySelectorAll('textarea');
-        textareas.forEach(function (textarea) {
-            if (textarea.id === 'id_enunciado') {
-                textarea.rows = 3;
-            } else if (textarea.id === 'id_opcoes_multipla_escolha') {
-                textarea.rows = 4;
-            }
-        });
-
-        // Destacar pergunta sendo editada e fazer scroll suave
-        {% if editando %}
-        const perguntaEditando = document.querySelector('.bg-light.border-primary');
-        if (perguntaEditando) {
-            setTimeout(() => {
-                perguntaEditando.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        }
-        {% endif %}
-    });
-</script>
-
-        </div>
-    </main>
-
+    </script>
 </body>
-
 </html>
-
