@@ -91,17 +91,18 @@
                 
                 <div class="bulk-actions-header">
                     <h3>Ações em Massa</h3>
-                    <div class="action-buttons">
-                        <button type="submit" name="acao" value="matricular" class="btn-success" 
-                                onclick="return confirm('Matricular alunos selecionados?')">
-                            ✅ Matricular Selecionados
+                    <div class="btn-group">
+                        <button type="submit" name="acao" value="matricular" class="btn btn-sm btn-success" 
+                                onclick="return confirm('Matricular alunos selecionados?')" title="Matricular Selecionados">
+                            ✅ Matricular
                         </button>
-                        <button type="submit" name="acao" value="desmatricular" class="btn-danger" 
-                                onclick="return confirm('Desmatricular alunos selecionados?')">
-                            ❌ Desmatricular Selecionados
+                        <button type="submit" name="acao" value="desmatricular" class="btn btn-sm btn-danger" 
+                                onclick="return confirm('Desmatricular alunos selecionados?')" title="Desmatricular Selecionados">
+                            ❌ Desmatricular
                         </button>
-                        <button type="button" onclick="toggleTodos()" class="btn-neutral">
-                            🔄 Selecionar/Desmarcar Todos
+                        <button type="button" onclick="toggleTodos()" class="btn btn-sm btn-secondary" 
+                                title="Selecionar/Desmarcar Todos">
+                            🔄 Selecionar Todos
                         </button>
                     </div>
                 </div>

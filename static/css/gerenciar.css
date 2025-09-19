@@ -880,6 +880,16 @@
     justify-content: center;
 }
 
+/* Formulário inline dentro de btn-group */
+.btn-group .inline-form {
+    display: inline;
+    margin: 0;
+}
+
+.btn-group .inline-form .btn {
+    margin: 0;
+}
+
 /* Status de usuários ativos/inativos */
 .status-active {
     background: #d4edda;
@@ -1235,7 +1245,8 @@
     color: #721c24;
 }
 
-/* Botões de ação em tabelas */
+/* Botões de ação em tabelas - DEPRECIADO - Use .btn-group em vez de .action-buttons */
+/*
 .action-buttons {
     display: flex;
     gap: 8px;
@@ -1257,6 +1268,7 @@
     min-width: 70px;
     justify-content: center;
 }
+*/
 
 .btn-edit {
     background: var(--cor06);
@@ -1498,7 +1510,8 @@ input[type="checkbox"] {
     margin-bottom: 15px;
 }
 
-/* Enhanced action buttons */
+/* Enhanced action buttons - DEPRECIADO - Use .btn-group */
+/*
 .action-buttons {
     display: flex;
     gap: 5px;
@@ -1510,6 +1523,7 @@ input[type="checkbox"] {
 .action-buttons .btn {
     white-space: nowrap;
 }
+*/
 
 /* Inline forms */
 .inline-form {

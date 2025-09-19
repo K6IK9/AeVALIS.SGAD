@@ -198,18 +198,17 @@
                 </td>
                 <td>{{ turma.data_criacao|date:"d/m/Y" }}</td>
                 <td>
-                  <div class="action-buttons">
-                    <a href="{% url 'gerenciar_alunos_turma' turma.id %}" class="btn-action btn-primary">
+                  <div class="btn-group">
+                    <a href="{% url 'gerenciar_alunos_turma' turma.id %}" 
+                       class="btn btn-sm btn-secondary" title="Gerenciar Alunos">
                       👥 Alunos
                     </a>
-                    <form method="post" action="{% url 'excluir_turma' turma.id %}" class="inline-form">
+                    <form method="post" action="{% url 'excluir_turma' turma.id %}" 
+                          class="inline-form"
+                          onsubmit="return confirm('Tem certeza que deseja excluir a turma \'{{ turma.disciplina.disciplina_nome }} - {{ turma.professor.user.get_full_name|escapejs }}\'?\n\nEsta ação não poderá ser desfeita.')">
                       {% csrf_token %}
-                      <button 
-                        type="submit" 
-                        class="btn-small btn-delete"
-                        onclick="return confirm('Tem certeza que deseja excluir a turma \'{{ turma.disciplina.disciplina_nome }} - {{ turma.professor.user.get_full_name }}\'? Esta ação não poderá ser desfeita.')"
-                      >
-                        Excluir
+                      <button type="submit" class="btn btn-sm btn-danger" title="Excluir Turma">
+                        🗑️ Excluir
                       </button>
                     </form>
                   </div>

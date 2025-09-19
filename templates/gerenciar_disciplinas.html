@@ -198,21 +198,20 @@
               <td>{{ disciplina.professor }}</td>
               <td>{{ disciplina.periodo_letivo }}</td>
               <td>
-                <a
-                  href="{% url 'editar_disciplina' disciplina.id %}"
-                  class="btn-action btn-edit"
-                  >✏️ Editar</a
-                >
-                <form method="post" action="{% url 'excluir_disciplina' disciplina.id %}" class="inline-form">
-                  {% csrf_token %}
-                  <button
-                    type="submit"
-                    class="btn-action btn-delete"
-                    onclick="return confirm('Tem certeza que deseja excluir a disciplina \'{{ disciplina.disciplina_nome }}\'? Esta ação não poderá ser desfeita.')"
-                  >
-                    🗑️ Excluir
-                  </button>
-                </form>
+                <div class="btn-group">
+                  <a href="{% url 'editar_disciplina' disciplina.id %}"
+                     class="btn btn-sm btn-secondary" title="Editar Disciplina">
+                    ✏️ Editar
+                  </a>
+                  <form method="post" action="{% url 'excluir_disciplina' disciplina.id %}" 
+                        class="inline-form"
+                        onsubmit="return confirm('Tem certeza que deseja excluir a disciplina \'{{ disciplina.disciplina_nome|escapejs }}\'?\n\nEsta ação não poderá ser desfeita.')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger" title="Excluir Disciplina">
+                      🗑️ Excluir
+                    </button>
+                  </form>
+                </div>
               </td>
             </tr>
             {% empty %}

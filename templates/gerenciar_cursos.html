@@ -158,22 +158,16 @@
                 <td class="col-coordenador">{{ curso.coordenador_curso }}</td>
                 <td class="col-disciplinas">{{ curso.disciplinas.count }}</td>
                 <td class="col-acoes">
-                  <div class="action-buttons">
-                    <a
-                      href="{% url 'editar_curso' curso.id %}"
-                      class="btn btn-sm btn-primary"
-                      title="Editar curso"
-                    >
+                  <div class="btn-group">
+                    <a href="{% url 'editar_curso' curso.id %}"
+                       class="btn btn-sm btn-secondary" title="Editar curso">
                       ✏️ Editar
                     </a>
-                    <form method="post" action="{% url 'excluir_curso' curso.id %}" class="inline-form">
+                    <form method="post" action="{% url 'excluir_curso' curso.id %}" 
+                          class="inline-form"
+                          onsubmit="return confirm('Tem certeza que deseja excluir o curso \'{{ curso.curso_nome|escapejs }}\'?\n\nEsta ação não poderá ser desfeita.')">
                       {% csrf_token %}
-                      <button
-                        type="submit"
-                        class="btn btn-sm btn-danger"
-                        title="Excluir curso"
-                        onclick="return confirm('Tem certeza que deseja excluir o curso \'{{ curso.curso_nome }}\'? Esta ação não poderá ser desfeita.')"
-                      >
+                      <button type="submit" class="btn btn-sm btn-danger" title="Excluir curso">
                         🗑️ Excluir
                       </button>
                     </form>

@@ -102,85 +102,222 @@
       </form>
     </div>
 
+    <!-- Seção de Informações sobre Categorias -->
+    <div class="form-section">
+      <h2>ℹ️ Informações sobre Categorias</h2>
+      
+      <div class="info-content">
+        <p><strong>📋 O que são categorias?</strong></p>
+        <p>As categorias organizam as perguntas da avaliação em grupos temáticos, facilitando a compreensão e análise dos resultados.</p>
+        
+        <p><strong>🔢 Como funciona o campo "Ordem"?</strong></p>
+        <p>O campo ordem define a sequência em que as categorias aparecerão na avaliação. Use números únicos crescentes para organizar logicamente:</p>
+        
+        <div class="example-box">
+          <h4>📝 Exemplo de organização pedagógica:</h4>
+          <ul>
+            <li><strong>1. Didática (ordem: 1)</strong>
+              <ul>
+                <li>O professor explica claramente?</li>
+                <li>O conteúdo é bem organizado?</li>
+              </ul>
+            </li>
+            <li><strong>2. Relacionamento (ordem: 2)</strong>
+              <ul>
+                <li>O professor é acessível?</li>
+                <li>Demonstra interesse pelo aprendizado?</li>
+              </ul>
+            </li>
+            <li><strong>3. Avaliação (ordem: 3)</strong>
+              <ul>
+                <li>Os critérios são claros?</li>
+                <li>O feedback é útil?</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="info-alert">
+          <strong class="alert-title">💡 Dicas importantes:</strong>
+          <div class="alert-text">
+            <ul>
+              <li><strong>Ordem única:</strong> Cada categoria deve ter uma ordem diferente (não pode repetir)</li>
+              <li><strong>Começa em 1:</strong> Use números a partir de 1 (não aceita 0)</li>
+              <li><strong>Sugestão:</strong> Use intervalos de 10 (10, 20, 30...) para facilitar inserções futuras</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
     {% if not editing %}
     <div class="form-section">
       <h2>📋 Categorias Cadastradas</h2>
+      
+      <!-- Seção de Filtros -->
+      <div class="filters-section" id="filtersSection">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label for="searchCategoriaNome">Buscar por Nome:</label>
+            <input type="text" 
+                   id="searchCategoriaNome" 
+                   placeholder="Digite o nome da categoria"
+                   autocomplete="off">
+          </div>
+          
+          <div class="filter-group">
+            <label for="filterStatus">Status:</label>
+            <select id="filterStatus">
+              <option value="">Todos os status</option>
+              <option value="ativa">Ativa</option>
+              <option value="inativa">Inativa</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filter-row">
+          <div class="filter-group">
+            <button type="button" 
+                    onclick="clearFilters()" 
+                    class="btn btn-clear"
+                    title="Limpar todos os filtros">
+              🧹 Limpar Filtros
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="item-count">
         Total de categorias: {{ categorias.count }}
       </div>
-      <div class="table-responsive">
-        <table class="table">
+      
+      {% if categorias %}
+        <table class="data-table">
           <thead>
             <tr>
-              <th>
-                <input type="text" id="searchCategoriaNome" placeholder="Nome da Categoria" />
-              </th>
+              <th>Nome</th>
               <th>Descrição</th>
               <th>Ordem</th>
-              <th>
-                <select id="filterStatus">
-                  <option value="">Status</option>
-                  <option value="Ativa">Ativa</option>
-                  <option value="Inativa">Inativa</option>
-                </select>
-              </th>
+              <th>Status</th>
               <th>Perguntas</th>
               <th>Ações</th>
             </tr>
           </thead>
-        <tbody>
-          {% for categoria in categorias %}
-          <tr>
-            <td><strong>{{ categoria.nome }}</strong></td>
-            <td>{{ categoria.descricao|default:"-" }}</td>
-            <td>{{ categoria.ordem }}</td>
-            <td>
-              <span class="status-badge {% if categoria.ativa %}status-ativa{% else %}status-inativa{% endif %}">
-                {% if categoria.ativa %}✅ Ativa{% else %}❌ Inativa{% endif %}
-              </span>
-            </td>
-            <td>
-              {{ categoria.perguntas.count }} pergunta{{ categoria.perguntas.count|pluralize }}
-            </td>
-            <td>
-              <div class="action-buttons">
-                <a href="{% url 'editar_categoria_simples' categoria.id %}" class="btn-action btn-edit">
-                  ✏️ Editar
-                </a>
-                {% if categoria.perguntas.count == 0 %}
-                <form method="post" action="{% url 'excluir_categoria' categoria.id %}" class="inline-form" onsubmit="return confirm('Tem certeza que deseja excluir a categoria \'{{ categoria.nome }}\'? Esta ação não pode ser desfeita.')">
-                  {% csrf_token %}
-                  <button type="submit" class="btn-action btn-delete">
-                    🗑️ Excluir
-                  </button>
-                </form>
+          <tbody>
+            {% for categoria in categorias %}
+            <tr>
+              <td><strong>{{ categoria.nome }}</strong></td>
+              <td>
+                {% if categoria.descricao %}
+                  {{ categoria.descricao|truncatechars:50 }}
                 {% else %}
-                <button type="button" class="btn-action btn-delete disabled-state" onclick="alert('Não é possível excluir esta categoria pois ela possui {{ categoria.perguntas.count }} pergunta(s) associada(s).')">
-                  🗑️ Excluir
-                </button>
+                  <em class="text-muted">Sem descrição</em>
                 {% endif %}
-              </div>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="6" class="text-center-table">
-              Nenhuma categoria encontrada.
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+              </td>
+              <td>
+                <span class="counter-badge">{{ categoria.ordem }}</span>
+              </td>
+              <td>
+                {% if categoria.ativa %}
+                  <span class="status-badge status-active">✅ Ativa</span>
+                {% else %}
+                  <span class="status-badge status-inactive">❌ Inativa</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="counter-badge">{{ categoria.perguntas.count }}</span>
+                <small class="text-muted">pergunta{{ categoria.perguntas.count|pluralize }}</small>
+              </td>
+              <td>
+                <div class="btn-group">
+                  <a href="{% url 'editar_categoria_simples' categoria.id %}" 
+                     class="btn btn-sm btn-secondary" title="Editar Categoria">
+                    ✏️ Editar
+                  </a>
+                  {% if categoria.perguntas.count == 0 %}
+                    <form method="post" action="{% url 'excluir_categoria' categoria.id %}" 
+                          class="inline-form"
+                          onsubmit="return confirm('Tem certeza que deseja excluir a categoria \'{{ categoria.nome|escapejs }}\'?\n\nEsta ação não pode ser desfeita.')">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-danger" title="Excluir Categoria">
+                        🗑️ Excluir
+                      </button>
+                    </form>
+                  {% else %}
+                    <button type="button" class="btn btn-sm btn-danger disabled" 
+                            title="Não é possível excluir esta categoria pois ela possui {{ categoria.perguntas.count }} pergunta(s) associada(s)"
+                            onclick="alert('Não é possível excluir esta categoria pois ela possui {{ categoria.perguntas.count }} pergunta(s) associada(s).')">
+                      🗑️ Excluir
+                    </button>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="empty-state">
+          <h3>📂 Nenhuma categoria cadastrada</h3>
+          <p>Crie a primeira categoria para organizar as perguntas das avaliações.</p>
+        </div>
+      {% endif %}
     </div>
     {% endif %}
   </div>
 
   <script src="{% static 'js/gerenciar-global.js' %}"></script>
   <script>
-    // Script específico para categorias - confirmação de exclusão customizada
-    document.addEventListener("DOMContentLoaded", function () {
-      // Interceptar alertas customizados do template (já estão inline, manter como estão)
-      console.log("Página de categorias carregada com script global");
+    // Função para filtrar a tabela
+    function filterTable() {
+      const nomeFilter = document.getElementById('searchCategoriaNome').value.toLowerCase();
+      const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
+      
+      const tableRows = document.querySelectorAll('.data-table tbody tr');
+      let visibleCount = 0;
+
+      tableRows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        
+        if (cells.length > 1) {
+          const categoriaNome = cells[0].textContent.toLowerCase().trim();
+          const categoriaStatus = cells[3].textContent.toLowerCase().trim();
+
+          const nomeMatch = !nomeFilter || categoriaNome.includes(nomeFilter);
+          const statusMatch = !statusFilter || categoriaStatus.includes(statusFilter);
+
+          if (nomeMatch && statusMatch) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        }
+      });
+
+      // Atualiza o contador
+      const itemCount = document.querySelector('.item-count');
+      if (itemCount) {
+        itemCount.textContent = `Categorias encontradas: ${visibleCount}`;
+      }
+    }
+
+    // Função para limpar filtros
+    function clearFilters() {
+      document.getElementById('searchCategoriaNome').value = '';
+      document.getElementById('filterStatus').value = '';
+      filterTable();
+    }
+
+    // Adicionar event listeners para filtros
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchCategoriaNome = document.getElementById('searchCategoriaNome');
+      const filterStatus = document.getElementById('filterStatus');
+
+      if (searchCategoriaNome) searchCategoriaNome.addEventListener('input', filterTable);
+      if (filterStatus) filterStatus.addEventListener('change', filterTable);
+      
+      console.log("Página de categorias carregada com filtros funcionais");
     });
   </script>
 </body>

@@ -30,17 +30,14 @@
 
           <div class="avaliacao-info">
             <p>
-              <strong>Disciplina:</strong> {{
-              avaliacao.disciplina.disciplina_nome }}
+              <strong>Disciplina:</strong> {{ avaliacao.disciplina.disciplina_nome }}
             </p>
             <p><strong>Turma:</strong> {{ avaliacao.turma.codigo_turma }}</p>
             <p>
-              <strong>Período:</strong> {{ avaliacao.turma.periodo_letivo.nome
-              }}
+              <strong>Período:</strong> {{ avaliacao.turma.periodo_letivo.nome }}
             </p>
             <p>
-              <strong>Data da Avaliação:</strong> {{
-              avaliacao.data_criacao|date:"d/m/Y" }}
+              <strong>Data da Avaliação:</strong> {{ avaliacao.data_criacao|date:"d/m/Y" }}
             </p>
             {% if avaliacao.ciclo %}
             <p><strong>Ciclo:</strong> {{ avaliacao.ciclo.nome }}</p>

@@ -877,9 +877,9 @@ class CategoriaPerguntaForm(forms.ModelForm):
             "ordem": forms.NumberInput(
                 attrs={
                     "class": "form-control",
-                    "min": "0",
+                    "min": "1",
                     "max": "999",
-                    "placeholder": "0",
+                    "placeholder": "1",
                 }
             ),
             "ativa": forms.CheckboxInput(attrs={"class": "form-check-input"}),
@@ -893,7 +893,7 @@ class CategoriaPerguntaForm(forms.ModelForm):
         help_texts = {
             "nome": "Nome único para identificar a categoria",
             "descricao": "Descrição opcional para explicar o propósito da categoria",
-            "ordem": "Ordem de exibição nas avaliações (menor número = primeiro)",
+            "ordem": "Ordem de exibição nas avaliações (número único, começando em 1)",
             "ativa": "Marque para manter a categoria ativa no sistema",
         }
 
@@ -929,6 +929,22 @@ class CategoriaPerguntaForm(forms.ModelForm):
 
     def clean_ordem(self):
         ordem = self.cleaned_data.get("ordem")
-        if ordem is not None and ordem < 0:
-            raise forms.ValidationError("A ordem não pode ser negativa.")
+        
+        # Validar se a ordem é válida
+        if ordem is not None:
+            if ordem < 1:
+                raise forms.ValidationError("A ordem deve ser um número maior que zero (mínimo: 1).")
+            
+            # Verificar se já existe uma categoria com esta ordem
+            qs = CategoriaPergunta.objects.filter(ordem=ordem)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            
+            if qs.exists():
+                categoria_existente = qs.first()
+                raise forms.ValidationError(
+                    f"Já existe uma categoria com ordem {ordem}: '{categoria_existente.nome}'. "
+                    f"Escolha uma ordem diferente."
+                )
+        
         return ordem

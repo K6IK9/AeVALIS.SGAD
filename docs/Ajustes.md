@@ -15,7 +15,7 @@
 14 . tela de gerenciar questionario tem esitlos quebrados okkk
 13. Relatório de avaliação tem comentario com nome do respondente, não deveria ter, pois é para ser anonimo. okkkk
 
-
+15. Tela de gerenciamento de disciplina nos filtro não aparece as opções
 ----
 
 # Novidades a implementar

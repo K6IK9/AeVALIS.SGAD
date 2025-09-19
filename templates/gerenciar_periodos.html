@@ -147,21 +147,16 @@
               <td>{{ periodo.get_semestre_display }}</td>
               <td><strong>{{ periodo.ano }}.{{ periodo.semestre }}</strong></td>
               <td>
-                <div class="action-buttons">
-                  <button
-                    type="button"
-                    class="btn-action btn-edit"
-                    onclick="editarPeriodo({{ periodo.id }}, '{{ periodo.nome }}', {{ periodo.ano }}, '{{ periodo.semestre }}')"
-                  >
+                <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-secondary" title="Editar Período"
+                          onclick="editarPeriodo({{ periodo.id }}, '{{ periodo.nome }}', {{ periodo.ano }}, '{{ periodo.semestre }}')">>
                     ✏️ Editar
                   </button>
-                  <form method="post" action="{% url 'excluir_periodo' periodo.id %}" class="inline-form">
+                  <form method="post" action="{% url 'excluir_periodo' periodo.id %}" 
+                        class="inline-form"
+                        onsubmit="return confirm('Tem certeza que deseja excluir o período \'{{ periodo.nome|escapejs }}\'?\n\nEsta ação não poderá ser desfeita.')">
                     {% csrf_token %}
-                    <button
-                      type="submit"
-                      class="btn-action btn-delete"
-                      onclick="return confirm('Tem certeza que deseja excluir o período \'{{ periodo.nome }}\'? Esta ação não poderá ser desfeita.')"
-                    >
+                    <button type="submit" class="btn btn-sm btn-danger" title="Excluir Período">
                       🗑️ Excluir
                     </button>
                   </form>
