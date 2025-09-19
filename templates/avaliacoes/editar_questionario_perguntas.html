@@ -205,7 +205,7 @@
                 </thead>
                 <tbody>
                     {% for qp in perguntas_existentes %}
-                    <tr {% if editando and pergunta_editando.id==qp.pergunta.id %}class="row-highlight" {% endif %}>
+                    <tr {% if editando and pergunta_editando.id == qp.pergunta.id %}class="row-highlight" {% endif %}>
                         <td style="text-align: center;">
                             <span class="category-order-number">{{ qp.ordem }}</span>
                         </td>
