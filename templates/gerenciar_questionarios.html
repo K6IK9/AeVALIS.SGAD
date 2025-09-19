@@ -44,239 +44,252 @@
         {% endif %}
 
 
-        <!-- Formulário de Criação/Edição -->
-        <div class="form-section">
-            <h2>
-                {% if editing %}
-                    ✏️ Editar Questionário
-                {% else %}
-                    ➕ Novo Questionário
-                {% endif %}
-            </h2>
-            <form method="post">
-                {% csrf_token %}
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="{{ form.titulo.id_for_label }}">
-                            {{ form.titulo.label }} <span class="required">*</span>
-                        </label>
-                        {{ form.titulo }}
-                        {% if form.titulo.errors %}
-                            <div class="field-error">
-                                {% for error in form.titulo.errors %}
-                                    {{ error }}
-                                {% endfor %}
+        <!-- Seção: Formulário de Criação/Edição -->
+        <div class="main-section create-section">
+            <div class="form-section">
+                <h2>
+                    {% if editing %}
+                        ✏️ Editar Questionário
+                    {% else %}
+                        ➕ Novo Questionário
+                    {% endif %}
+                </h2>
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.titulo.id_for_label }}">
+                                {{ form.titulo.label }} <span class="required">*</span>
+                            </label>
+                            {{ form.titulo }}
+                            {% if form.titulo.errors %}
+                                <div class="field-error">
+                                    {% for error in form.titulo.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.descricao.id_for_label }}">
+                                {{ form.descricao.label }}
+                            </label>
+                            {{ form.descricao }}
+                            <small class="form-help">Descrição opcional do questionário</small>
+                            {% if form.descricao.errors %}
+                                <div class="field-error">
+                                    {% for error in form.descricao.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                {{ form.ativo }}
+                                <label for="{{ form.ativo.id_for_label }}">
+                                    Questionário Ativo
+                                </label>
                             </div>
+                            <small class="form-help">Questionários inativos não podem ser usados em novos ciclos</small>
+                            {% if form.ativo.errors %}
+                                <div class="field-error">
+                                    {% for error in form.ativo.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn">
+                            {% if editing %}
+                                ✓ Salvar Alterações
+                            {% else %}
+                                ➕ Criar Questionário
+                            {% endif %}
+                        </button>
+                        {% if editing %}
+                            <a href="{% url 'gerenciar_questionarios' %}" class="btn btn-secondary">
+                                ← Cancelar
+                            </a>
                         {% endif %}
                     </div>
-                </div>
+                </form>
+            </div>
+
+            {% if editing and questionario_editando %}
+            <div class="form-section">
+                <h2>ℹ️ Informações do Questionário</h2>
                 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="{{ form.descricao.id_for_label }}">
-                            {{ form.descricao.label }}
-                        </label>
-                        {{ form.descricao }}
-                        <small class="form-help">Descrição opcional do questionário</small>
-                        {% if form.descricao.errors %}
-                            <div class="field-error">
-                                {% for error in form.descricao.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <div class="checkbox-group">
-                            {{ form.ativo }}
-                            <label for="{{ form.ativo.id_for_label }}">
-                                Questionário Ativo
-                            </label>
-                        </div>
-                        <small class="form-help">Questionários inativos não podem ser usados em novos ciclos</small>
-                        {% if form.ativo.errors %}
-                            <div class="field-error">
-                                {% for error in form.ativo.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Perguntas:</span>
+                        <span class="info-value">{{ questionario_editando.perguntas.count }}</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label">Criado em:</span>
+                        <span class="info-value">{{ questionario_editando.data_criacao|date:"d/m/Y H:i" }}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Criado por:</span>
+                        <span class="info-value">{{ questionario_editando.criado_por.get_full_name|default:questionario_editando.criado_por.username }}</span>
                     </div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn">
-                        {% if editing %}
-                            ✓ Salvar Alterações
-                        {% else %}
-                            ➕ Criar Questionário
-                        {% endif %}
-                    </button>
-                    {% if editing %}
-                        <a href="{% url 'gerenciar_questionarios' %}" class="btn btn-secondary">
-                            ← Cancelar
-                        </a>
-                    {% endif %}
+                    <a href="{% url 'editar_questionario_perguntas' questionario_editando.id %}" class="btn">
+                        📝 Gerenciar Perguntas
+                    </a>
                 </div>
-            </form>
-        </div>
-
-        {% if editing and questionario_editando %}
-        <div class="form-section">
-            <h2>ℹ️ Informações do Questionário</h2>
-            
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Perguntas:</span>
-                    <span class="info-value">{{ questionario_editando.perguntas.count }}</span>
-                </div>
-                
-                <div class="info-item">
-                    <span class="info-label">Criado em:</span>
-                    <span class="info-value">{{ questionario_editando.data_criacao|date:"d/m/Y H:i" }}</span>
-                </div>
-
-                <div class="info-item">
-                    <span class="info-label">Criado por:</span>
-                    <span class="info-value">{{ questionario_editando.criado_por.get_full_name|default:questionario_editando.criado_por.username }}</span>
-                </div>
-            </div>
-
-            <div class="form-actions">
-                <a href="{% url 'editar_questionario_perguntas' questionario_editando.id %}" class="btn">
-                    📝 Gerenciar Perguntas
-                </a>
-            </div>
-        </div>
-        {% endif %}
-        
-        <!-- Lista de Questionários -->
-        <div class="form-section">
-            <h2>📋 Questionários Cadastrados</h2>
-            
-            <!-- Seção de Filtros -->
-            <div class="filters-section" id="filtersSection">
-              <div class="filter-row">
-                <div class="filter-group">
-                  <label for="searchQuestionarioTitulo">Buscar por Título:</label>
-                  <input type="text" 
-                         id="searchQuestionarioTitulo" 
-                         placeholder="Digite o título do questionário"
-                         autocomplete="off">
-                </div>
-                
-                <div class="filter-group">
-                  <label for="filterStatus">Status:</label>
-                  <select id="filterStatus">
-                    <option value="">Todos os status</option>
-                    <option value="ativo">Ativo</option>
-                    <option value="inativo">Inativo</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="filter-row">
-                <div class="filter-group">
-                  <label for="filterCriador">Criado por:</label>
-                  <select id="filterCriador">
-                    <option value="">Todos os criadores</option>
-                    {% regroup questionarios by criado_por as criadores_agrupados %}
-                    {% for criador_group in criadores_agrupados %}
-                      <option value="{{ criador_group.grouper.get_full_name|default:criador_group.grouper.username }}">
-                        {{ criador_group.grouper.get_full_name|default:criador_group.grouper.username }}
-                      </option>
-                    {% endfor %}
-                  </select>
-                </div>
-
-                <div class="filter-group">
-                  <button type="button" 
-                          onclick="clearFilters()" 
-                          class="btn btn-clear"
-                          title="Limpar todos os filtros">
-                    🧹 Limpar Filtros
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="item-count">
-                Total de questionários: {{ questionarios.count }}
-            </div>
-
-            {% if questionarios %}
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Título</th>
-                            <th>Descrição</th>
-                            <th>Criado por</th>
-                            <th>Data</th>
-                            <th>Status</th>
-                            <th>Perguntas</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for questionario in questionarios %}
-                        <tr {% if editing and questionario_editando.id == questionario.id %}class="row-highlight"{% endif %}>
-                            <td>
-                                <strong>{{ questionario.titulo }}</strong>
-                            </td>
-                            <td>
-                                {% if questionario.descricao %}
-                                    {{ questionario.descricao|truncatechars:50 }}
-                                {% else %}
-                                    <em class="text-muted">Sem descrição</em>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {{ questionario.criado_por.get_full_name|default:questionario.criado_por.username }}
-                            </td>
-                            <td>
-                                {{ questionario.data_criacao|date:"d/m/Y" }}
-                            </td>
-                            <td>
-                                {% if questionario.ativo %}
-                                    <span class="status-badge status-active">✓ Ativo</span>
-                                {% else %}
-                                    <span class="status-badge status-inactive">⏸ Inativo</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="counter-badge">{{ questionario.perguntas.count }}</span>
-                            </td>
-                            <td>
-                                <div class="action-buttons">
-                                    <a href="{% url 'editar_questionario_perguntas' questionario.id %}" 
-                                       class="btn-action btn-edit" title="Gerenciar Perguntas">
-                                        📝 Perguntas
-                                    </a>
-                                    <a href="{% url 'editar_questionario_simples' questionario.id %}" 
-                                       class="btn-action btn-edit" title="Editar Questionário">
-                                        ✏️ Editar
-                                    </a>
-                                    <a href="{% url 'excluir_questionario' questionario.id %}" 
-                                       class="btn-action btn-delete" 
-                                       title="Excluir Questionário"
-                                       onclick="return confirm('Tem certeza que deseja excluir o questionário \'{{ questionario.titulo }}\'?\n\nEsta ação não pode ser desfeita e removerá todas as perguntas associadas.')">
-                                        🗑️ Excluir
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-            <div class="empty-state">
-                <h3>📝 Nenhum questionário cadastrado</h3>
-                <p>Crie seu primeiro questionário usando o formulário acima.</p>
             </div>
             {% endif %}
+        </div>
+
+        <!-- Separador Visual -->
+        <div class="section-divider"></div>
+
+        <!-- Seção: Filtros e Lista de Questionários -->
+        <div class="main-section list-section">
+        <!-- Seção: Filtros e Lista de Questionários -->
+        <div class="main-section list-section">
+            <!-- Filtros de Busca -->
+            <div class="filters-container">
+                <h2>🔍 Filtrar Questionários</h2>
+                <div class="filters-section" id="filtersSection">
+                  <div class="filter-row">
+                    <div class="filter-group">
+                      <label for="searchQuestionarioTitulo">Buscar por Título:</label>
+                      <input type="text" 
+                             id="searchQuestionarioTitulo" 
+                             placeholder="Digite o título do questionário"
+                             autocomplete="off">
+                    </div>
+                    
+                    <div class="filter-group">
+                      <label for="filterStatus">Status:</label>
+                      <select id="filterStatus">
+                        <option value="">Todos os status</option>
+                        <option value="ativo">Ativo</option>
+                        <option value="inativo">Inativo</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="filter-row">
+                    <div class="filter-group">
+                      <label for="filterCriador">Criado por:</label>
+                      <select id="filterCriador">
+                        <option value="">Todos os criadores</option>
+                        {% regroup questionarios by criado_por as criadores_agrupados %}
+                        {% for criador_group in criadores_agrupados %}
+                          <option value="{{ criador_group.grouper.get_full_name|default:criador_group.grouper.username }}">
+                            {{ criador_group.grouper.get_full_name|default:criador_group.grouper.username }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+
+                    <div class="filter-group">
+                      <button type="button" 
+                              onclick="clearFilters()" 
+                              class="btn btn-clear"
+                              title="Limpar todos os filtros">
+                        🧹 Limpar Filtros
+                      </button>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            
+            <!-- Lista de Questionários -->
+            <div class="questionnaire-table-container">
+                <h2>📋 Questionários Cadastrados</h2>
+                
+                <div class="item-count">
+                    Total de questionários: {{ questionarios.count }}
+                </div>
+
+                {% if questionarios %}
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Descrição</th>
+                                <th>Criado por</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th>Perguntas</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for questionario in questionarios %}
+                            <tr {% if editing and questionario_editando.id == questionario.id %}class="row-highlight"{% endif %}>
+                                <td>
+                                    <strong>{{ questionario.titulo }}</strong>
+                                </td>
+                                <td>
+                                    {% if questionario.descricao %}
+                                        {{ questionario.descricao|truncatechars:50 }}
+                                    {% else %}
+                                        <em class="text-muted">Sem descrição</em>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ questionario.criado_por.get_full_name|default:questionario.criado_por.username }}
+                                </td>
+                                <td>
+                                    {{ questionario.data_criacao|date:"d/m/Y" }}
+                                </td>
+                                <td>
+                                    {% if questionario.ativo %}
+                                        <span class="status-badge status-active">✓ Ativo</span>
+                                    {% else %}
+                                        <span class="status-badge status-inactive">⏸ Inativo</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="counter-badge">{{ questionario.perguntas.count }}</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{% url 'editar_questionario_perguntas' questionario.id %}" 
+                                           class="btn-action btn-edit" title="Gerenciar Perguntas">
+                                            📝 Perguntas
+                                        </a>
+                                        <a href="{% url 'editar_questionario_simples' questionario.id %}" 
+                                           class="btn-action btn-edit" title="Editar Questionário">
+                                            ✏️ Editar
+                                        </a>
+                                        <a href="{% url 'excluir_questionario' questionario.id %}" 
+                                           class="btn-action btn-delete" 
+                                           title="Excluir Questionário"
+                                           onclick="return confirm('Tem certeza que deseja excluir o questionário \'{{ questionario.titulo }}\'?\n\nEsta ação não pode ser desfeita e removerá todas as perguntas associadas.')">
+                                            🗑️ Excluir
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                <div class="empty-state">
+                    <h3>📝 Nenhum questionário cadastrado</h3>
+                    <p>Crie seu primeiro questionário usando o formulário acima.</p>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 

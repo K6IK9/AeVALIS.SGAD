@@ -86,21 +86,20 @@
     color: var(--cor-branco);
 }
 
-/* Container principal em grid - INVERTIDO */
+/* Container principal em layout vertical */
 .main-container {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
+    display: flex;
+    flex-direction: column;
     gap: 30px;
     margin-top: 20px;
 }
 
-/* Seção do formulário - AGORA À ESQUERDA */
+/* Seção do formulário - AGORA ACIMA */
 .form-section {
     background-color: var(--cor-branco);
     border: 1px solid #e5e7eb;
     border-radius: 15px;
     padding: 25px;
-    height: fit-content;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -173,7 +172,7 @@
     margin: 0;
 }
 
-/* Seção de perguntas - AGORA À DIREITA */
+/* Seção de perguntas - AGORA ABAIXO */
 .questions-section {
     background-color: var(--cor-branco);
     border: 1px solid #e5e7eb;
@@ -435,7 +434,6 @@
 /* Responsividade */
 @media (max-width: 768px) {
     .main-container {
-        grid-template-columns: 1fr;
         gap: 20px;
     }
     
