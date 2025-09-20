@@ -570,7 +570,16 @@ def gerenciar_disciplinas(request):
     # Lista todas as disciplinas
     disciplinas = Disciplina.objects.all().order_by("disciplina_nome")
 
-    context = {"form": form, "disciplinas": disciplinas}
+    # Buscar dados para os filtros
+    cursos = Curso.objects.all().order_by("curso_nome")
+    periodos = PeriodoLetivo.objects.all().order_by("periodo_nome")
+
+    context = {
+        "form": form,
+        "disciplinas": disciplinas,
+        "cursos": cursos,
+        "periodos": periodos,
+    }
 
     return render(request, "gerenciar_disciplinas.html", context)
 
@@ -602,9 +611,17 @@ def editar_disciplina(request, disciplina_id):
     else:
         form = DisciplinaForm(instance=disciplina)
 
+    # Buscar dados para os filtros
+    cursos = Curso.objects.all().order_by("curso_nome")
+    periodos = PeriodoLetivo.objects.all().order_by("periodo_nome")
+    disciplinas = Disciplina.objects.all().order_by("disciplina_nome")
+
     context = {
         "form": form,
         "disciplina": disciplina,
+        "disciplinas": disciplinas,
+        "cursos": cursos,
+        "periodos": periodos,
         "editing": True,
     }
     return render(request, "gerenciar_disciplinas.html", context)

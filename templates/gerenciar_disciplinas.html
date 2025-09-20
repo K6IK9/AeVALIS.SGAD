@@ -122,13 +122,8 @@
         <div class="filters-section" id="filtersSection">
           <div class="filter-row">
             <div class="filter-group">
-              <label for="searchDisciplinaNome">Buscar por Nome:</label>
-              <input type="text" id="searchDisciplinaNome" placeholder="Digite o nome da disciplina">
-            </div>
-            
-            <div class="filter-group">
-              <label for="searchDisciplinaSigla">Buscar por Sigla:</label>
-              <input type="text" id="searchDisciplinaSigla" placeholder="Digite a sigla">
+              <label for="searchDisciplinaNome">Buscar por Nome ou Sigla:</label>
+              <input type="text" id="searchDisciplinaNome" placeholder="Digite o nome ou sigla da disciplina">
             </div>
           </div>
 
@@ -177,7 +172,6 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>ID</th>
               <th>Nome da Disciplina</th>
               <th>Sigla</th>
               <th>Tipo</th>
@@ -190,7 +184,6 @@
           <tbody>
             {% for disciplina in disciplinas %}
             <tr>
-              <td>{{ disciplina.id }}</td>
               <td>{{ disciplina.disciplina_nome }}</td>
               <td>{{ disciplina.disciplina_sigla }}</td>
               <td>{{ disciplina.disciplina_tipo }}</td>
@@ -216,7 +209,7 @@
             </tr>
             {% empty %}
             <tr>
-              <td colspan="8" class="text-center-table">
+              <td colspan="7" class="text-center-table">
                 Nenhuma disciplina encontrada.
               </td>
             </tr>
@@ -230,7 +223,6 @@
         // Função para filtrar a tabela
         function filterTable() {
           const nomeFilter = document.getElementById('searchDisciplinaNome').value.toLowerCase();
-          const siglaFilter = document.getElementById('searchDisciplinaSigla').value.toLowerCase();
           const cursoFilter = document.getElementById('filterCurso').value.toLowerCase();
           const tipoFilter = document.getElementById('filterTipo').value.toLowerCase();
           const periodoFilter = document.getElementById('filterPeriodo').value.toLowerCase();
@@ -243,19 +235,19 @@
             
             // Verifica se a linha tem células (não é a linha "Nenhuma disciplina encontrada")
             if (cells.length > 1) {
-              const disciplinaNome = cells[1].textContent.toLowerCase(); // Nome da disciplina
-              const disciplinaSigla = cells[2].textContent.toLowerCase(); // Sigla
-              const disciplinaTipo = cells[3].textContent.toLowerCase(); // Tipo
-              const disciplinaCurso = cells[4].textContent.toLowerCase(); // Curso
-              const disciplinaPeriodo = cells[6].textContent.toLowerCase(); // Período Letivo
+              const disciplinaNome = cells[0].textContent.toLowerCase(); // Nome da disciplina
+              const disciplinaSigla = cells[1].textContent.toLowerCase(); // Sigla
+              const disciplinaTipo = cells[2].textContent.toLowerCase(); // Tipo
+              const disciplinaCurso = cells[3].textContent.toLowerCase(); // Curso
+              const disciplinaPeriodo = cells[5].textContent.toLowerCase(); // Período Letivo
 
-              const nomeMatch = !nomeFilter || disciplinaNome.includes(nomeFilter);
-              const siglaMatch = !siglaFilter || disciplinaSigla.includes(siglaFilter);
+              // A busca por nome agora procura tanto no nome quanto na sigla
+              const nomeMatch = !nomeFilter || disciplinaNome.includes(nomeFilter) || disciplinaSigla.includes(nomeFilter);
               const cursoMatch = !cursoFilter || disciplinaCurso.includes(cursoFilter);
               const tipoMatch = !tipoFilter || disciplinaTipo.includes(tipoFilter);
               const periodoMatch = !periodoFilter || disciplinaPeriodo.includes(periodoFilter);
 
-              if (nomeMatch && siglaMatch && cursoMatch && tipoMatch && periodoMatch) {
+              if (nomeMatch && cursoMatch && tipoMatch && periodoMatch) {
                 row.style.display = '';
                 visibleCount++;
               } else {
@@ -280,7 +272,6 @@
         // Função para limpar filtros
         function clearFilters() {
           document.getElementById('searchDisciplinaNome').value = '';
-          document.getElementById('searchDisciplinaSigla').value = '';
           document.getElementById('filterCurso').value = '';
           document.getElementById('filterTipo').value = '';
           document.getElementById('filterPeriodo').value = '';
@@ -290,13 +281,11 @@
         // Adiciona event listeners aos campos de filtro
         document.addEventListener('DOMContentLoaded', function() {
           const searchDisciplinaNome = document.getElementById('searchDisciplinaNome');
-          const searchDisciplinaSigla = document.getElementById('searchDisciplinaSigla');
           const filterCurso = document.getElementById('filterCurso');
           const filterTipo = document.getElementById('filterTipo');
           const filterPeriodo = document.getElementById('filterPeriodo');
 
           if (searchDisciplinaNome) searchDisciplinaNome.addEventListener('input', filterTable);
-          if (searchDisciplinaSigla) searchDisciplinaSigla.addEventListener('input', filterTable);
           if (filterCurso) filterCurso.addEventListener('change', filterTable);
           if (filterTipo) filterTipo.addEventListener('change', filterTable);
           if (filterPeriodo) filterPeriodo.addEventListener('change', filterTable);

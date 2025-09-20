@@ -148,10 +148,6 @@
           </div>
 
           <div class="filter-group">
-            <button type="button" class="btn-filter" onclick="aplicarFiltros()">🔍 Pesquisar</button>
-          </div>
-
-          <div class="filter-group">
             <button type="button" class="btn-filter" onclick="limparFiltros()">
               Limpar Filtros
             </button>
@@ -472,11 +468,6 @@
 
         linha.style.display = mostrar ? "" : "none";
       });
-    }
-
-    // Função para aplicar filtros - usando a global aplicarFiltros como fallback
-    function aplicarFiltros() {
-      filtrarTurmas();
     }
 
     // Função para limpar filtros específica da página

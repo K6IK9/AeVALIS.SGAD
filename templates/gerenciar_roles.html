@@ -58,7 +58,8 @@
                             <div class="search-box">
                                 <input type="text" name="busca" id="busca" class="form-control"
                                     value="{{ request.GET.busca }}"
-                                    placeholder="Digite o nome ou matrícula do usuário...">
+                                    placeholder="Digite o nome ou matrícula do usuário..."
+                                    oninput="aplicarFiltrosComDelay()">
                             </div>
                         </div>
                         <div class="filter-group">
@@ -76,9 +77,6 @@
                                 <option value="sem_role" {% if request.GET.role == 'sem_role' %}selected{% endif %}>Sem
                                     Role</option>
                             </select>
-                        </div>
-                        <div class="filter-group">
-                            <button type="submit" class="btn-filter">🔍 Pesquisar</button>
                         </div>
                         <div class="filter-group">
                             <button type="button" class="btn-filter" onclick="limparFiltros()">Limpar Filtros</button>
@@ -233,6 +231,14 @@
             document.getElementById('filtros-form').submit();
         }
 
+        // Função para aplicar filtros com delay (busca em tempo real)
+        function aplicarFiltrosComDelay() {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(function() {
+                aplicarFiltros();
+            }, 800); // 800ms de delay
+        }
+
         function limparFiltros() {
             document.getElementById('busca').value = '';
             document.getElementById('role').value = '';
@@ -279,16 +285,8 @@
             document.getElementById('role-form').reset();
         }
 
-        // Busca em tempo real (com delay)
+        // Busca em tempo real já implementada via oninput
         let timeoutId;
-        const buscaElement = document.getElementById('busca');
-        if (buscaElement) {
-            buscaElement.addEventListener('keypress', function (event) {
-                if (event.key === 'Enter') {
-                    aplicarFiltros();
-                }
-            });
-        }
 
         // Drag scroll functionality para a tabela
         function enableDragScroll() {
