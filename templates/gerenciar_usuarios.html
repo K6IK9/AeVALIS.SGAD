@@ -1,5 +1,8 @@
-{% load user_tags %}
-{% load static %}
+{% load use   <!-- CSS externos -->
+  <link rel="stylesheet" href="{% static 'css/global.css' %}">
+  <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}">externos -->
+  <link rel="stylesheet" href="{% static 'css/global.css' %}">
+  <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}">{% load static %}
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -10,6 +13,7 @@
   <title>IF SADD - Gerenciar Usuários</title>
 
   <!-- CSS externos -->
+  <link rel="stylesheet" href="{% static 'css/global.css' %}">
   <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}">
 </head>
 
@@ -366,8 +370,24 @@
       }, 800); // 800ms de delay para manter consistência
     }
 
+    // Função para aplicar filtros
+    function aplicarFiltros() {
+      document.getElementById('filtros-form').submit();
+    }
+
     // Função para limpar filtros - corrigida
     function limparFiltros() {
+      document.getElementById('search').value = '';
+      document.getElementById('role').value = '';
+      document.getElementById('status').value = '';
+      aplicarFiltros();
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      setupSearch();
+    });
+  </script>
   {% endif %}
 </body>
 </html>
