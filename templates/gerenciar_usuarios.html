@@ -119,42 +119,47 @@
     </div>
     {% endif %}
 
-    <!-- Formulário de Pesquisa e Filtros -->
+    <!-- Seção de Filtros -->
     {% if not editing %}
-    <div class="filters-section">
-      <h3 class="filters-title">Filtros e Busca</h3>
-      <form method="get" id="filtros-form">
-        <div class="filter-row">
-          <div class="filter-group">
-            <label for="search">Buscar por Nome/Email/Matrícula:</label>
-            <div class="search-box">
-                                <input type="text" id="search" name="search" value="{{ search|default:'' }}" 
-                     placeholder="Buscar usuários...">
-            </div>
-          </div>
-          <div class="filter-group">
-            <label for="role">Filtrar por Função:</label>
-            <select name="role" id="role" class="form-control" onchange="aplicarFiltros()">
-              <option value="">Todas as funções</option>
-              <option value="aluno" {% if request.GET.role == 'aluno' %}selected{% endif %}>Aluno</option>
-              <option value="professor" {% if request.GET.role == 'professor' %}selected{% endif %}>Professor</option>
-              <option value="coordenador" {% if request.GET.role == 'coordenador' %}selected{% endif %}>Coordenador</option>
-              <option value="admin" {% if request.GET.role == 'admin' %}selected{% endif %}>Administrador</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="status">Filtrar por Status:</label>
-            <select name="status" id="status" class="form-control" onchange="aplicarFiltros()">
-              <option value="">Todos os status</option>
-              <option value="ativo" {% if request.GET.status == 'ativo' %}selected{% endif %}>Ativo</option>
-              <option value="inativo" {% if request.GET.status == 'inativo' %}selected{% endif %}>Inativo</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <button type="button" class="btn-filter" onclick="limparFiltros()">Limpar Filtros</button>
-          </div>
+    <div class="filters-section" id="filtersSection">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="searchUsuario">Buscar por Nome/Email/Matrícula:</label>
+          <input type="text" id="searchUsuario" placeholder="Digite o nome, email ou matrícula do usuário">
         </div>
-      </form>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="filterRole">Filtrar por Função:</label>
+          <select id="filterRole">
+            <option value="">Todas as funções</option>
+            <option value="aluno">Aluno</option>
+            <option value="professor">Professor</option>
+            <option value="coordenador">Coordenador</option>
+            <option value="administrador">Administrador</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filterStatus">Filtrar por Status:</label>
+          <select id="filterStatus">
+            <option value="">Todos os status</option>
+            <option value="ativo">Ativo</option>
+            <option value="inativo">Inativo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-group">
+          <button type="button" onclick="clearFiltersUsuarios()" class="btn btn-clear">Limpar Filtros</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="item-count">
+      Total de usuários: {{ usuarios.count }}
     </div>
     {% endif %}
 
@@ -162,7 +167,7 @@
     {% if not editing %}
     <div class="form-section">
       <div class="section-header">
-        <h2>👤 Lista de Usuários ({{ usuarios|length }})</h2>
+        <h2>👤 Lista de Usuários</h2>
         {% if user.is_superuser %}
         <button type="button" class="btn" onclick="openModal('createUserModal')">➕ Novo Usuário</button>
         {% endif %}
@@ -360,29 +365,74 @@
   <!-- Scripts específicos da página -->
   {% if not editing %}
     <script>
-    // Auto-pesquisa com delay - usando função global setupAutoSearch
-    function setupSearch() {
-      setupAutoSearch('search', function() {
-        document.getElementById('filtros-form').submit();
-      }, 800); // 800ms de delay para manter consistência
+    // Função para filtrar a tabela de usuários
+    function filterTableUsuarios() {
+      const searchFilter = document.getElementById('searchUsuario').value.toLowerCase();
+      const roleFilter = document.getElementById('filterRole').value.toLowerCase();
+      const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
+      
+      const tableRows = document.querySelectorAll('.data-table tbody tr');
+      let visibleCount = 0;
+
+      tableRows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        
+        // Verifica se a linha tem células (não é a linha "Nenhum usuário encontrado")
+        if (cells.length > 1) {
+          const userName = cells[1].textContent.toLowerCase(); // Nome
+          const userEmail = cells[2].textContent.toLowerCase(); // Email  
+          const userMatricula = cells[3].textContent.toLowerCase(); // Matrícula
+          const userRole = cells[4].textContent.toLowerCase(); // Role
+          const userStatus = cells[5].textContent.toLowerCase(); // Status
+
+          // A busca procura em nome, email e matrícula
+          const searchMatch = !searchFilter || 
+            userName.includes(searchFilter) || 
+            userEmail.includes(searchFilter) || 
+            userMatricula.includes(searchFilter);
+          
+          const roleMatch = !roleFilter || userRole.includes(roleFilter);
+          const statusMatch = !statusFilter || userStatus.includes(statusFilter);
+
+          if (searchMatch && roleMatch && statusMatch) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        }
+      });
+
+      // Atualiza o contador
+      const itemCount = document.querySelector('.item-count');
+      if (itemCount) {
+        itemCount.textContent = `Usuários encontrados: ${visibleCount}`;
+      }
+
+      // Mostra mensagem se nenhum resultado for encontrado
+      const emptyRow = document.querySelector('tr td[colspan]');
+      if (emptyRow) {
+        emptyRow.parentElement.style.display = visibleCount === 0 ? '' : 'none';
+      }
     }
 
-    // Função para aplicar filtros
-    function aplicarFiltros() {
-      document.getElementById('filtros-form').submit();
+    // Função para limpar filtros
+    function clearFiltersUsuarios() {
+      document.getElementById('searchUsuario').value = '';
+      document.getElementById('filterRole').value = '';
+      document.getElementById('filterStatus').value = '';
+      filterTableUsuarios();
     }
 
-    // Função para limpar filtros - corrigida
-    function limparFiltros() {
-      document.getElementById('search').value = '';
-      document.getElementById('role').value = '';
-      document.getElementById('status').value = '';
-      aplicarFiltros();
-    }
-
-    // Initialize when page loads
+    // Adiciona event listeners aos campos de filtro
     document.addEventListener('DOMContentLoaded', function() {
-      setupSearch();
+      const searchUsuario = document.getElementById('searchUsuario');
+      const filterRole = document.getElementById('filterRole');
+      const filterStatus = document.getElementById('filterStatus');
+
+      if (searchUsuario) searchUsuario.addEventListener('input', filterTableUsuarios);
+      if (filterRole) filterRole.addEventListener('change', filterTableUsuarios);
+      if (filterStatus) filterStatus.addEventListener('change', filterTableUsuarios);
     });
   </script>
   {% endif %}

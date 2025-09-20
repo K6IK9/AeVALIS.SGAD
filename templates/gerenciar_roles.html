@@ -51,37 +51,29 @@
             <!-- Filtros -->
             <div class="filters-section">
                 <h3 class="filters-title">Filtros e Busca</h3>
-                <form method="get" id="filtros-form">
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <label for="busca">Buscar por Nome/Matrícula:</label>
-                            <div class="search-box">
-                                <input type="text" name="busca" id="busca" class="form-control"
-                                    value="{{ request.GET.busca }}"
-                                    placeholder="Digite o nome ou matrícula do usuário...">
-                            </div>
-                        </div>
-                        <div class="filter-group">
-                            <label for="role">Filtrar por Role:</label>
-                            <select name="role" id="role" class="form-control" onchange="aplicarFiltros()">
-                                <option value="">Todas as roles</option>
-                                <option value="admin" {% if request.GET.role == 'admin' %}selected{% endif %}>Admin
-                                </option>
-                                <option value="coordenador" {% if request.GET.role == 'coordenador' %}selected{% endif %}>
-                                    Coordenador</option>
-                                <option value="professor" {% if request.GET.role == 'professor' %}selected{% endif %}>
-                                    Professor</option>
-                                <option value="aluno" {% if request.GET.role == 'aluno' %}selected{% endif %}>Aluno
-                                </option>
-                                <option value="sem_role" {% if request.GET.role == 'sem_role' %}selected{% endif %}>Sem
-                                    Role</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <button type="button" class="btn-filter" onclick="limparFiltros()">Limpar Filtros</button>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="searchUsuario">Buscar por Nome/Matrícula:</label>
+                        <div class="search-box">
+                            <input type="text" id="searchUsuario" class="form-control"
+                                placeholder="Digite o nome ou matrícula do usuário...">
                         </div>
                     </div>
-                </form>
+                    <div class="filter-group">
+                        <label for="filterRole">Filtrar por Role:</label>
+                        <select id="filterRole" class="form-control">
+                            <option value="">Todas as roles</option>
+                            <option value="admin">Admin</option>
+                            <option value="coordenador">Coordenador</option>
+                            <option value="professor">Professor</option>
+                            <option value="aluno">Aluno</option>
+                            <option value="sem_role">Sem Role</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button type="button" class="btn-filter" onclick="clearFilters()">Limpar Filtros</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Lista de Usuários com Permissões -->
@@ -95,7 +87,7 @@
                     <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
                 </div>
                 <div class="table-responsive">
-                    <table class="data-table users-table roles-table">
+                    <table class="data-table users-table roles-table" id="rolesTable">
                         <thead>
                             <tr>
                                 <th>Avatar</th>
@@ -229,22 +221,70 @@
             }
         });
 
-        function aplicarFiltros() {
-            document.getElementById('filtros-form').submit();
+        // Filtros client-side
+        function filterTableRoles() {
+            const searchInput = document.getElementById('searchUsuario').value.toLowerCase();
+            const roleFilter = document.getElementById('filterRole').value.toLowerCase();
+            const table = document.getElementById('rolesTable');
+            const rows = table.getElementsByTagName('tr');
+            let visibleCount = 0;
+
+            // Iterar sobre todas as linhas da tabela (exceto cabeçalho)
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                
+                if (cells.length > 0) {
+                    // Extrair dados da linha
+                    const nome = cells[1].textContent.toLowerCase();
+                    const matricula = cells[2].textContent.toLowerCase();
+                    const email = cells[3].textContent.toLowerCase();
+                    const role = cells[4].textContent.toLowerCase();
+                    
+                    // Aplicar filtros
+                    const matchesSearch = searchInput === '' || 
+                        nome.includes(searchInput) || 
+                        matricula.includes(searchInput) ||
+                        email.includes(searchInput);
+                    
+                    const matchesRole = roleFilter === '' || role.includes(roleFilter);
+                    
+                    // Mostrar/ocultar linha
+                    if (matchesSearch && matchesRole) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            }
+
+            // Atualizar contador
+            const sectionHeader = document.querySelector('.section-header h2');
+            if (sectionHeader) {
+                sectionHeader.textContent = `👥 Gerenciamento de Permissões (${visibleCount})`;
+            }
         }
 
-        // Configurar busca automática com delay
-        function setupSearch() {
-            setupAutoSearch('busca', function() {
-                document.getElementById('filtros-form').submit();
-            }, 800); // 800ms de delay
+        function clearFilters() {
+            document.getElementById('searchUsuario').value = '';
+            document.getElementById('filterRole').value = '';
+            filterTableRoles();
         }
 
-        function limparFiltros() {
-            document.getElementById('busca').value = '';
-            document.getElementById('role').value = '';
-            aplicarFiltros();
-        }
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchUsuario');
+            const roleFilter = document.getElementById('filterRole');
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', filterTableRoles);
+            }
+            
+            if (roleFilter) {
+                roleFilter.addEventListener('change', filterTableRoles);
+            }
+        });
 
         function alterarRole(userId, nome, matricula, roleAtual) {
             usuarioAtual = userId;
@@ -286,9 +326,9 @@
             document.getElementById('role-form').reset();
         }
 
-        // Inicializar busca automática quando a página carrega
+        // Inicializar componentes quando a página carrega
         document.addEventListener('DOMContentLoaded', function() {
-            setupSearch();
+            // Filtros já inicializados acima
         });
 
     </script>
