@@ -10,7 +10,14 @@
   <title>IF SADD - Gerenciar Usuários</title>
 
   <!-- CSS externos -->
-  <link rel="stylesheet" href="{% static 'css/global.css' %}">
+  <link rel="stylesheet" href="{% s  <!-- Modal para criar usuário -->
+  {% if user.is_superuser and not editing %}
+  <div id="createUserModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">➕ Criar Novo Usuário</h3>
+        <span class="close-modal" onclick="closeModal('createUserModal')">&times;</span>
+      </div>s/global.css' %}">
   <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}">
 </head>
 
@@ -128,14 +135,13 @@
           <div class="filter-group">
             <label for="search">Buscar por Nome/Email/Matrícula:</label>
             <div class="search-box">
-              <input type="text" id="search" name="search" class="form-control" 
-                     value="{{ request.GET.search }}" 
-                     placeholder="Digite o nome, email ou matrícula do usuário...">
+                                <input type="text" id="search" name="search" value="{{ search|default:'' }}" 
+                     placeholder="Buscar usuários...">
             </div>
           </div>
           <div class="filter-group">
             <label for="role">Filtrar por Função:</label>
-            <select name="role" id="role" class="form-control">
+            <select name="role" id="role" class="form-control" onchange="aplicarFiltros()">
               <option value="">Todas as funções</option>
               <option value="aluno" {% if request.GET.role == 'aluno' %}selected{% endif %}>Aluno</option>
               <option value="professor" {% if request.GET.role == 'professor' %}selected{% endif %}>Professor</option>
@@ -145,14 +151,11 @@
           </div>
           <div class="filter-group">
             <label for="status">Filtrar por Status:</label>
-            <select name="status" id="status" class="form-control">
+            <select name="status" id="status" class="form-control" onchange="aplicarFiltros()">
               <option value="">Todos os status</option>
               <option value="ativo" {% if request.GET.status == 'ativo' %}selected{% endif %}>Ativo</option>
               <option value="inativo" {% if request.GET.status == 'inativo' %}selected{% endif %}>Inativo</option>
             </select>
-          </div>
-          <div class="filter-group">
-            <button type="submit" class="btn-filter">🔍 Pesquisar</button>
           </div>
           <div class="filter-group">
             <button type="button" class="btn-filter" onclick="limparFiltros()">Limpar Filtros</button>
@@ -292,8 +295,8 @@
 
   <!-- Modal para criar usuário -->
   {% if user.is_superuser and not editing %}
-  <div id="createUserModal" class="modal">
-    <div class="modal-content">
+  <div id="createUserModal" class="modal-overlay">
+    <div class="modal">
       <div class="modal-header">
         <h3 class="modal-title">➕ Criar Novo Usuário</h3>
         <span class="close-modal" onclick="closeModal('createUserModal')">&times;</span>
@@ -302,36 +305,36 @@
         <form id="createUserForm" method="post">
           {% csrf_token %}
           <div class="form-group">
-            <label for="username">Nome de Usuário*:</label>
-            <input type="text" id="username" name="username" class="form-control" required>
+            <label for="modal_username">Nome de Usuário*:</label>
+            <input type="text" id="modal_username" name="username" class="form-control" required>
           </div>
           <div class="form-group">
-            <label for="email">Email*:</label>
-            <input type="email" id="email" name="email" class="form-control" required>
+            <label for="modal_email">Email*:</label>
+            <input type="email" id="modal_email" name="email" class="form-control" required>
           </div>
           <div class="form-group">
-            <label for="first_name">Primeiro Nome:</label>
-            <input type="text" id="first_name" name="first_name" class="form-control">
+            <label for="modal_first_name">Primeiro Nome:</label>
+            <input type="text" id="modal_first_name" name="first_name" class="form-control">
           </div>
           <div class="form-group">
-            <label for="last_name">Último Nome:</label>
-            <input type="text" id="last_name" name="last_name" class="form-control">
+            <label for="modal_last_name">Último Nome:</label>
+            <input type="text" id="modal_last_name" name="last_name" class="form-control">
           </div>
           <div class="form-group">
-            <label for="matricula">Matrícula:</label>
-            <input type="text" id="matricula" name="matricula" class="form-control">
+            <label for="modal_matricula">Matrícula:</label>
+            <input type="text" id="modal_matricula" name="matricula" class="form-control">
           </div>
           <div class="form-group">
-            <label for="password">Senha*:</label>
-            <input type="password" id="password" name="password" class="form-control" required>
+            <label for="modal_password">Senha*:</label>
+            <input type="password" id="modal_password" name="password" class="form-control" required>
           </div>
           <div class="form-group">
-            <label for="password_confirm">Confirmar Senha*:</label>
-            <input type="password" id="password_confirm" name="password_confirm" class="form-control" required>
+            <label for="modal_password_confirm">Confirmar Senha*:</label>
+            <input type="password" id="modal_password_confirm" name="password_confirm" class="form-control" required>
           </div>
           <div class="form-group">
-            <label for="roles">Funções:</label>
-            <select multiple id="roles" name="roles" class="form-control">
+            <label for="modal_roles">Funções:</label>
+            <select multiple id="modal_roles" name="roles" class="form-control">
               {% for role in available_roles %}
               <option value="{{ role.id }}">{{ role.get_name_display }}</option>
               {% endfor %}
@@ -363,24 +366,16 @@
 
   <!-- Scripts específicos da página -->
   {% if not editing %}
-  <script>
+    <script>
     // Auto-pesquisa com delay - usando função global setupAutoSearch
     function setupSearch() {
       setupAutoSearch('search', function() {
         document.getElementById('filtros-form').submit();
-      });
+      }, 800); // 800ms de delay para manter consistência
     }
 
-    // Função para limpar filtros - usando a função global como base
+    // Função para limpar filtros - corrigida
     function limparFiltros() {
-      limparFiltros(['search', 'role', 'status'], 'filtros-form');
-    }
-
-    // Initialize when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-      setupSearch();
-    });
-  </script>
   {% endif %}
 </body>
 </html>

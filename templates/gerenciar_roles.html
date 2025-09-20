@@ -58,8 +58,7 @@
                             <div class="search-box">
                                 <input type="text" name="busca" id="busca" class="form-control"
                                     value="{{ request.GET.busca }}"
-                                    placeholder="Digite o nome ou matrícula do usuário..."
-                                    oninput="aplicarFiltrosComDelay()">
+                                    placeholder="Digite o nome ou matrícula do usuário...">
                             </div>
                         </div>
                         <div class="filter-group">
@@ -203,11 +202,11 @@
                         </div>
 
                         <div class="actions-end">
-                            <button type="button" class="btn-action btn-cancel"
+                            <button type="button" class="btn btn-secondary"
                                 onclick="fecharModal()">
                                 Cancelar
                             </button>
-                            <button type="submit" class="btn-action btn-edit">
+                            <button type="submit" class="btn btn-success">
                                 Alterar Permissões
                             </button>
                         </div>
@@ -231,11 +230,10 @@
             document.getElementById('filtros-form').submit();
         }
 
-        // Função para aplicar filtros com delay (busca em tempo real)
-        function aplicarFiltrosComDelay() {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(function() {
-                aplicarFiltros();
+        // Configurar busca automática com delay
+        function setupSearch() {
+            setupAutoSearch('busca', function() {
+                document.getElementById('filtros-form').submit();
             }, 800); // 800ms de delay
         }
 
@@ -285,85 +283,11 @@
             document.getElementById('role-form').reset();
         }
 
-        // Busca em tempo real já implementada via oninput
-        let timeoutId;
-
-        // Drag scroll functionality para a tabela
-        function enableDragScroll() {
-            const tableContainer = document.querySelector('.table-responsive');
-            if (!tableContainer) return;
-            
-            let isDown = false;
-            let startX;
-            let scrollLeft;
-
-            tableContainer.addEventListener('mousedown', (e) => {
-                // Evitar drag em elementos interativos
-                if (e.target.tagName === 'INPUT' || 
-                    e.target.tagName === 'BUTTON' || 
-                    e.target.tagName === 'A' ||
-                    e.target.closest('button') ||
-                    e.target.closest('a')) {
-                    return;
-                }
-                
-                isDown = true;
-                tableContainer.classList.add('grabbing');
-                startX = e.pageX - tableContainer.offsetLeft;
-                scrollLeft = tableContainer.scrollLeft;
-                e.preventDefault();
-            });
-
-            tableContainer.addEventListener('mouseleave', () => {
-                isDown = false;
-                tableContainer.classList.remove('grabbing');
-            });
-
-            tableContainer.addEventListener('mouseup', () => {
-                isDown = false;
-                tableContainer.classList.remove('grabbing');
-            });
-
-            tableContainer.addEventListener('mousemove', (e) => {
-                if (!isDown) return;
-                e.preventDefault();
-                const x = e.pageX - tableContainer.offsetLeft;
-                const walk = (x - startX) * 2;
-                tableContainer.scrollLeft = scrollLeft - walk;
-            });
-
-            // Touch events for mobile
-            tableContainer.addEventListener('touchstart', (e) => {
-                if (e.target.tagName === 'INPUT' || 
-                    e.target.tagName === 'BUTTON' || 
-                    e.target.tagName === 'A') {
-                    return;
-                }
-                
-                isDown = true;
-                startX = e.touches[0].pageX - tableContainer.offsetLeft;
-                scrollLeft = tableContainer.scrollLeft;
-            });
-
-            tableContainer.addEventListener('touchmove', (e) => {
-                if (!isDown) return;
-                const x = e.touches[0].pageX - tableContainer.offsetLeft;
-                const walk = (x - startX) * 2;
-                tableContainer.scrollLeft = scrollLeft - walk;
-            });
-
-            tableContainer.addEventListener('touchend', () => {
-                isDown = false;
-            });
-
-            // Scroll smooth behavior
-            tableContainer.style.scrollBehavior = 'auto';
-        }
-
-        // Initialize when page loads
+        // Inicializar busca automática quando a página carrega
         document.addEventListener('DOMContentLoaded', function() {
-            enableDragScroll();
+            setupSearch();
         });
+
     </script>
 </body>
 
