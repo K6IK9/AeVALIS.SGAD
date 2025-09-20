@@ -216,14 +216,16 @@ def gerenciar_usuarios(request):
     # Iniciar with todos os usuários
     usuarios_queryset = User.objects.all()
 
-    # Aplicar filtro de busca por nome ou matrícula
+    # Aplicar filtro de busca por nome, email, username e matrícula
     if busca:
         usuarios_queryset = usuarios_queryset.filter(
             Q(first_name__icontains=busca)
             | Q(last_name__icontains=busca)
             | Q(username__icontains=busca)
             | Q(email__icontains=busca)
-        )
+            | Q(perfil_aluno__user__username__icontains=busca)  # Matrícula do aluno
+            | Q(perfil_professor__registro_academico__icontains=busca)  # Registro do professor
+        ).distinct()
 
     # Aplicar filtro por status
     if filtro_status:
@@ -232,26 +234,25 @@ def gerenciar_usuarios(request):
         elif filtro_status == "inativo":
             usuarios_queryset = usuarios_queryset.filter(is_active=False)
 
+    # Aplicar filtro por role (se especificado)
+    if filtro_role:
+        if filtro_role == "admin":
+            usuarios_queryset = usuarios_queryset.filter(groups__name="admin")
+        elif filtro_role == "coordenador":
+            usuarios_queryset = usuarios_queryset.filter(groups__name="coordenador")
+        elif filtro_role == "professor":
+            usuarios_queryset = usuarios_queryset.filter(groups__name="professor")
+        elif filtro_role == "aluno":
+            usuarios_queryset = usuarios_queryset.filter(groups__name="aluno")
+
+    # Obter lista final ordenada
+    usuarios_filtrados = usuarios_queryset.order_by("username")
+
     # Lista todos os usuários com suas roles
     usuarios_detalhados = []
-    for user in usuarios_queryset.order_by("username"):
+    for user in usuarios_filtrados:
         role_atual = get_user_role_name(user)
-
-        # Aplicar filtro por role
-        if filtro_role:
-            # Mapeamento dos filtros para os nomes das roles
-            filtros_map = {
-                "admin": "Administrador",
-                "coordenador": "Coordenador",
-                "professor": "Professor",
-                "aluno": "Aluno",
-                "sem_role": "Sem role",
-            }
-
-            role_esperada = filtros_map.get(filtro_role, filtro_role)
-            if role_atual != role_esperada:
-                continue
-
+        
         usuarios_detalhados.append(
             {
                 "usuario": user,
@@ -270,7 +271,8 @@ def gerenciar_usuarios(request):
     context = {
         "form": form,
         "usuarios_detalhados": usuarios_detalhados,
-        "usuarios": usuarios_queryset,  # Para compatibilidade com template
+        "usuarios": usuarios_filtrados,  # Usuários já filtrados
+        "search": busca,  # Para o campo de busca no template
         "filtro_busca": busca,
         "filtro_status": filtro_status,
         "filtro_role": filtro_role,
@@ -572,7 +574,7 @@ def gerenciar_disciplinas(request):
 
     # Buscar dados para os filtros
     cursos = Curso.objects.all().order_by("curso_nome")
-    periodos = PeriodoLetivo.objects.all().order_by("periodo_nome")
+    periodos = PeriodoLetivo.objects.all().order_by("nome")
 
     context = {
         "form": form,
@@ -613,7 +615,7 @@ def editar_disciplina(request, disciplina_id):
 
     # Buscar dados para os filtros
     cursos = Curso.objects.all().order_by("curso_nome")
-    periodos = PeriodoLetivo.objects.all().order_by("periodo_nome")
+    periodos = PeriodoLetivo.objects.all().order_by("nome")
     disciplinas = Disciplina.objects.all().order_by("disciplina_nome")
 
     context = {
