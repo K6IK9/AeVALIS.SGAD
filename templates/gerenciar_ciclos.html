@@ -191,7 +191,9 @@
       </div>
       {% if not editing %}
       <div class="form-section">
-        <h2>📋 Ciclos de Avaliação Cadastrados</h2>
+        <div class="section-header">
+          <h2>📋 Ciclos de Avaliação Cadastrados ({{ ciclos.count }})</h2>
+        </div>
 
         <!-- Filtros e Busca -->
         <div class="filters-section" id="filtersSection">
@@ -234,10 +236,6 @@
               <button type="button" class="btn-filter" onclick="clearFilters()">Limpar Filtros</button>
             </div>
           </div>
-        </div>
-
-        <div class="item-count">
-          Total de ciclos: {{ ciclos.count }}
         </div>
 
         {% if ciclos %}
@@ -400,9 +398,9 @@
           });
 
           // Atualiza o contador
-          const itemCount = document.querySelector('.item-count');
-          if (itemCount) {
-            itemCount.textContent = `Ciclos encontrados: ${visibleCount}`;
+          const sectionHeader = document.querySelector('.section-header h2');
+          if (sectionHeader) {
+            sectionHeader.textContent = `📋 Ciclos de Avaliação Cadastrados (${visibleCount})`;
           }
         }
 

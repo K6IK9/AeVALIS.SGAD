@@ -1,4 +1,6 @@
-{% load static %}
+{% load sta  <!-- CSS externos -->
+  <link rel="stylesheet" href="{% static 'css/global.css' %}">
+  <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}"> %}
 {% load user_tags %}
 
 <!DOCTYPE html>
@@ -157,19 +159,15 @@
         </div>
       </div>
     </div>
-
-    <div class="item-count">
-      Total de usuários: {{ usuarios.count }}
-    </div>
     {% endif %}
 
     <!-- Lista de Usuários -->
     {% if not editing %}
     <div class="form-section">
       <div class="section-header">
-        <h2>👤 Lista de Usuários</h2>
+        <h2>👤 Lista de Usuários ({{ usuarios.count }})</h2>
         {% if user.is_superuser %}
-        <button type="button" class="btn" onclick="openModal('createUserModal')">➕ Novo Usuário</button>
+        <a href="{% url 'registro' %}?next={% url 'gerenciar_usuarios' %}" class="btn">➕ Novo Usuário</a>
         {% endif %}
       </div>
 
@@ -189,54 +187,58 @@
             </tr>
           </thead>
           <tbody>
-            {% for usuario in usuarios %}
-            <tr>
+            {% for item in usuarios %}
+            <tr data-nome="{{ item.usuario.get_full_name|default:item.usuario.username }}" 
+                data-email="{{ item.usuario.email|default:'' }}" 
+                data-matricula="{% if item.usuario.perfil_aluno %}{{ item.usuario.perfil_aluno.matricula|default:'' }}{% elif item.usuario.perfil_professor %}{{ item.usuario.perfil_professor.registro_academico|default:'' }}{% else %}{{ item.usuario.username|default:'' }}{% endif %}" 
+                data-role="{{ item.role }}" 
+                data-status="{{ item.status }}">
               <td>
                 <div class="user-avatar">
-                  {{ usuario.first_name|first|upper|default:"U" }}
+                  {{ item.usuario.first_name|first|upper|default:"U" }}
                 </div>
               </td>
               <td data-label="Nome">
-                <strong>{{ usuario.get_full_name|default:usuario.username }}</strong>
+                <strong>{{ item.usuario.get_full_name|default:item.usuario.username }}</strong>
               </td>
-              <td data-label="Email">{{ usuario.email|default:"Não informado" }}</td>
+              <td data-label="Email">{{ item.usuario.email|default:"Não informado" }}</td>
               <td data-label="Matrícula">
-                {% if usuario.perfil_aluno %}
-                  {{ usuario.perfil_aluno.matricula|default:"Não informada" }}
-                {% elif usuario.perfil_professor %}
-                  {{ usuario.perfil_professor.registro_academico|default:"Não informada" }}
+                {% if item.usuario.perfil_aluno %}
+                  {{ item.usuario.perfil_aluno.matricula|default:"Não informada" }}
+                {% elif item.usuario.perfil_professor %}
+                  {{ item.usuario.perfil_professor.registro_academico|default:"Não informada" }}
                 {% else %}
-                  {{ usuario.username|default:"Não informada" }}
+                  {{ item.usuario.username|default:"Não informada" }}
                 {% endif %}
               </td>
               <td data-label="Funções">
-                <span class="role-badge {{ usuario|get_user_role_class }}">
-                  {{ usuario|get_user_role }}
+                <span class="role-badge {{ item.usuario|get_user_role_class }}">
+                  {{ item.role }}
                 </span>
               </td>
               <td data-label="Status">
-                {% if usuario.is_active %}
+                {% if item.usuario.is_active %}
                 <span class="status-badge status-active">✅ Ativo</span>
                 {% else %}
                 <span class="status-badge status-inactive">❌ Inativo</span>
                 {% endif %}
               </td>
               <td data-label="Último Login">
-                {{ usuario.last_login|date:"d/m/Y H:i"|default:"Nunca" }}
+                {{ item.usuario.last_login|date:"d/m/Y H:i"|default:"Nunca" }}
               </td>
               <td data-label="Ações" class="actions-column">
                 <div class="btn-group">
-                  {% if user.is_superuser or user == usuario %}
-                  <a href="{% url 'editar_usuario' usuario.id %}" 
+                  {% if user.is_superuser or user == item.usuario %}
+                  <a href="{% url 'editar_usuario' item.usuario.id %}" 
                      class="btn btn-sm btn-secondary" 
                      title="Editar usuário">
                     ✏️ Editar
                   </a>
                   {% endif %}
-                  {% if user.is_superuser and user != usuario %}
-                  <form method="post" action="{% url 'excluir_usuario' usuario.id %}" 
+                  {% if user.is_superuser and user != item.usuario %}
+                  <form method="post" action="{% url 'excluir_usuario' item.usuario.id %}" 
                         class="inline-form" 
-                        onsubmit="return confirm('Tem certeza que deseja excluir o usuário {{ usuario.get_full_name|escapejs }}? Esta ação não pode ser desfeita.')">
+                        onsubmit="return confirm('Tem certeza que deseja excluir o usuário {{ item.usuario.get_full_name|escapejs }}? Esta ação não pode ser desfeita.')">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-danger" 
                             title="Excluir usuário">
@@ -252,37 +254,14 @@
         </table>
       </div>
 
-      <!-- Paginação -->
-      {% if usuarios.has_other_pages %}
-      <div class="pagination">
-        {% if usuarios.has_previous %}
-        <a href="?page=1" class="btn btn-sm">❮❮</a>
-        <a href="?page={{ usuarios.previous_page_number }}" class="btn btn-sm">❮</a>
-        {% endif %}
-        
-        {% for num in usuarios.paginator.page_range %}
-        {% if usuarios.number == num %}
-        <span class="btn btn-sm current">{{ num }}</span>
-        {% else %}
-        <a href="?page={{ num }}" class="btn btn-sm">{{ num }}</a>
-        {% endif %}
-        {% endfor %}
-        
-        {% if usuarios.has_next %}
-        <a href="?page={{ usuarios.next_page_number }}" class="btn btn-sm">❯</a>
-        <a href="?page={{ usuarios.paginator.num_pages }}" class="btn btn-sm">❯❯</a>
-        {% endif %}
-      </div>
-      {% endif %}
-
       {% else %}
       <div class="empty-state">
         <p class="empty-message">Nenhum usuário encontrado.</p>
         {% if user.is_superuser %}
         <p>
-          <button type="button" class="btn" onclick="openModal('createUserModal')">
+          <a href="{% url 'registro' %}?next={% url 'gerenciar_usuarios' %}" class="btn">
             ➕ Criar primeiro usuário
-          </button>
+          </a>
         </p>
         {% endif %}
       </div>
@@ -290,74 +269,6 @@
     </div>
     {% endif %}
   </div>
-
-  <!-- Modal para criar usuário -->
-  {% if user.is_superuser and not editing %}
-  <div id="createUserModal" class="modal-overlay">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 class="modal-title">➕ Criar Novo Usuário</h3>
-        <span class="close-modal" onclick="closeModal('createUserModal')">&times;</span>
-      </div>
-      <div class="modal-body">
-        <form id="createUserForm" method="post">
-          {% csrf_token %}
-          <div class="form-group">
-            <label for="modal_username">Nome de Usuário*:</label>
-            <input type="text" id="modal_username" name="username" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label for="modal_email">Email*:</label>
-            <input type="email" id="modal_email" name="email" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label for="modal_first_name">Primeiro Nome:</label>
-            <input type="text" id="modal_first_name" name="first_name" class="form-control">
-          </div>
-          <div class="form-group">
-            <label for="modal_last_name">Último Nome:</label>
-            <input type="text" id="modal_last_name" name="last_name" class="form-control">
-          </div>
-          <div class="form-group">
-            <label for="modal_matricula">Matrícula:</label>
-            <input type="text" id="modal_matricula" name="matricula" class="form-control">
-          </div>
-          <div class="form-group">
-            <label for="modal_password">Senha*:</label>
-            <input type="password" id="modal_password" name="password" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label for="modal_password_confirm">Confirmar Senha*:</label>
-            <input type="password" id="modal_password_confirm" name="password_confirm" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label for="modal_roles">Funções:</label>
-            <select multiple id="modal_roles" name="roles" class="form-control">
-              {% for role in available_roles %}
-              <option value="{{ role.id }}">{{ role.get_name_display }}</option>
-              {% endfor %}
-            </select>
-            <small class="help-text">Mantenha Ctrl pressionado para selecionar múltiplas funções</small>
-          </div>
-          <div class="form-group">
-            <div class="checkbox-group">
-              <input type="checkbox" name="is_active" id="modal_is_active" checked>
-              <label for="modal_is_active">Usuário ativo</label>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="closeModal('createUserModal')">
-              ❌ Cancelar
-            </button>
-            <button type="submit" class="btn">
-              ✅ Criar Usuário
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-  {% endif %}
 
   <!-- Script global de gerenciamento -->
   <script src="{% static 'js/gerenciar-global.js' %}"></script>
@@ -403,16 +314,37 @@
         }
       });
 
-      // Atualiza o contador
-      const itemCount = document.querySelector('.item-count');
-      if (itemCount) {
-        itemCount.textContent = `Usuários encontrados: ${visibleCount}`;
+      // Atualiza o contador no título
+      const sectionTitle = document.querySelector('.section-header h2');
+      if (sectionTitle) {
+        sectionTitle.textContent = `👤 Lista de Usuários (${visibleCount})`;
       }
 
       // Mostra mensagem se nenhum resultado for encontrado
-      const emptyRow = document.querySelector('tr td[colspan]');
-      if (emptyRow) {
-        emptyRow.parentElement.style.display = visibleCount === 0 ? '' : 'none';
+      const emptyState = document.querySelector('.empty-state');
+      if (emptyState) {
+        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+      
+      // Se não há resultados, mostra mensagem
+      if (visibleCount === 0 && !emptyState) {
+        // Se não existe uma mensagem de empty state, cria uma temporária
+        const tbody = document.querySelector('.data-table tbody');
+        let noResultsRow = tbody.querySelector('.no-results-row');
+        
+        if (!noResultsRow) {
+          noResultsRow = document.createElement('tr');
+          noResultsRow.className = 'no-results-row';
+          noResultsRow.innerHTML = '<td colspan="8" style="text-align: center; padding: 20px; color: #666;">Nenhum usuário encontrado com os filtros aplicados.</td>';
+          tbody.appendChild(noResultsRow);
+        }
+        noResultsRow.style.display = '';
+      } else {
+        // Remove mensagem temporária se existir
+        const noResultsRow = document.querySelector('.no-results-row');
+        if (noResultsRow) {
+          noResultsRow.style.display = 'none';
+        }
       }
     }
 

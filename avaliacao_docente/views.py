@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, FormView
 from django.views.generic import TemplateView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import login
@@ -53,6 +53,7 @@ from .forms import (
     PerguntaAvaliacaoForm,
     QuestionarioAvaliacaoForm,
     CategoriaPerguntaForm,
+    RegistroForm,
 )
 
 
@@ -161,24 +162,6 @@ def gerenciar_usuarios(request):
         messages.error(request, "Você não tem permissão para acessar esta página.")
         return redirect("inicio")
 
-    if request.method == "POST":
-        form = GerenciarUsuarioForm(request.POST)
-        if form.is_valid():
-            usuario = form.save(commit=False)
-            usuario.set_password("123456")  # Senha padrão
-            usuario.save()
-            messages.success(
-                request,
-                f"Usuário '{usuario.username}' criado com sucesso! Senha padrão: 123456",
-            )
-            return redirect("gerenciar_usuarios")
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"Erro no campo {field}: {error}")
-    else:
-        form = GerenciarUsuarioForm()
-
     # Obter todos os usuários ordenados
     usuarios_queryset = User.objects.all().order_by("username")
 
@@ -201,7 +184,6 @@ def gerenciar_usuarios(request):
     alunos_count = User.objects.filter(groups__name="aluno").count()
 
     context = {
-        "form": form,
         "usuarios_detalhados": usuarios_detalhados,
         "usuarios": usuarios_detalhados,  # Todos os usuários para filtragem client-side
         "total_usuarios": total_usuarios,
@@ -395,7 +377,15 @@ def gerenciar_cursos(request):
     # Lista todos os cursos
     cursos = Curso.objects.all().order_by("curso_nome")
 
-    context = {"form": form, "cursos": cursos}
+    # Lista apenas os coordenadores que estão associados aos cursos
+    coordenadores_de_cursos = cursos.values_list(
+        "coordenador_curso", flat=True
+    ).distinct()
+    coordenadores = PerfilProfessor.objects.filter(
+        id__in=coordenadores_de_cursos
+    ).select_related("user")
+
+    context = {"form": form, "cursos": cursos, "coordenadores": coordenadores}
 
     return render(request, "gerenciar_cursos.html", context)
 
@@ -1037,13 +1027,36 @@ def perfil_usuario(request):
 
 
 # Tela para registros de usuarios - Redirecionada para login SUAP
-class RegistrarUsuarioView(TemplateView):
+class RegistrarUsuarioView(FormView):
     template_name = "registration/register.html"
+    form_class = RegistroForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["suap_message"] = True
         return context
+
+    def form_valid(self, form):
+        # Salva o usuário
+        user = form.save()
+
+        # Mensagem de sucesso
+        messages.success(self.request, f"Usuário '{user.username}' criado com sucesso!")
+
+        # Se há um parâmetro 'next' na URL, redireciona para lá
+        next_url = self.request.GET.get("next")
+        if next_url:
+            return redirect(next_url)
+
+        # Caso contrário, redireciona para a página inicial
+        return redirect("inicio")
+
+    def form_invalid(self, form):
+        # Adiciona mensagens de erro
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f"Erro no campo {field}: {error}")
+        return super().form_invalid(form)
 
 
 # Tela para avaliações, mas será apresentado por diario

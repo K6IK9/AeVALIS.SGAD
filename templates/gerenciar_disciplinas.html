@@ -116,7 +116,7 @@
 
       {% if not editing %}
       <div class="form-section">
-        <h2>Disciplinas Cadastradas</h2>
+        <h2>📚 Disciplinas Cadastradas ({{ disciplinas.count }})</h2>
 
         <!-- Seção de Filtros -->
         <div class="filters-section" id="filtersSection">
@@ -166,10 +166,8 @@
           </div>
         </div>
 
-        <div class="item-count">
-          Total de disciplinas: {{ disciplinas.count }}
-        </div>
-        <table class="data-table">
+        <div class="table-responsive">
+          <table class="data-table">
           <thead>
             <tr>
               <th>Nome da Disciplina</th>
@@ -216,6 +214,7 @@
             {% endfor %}
           </tbody>
         </table>
+        </div>
       </div>
       {% endif %}
 
@@ -257,9 +256,9 @@
           });
 
           // Atualiza o contador
-          const itemCount = document.querySelector('.item-count');
-          if (itemCount) {
-            itemCount.textContent = `Disciplinas encontradas: ${visibleCount}`;
+          const sectionHeader = document.querySelector('.section-header h2');
+          if (sectionHeader) {
+            sectionHeader.textContent = `📚 Disciplinas Cadastradas (${visibleCount})`;
           }
 
           // Mostra mensagem se nenhum resultado for encontrado
@@ -291,6 +290,9 @@
           if (filterPeriodo) filterPeriodo.addEventListener('change', filterTable);
         });
       </script>
+      
+      <!-- Script global para funcionalidades de gerenciamento -->
+      <script src="{% static 'js/gerenciar-global.js' %}"></script>
     </div>
   </body>
 </html>

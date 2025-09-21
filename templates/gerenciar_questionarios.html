@@ -182,14 +182,13 @@
 
         <!-- Lista de Questionários -->
         <div class="form-section">
-            <h2>📋 Questionários Cadastrados</h2>
-
-            <div class="item-count">
-                Total de questionários: <span id="total-count">{{ questionarios.count }}</span>
+            <div class="section-header">
+                <h2>📋 Questionários Cadastrados ({{ questionarios.count }})</h2>
             </div>
 
             {% if questionarios %}
-            <table class="data-table">
+            <div class="table-responsive">
+                <table class="data-table">
                 <thead>
                     <tr>
                         <th>Título</th>
@@ -254,6 +253,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
             {% else %}
             <div class="empty-state">
                 <h3>📝 Nenhum questionário cadastrado</h3>
@@ -295,9 +295,9 @@
             });
 
             // Atualiza o contador
-            const totalCount = document.getElementById('total-count');
-            if (totalCount) {
-                totalCount.textContent = visibleCount;
+            const sectionHeader = document.querySelector('.section-header h2');
+            if (sectionHeader) {
+                sectionHeader.textContent = `📋 Questionários Cadastrados (${visibleCount})`;
             }
         }
 
@@ -320,6 +320,9 @@
             if (criadorSelect) criadorSelect.addEventListener('change', filterTable);
         });
     </script>
+    
+    <!-- Script global para funcionalidades de gerenciamento -->
+    <script src="{% static 'js/gerenciar-global.js' %}"></script>
 </body>
 
 </html>

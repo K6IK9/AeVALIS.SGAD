@@ -87,7 +87,9 @@
       </div>
 
       <div class="form-section">
-        <h2>Períodos Letivos Cadastrados</h2>
+      <div class="section-header">
+        <h2>📅 Períodos Letivos Cadastrados ({{ periodos.count }})</h2>
+      </div>
 
         <!-- Seção de Filtros -->
         <div class="filters-section" id="filtersSection">
@@ -124,10 +126,8 @@
           </div>
         </div>
 
-        <div class="item-count">
-          Total de períodos: {{ periodos.count }}
-        </div>
-        <table class="data-table">
+        <div class="table-responsive">
+          <table class="data-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -172,6 +172,7 @@
             {% endfor %}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
 
@@ -313,9 +314,9 @@
         });
 
         // Atualiza o contador
-        const itemCount = document.querySelector('.item-count');
-        if (itemCount) {
-          itemCount.textContent = `Períodos encontrados: ${visibleCount}`;
+        const sectionHeader = document.querySelector('.section-header h2');
+        if (sectionHeader) {
+          sectionHeader.textContent = `📅 Períodos Letivos Cadastrados (${visibleCount})`;
         }
 
         // Mostra mensagem se nenhum resultado for encontrado
@@ -371,5 +372,8 @@
           });
       };
     </script>
+    
+    <!-- Script global para funcionalidades de gerenciamento -->
+    <script src="{% static 'js/gerenciar-global.js' %}"></script>
   </body>
 </html>

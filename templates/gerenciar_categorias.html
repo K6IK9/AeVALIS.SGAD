@@ -152,7 +152,9 @@
 
     {% if not editing %}
     <div class="form-section">
-      <h2>📋 Categorias Cadastradas</h2>
+      <div class="section-header">
+        <h2>📋 Categorias Cadastradas ({{ categorias.count }})</h2>
+      </div>
       
       <!-- Seção de Filtros -->
       <div class="filters-section" id="filtersSection">
@@ -187,10 +189,6 @@
         </div>
       </div>
 
-      <div class="item-count">
-        Total de categorias: {{ categorias.count }}
-      </div>
-      
       {% if categorias %}
         <table class="data-table">
           <thead>
@@ -296,9 +294,9 @@
       });
 
       // Atualiza o contador
-      const itemCount = document.querySelector('.item-count');
-      if (itemCount) {
-        itemCount.textContent = `Categorias encontradas: ${visibleCount}`;
+      const sectionHeader = document.querySelector('.section-header h2');
+      if (sectionHeader) {
+        sectionHeader.textContent = `📋 Categorias Cadastradas (${visibleCount})`;
       }
     }
 
