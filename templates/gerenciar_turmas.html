@@ -1,4 +1,3 @@
-{% load user_tags %}
 {% load static %}
 
 <!DOCTYPE html>
@@ -30,13 +29,7 @@
       <span>📚 Turmas</span>
     </div>
 
-    {% if messages %}
-    <div class="messages">
-      {% for message in messages %}
-      <div class="message {{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-    {% endif %}
+    {% include "partials/messages.html" %}
 
     <!-- Formulário de Criação de Turma -->
     <div class="form-section">
@@ -100,65 +93,72 @@
       </form>
     </div>
 
-    <!-- Seção de Filtros e Listagem -->
+    <!-- Seção de Filtros -->
+    <div class="filters-section" id="filtersSection">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="filtro-periodo">Filtrar por Período Letivo:</label>
+          <select id="filtro-periodo" class="form-control">
+            <option value="">Todos os períodos</option>
+            {% for periodo in periodos_disponiveis %}
+            <option value="{{ periodo.id }}">{{ periodo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filtro-disciplina">Filtrar por Disciplina:</label>
+          <select id="filtro-disciplina" class="form-control">
+            <option value="">Todas as disciplinas</option>
+            {% for disciplina in disciplinas %}
+            <option value="{{ disciplina.id }}">
+              {{ disciplina.disciplina_nome }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="filtro-professor">Filtrar por Professor:</label>
+          <select id="filtro-professor" class="form-control">
+            <option value="">Todos os professores</option>
+            {% for professor in professores %}
+            <option value="{{ professor.id }}">
+              {{ professor.user.get_full_name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filtro-turno">Filtrar por Turno:</label>
+          <select id="filtro-turno" class="form-control">
+            <option value="">Todos os turnos</option>
+            <option value="matutino">Matutino</option>
+            <option value="vespertino">Vespertino</option>
+            <option value="noturno">Noturno</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-group">
+          <button type="button" onclick="limparFiltrosTurmas()" class="btn btn-clear">Limpar Filtros</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Listagem de Turmas -->
     <div class="form-section">
       <div class="section-header">
-        <h2>Turmas Cadastradas</h2>
-        <div class="section-actions">
-          <span class="turma-count">Total: {{ turmas|length }} turma{{ turmas|length|pluralize }}</span>
-        </div>
+        <h2>📚 Turmas Cadastradas ({{ turmas|length }})</h2>
       </div>
 
-      <!-- Filtros -->
-      <div class="filters-section">
-        <h3 class="filters-title">Filtros e Busca</h3>
-        <div class="filter-row">
-          <div class="filter-group">
-            <label for="filtro-periodo">Filtrar por Período Letivo:</label>
-            <select id="filtro-periodo" class="form-control" onchange="filtrarTurmas()">
-              <option value="">Todos os períodos</option>
-              {% for periodo in periodos_letivos %}
-              <option value="{{ periodo.id }}">{{ periodo }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label for="filtro-disciplina">Filtrar por Disciplina:</label>
-            <select id="filtro-disciplina" class="form-control" onchange="filtrarTurmas()">
-              <option value="">Todas as disciplinas</option>
-              {% for disciplina in disciplinas %}
-              <option value="{{ disciplina.id }}">
-                {{ disciplina.disciplina_nome }}
-              </option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label for="filtro-professor">Filtrar por Professor:</label>
-            <select id="filtro-professor" class="form-control" onchange="filtrarTurmas()">
-              <option value="">Todos os professores</option>
-              {% for professor in professores %}
-              <option value="{{ professor.id }}">
-                {{ professor.user.get_full_name }}
-              </option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <button type="button" class="btn-filter" onclick="limparFiltros()">
-              Limpar Filtros
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabela de Turmas -->
-      <div class="table-container">
-        <div class="table-responsive">
-          <table class="turmas-table data-table" id="tabela-turmas">
+      {% if turmas %}
+      <div class="table-responsive">
+        <table class="turmas-table data-table" id="tabela-turmas">
             <thead>
               <tr>
                 <th>Código</th>
@@ -173,10 +173,9 @@
               </tr>
             </thead>
             <tbody>
-              {% if turmas %}
               {% for turma in turmas %}
               <tr data-periodo="{{ turma.periodo_letivo.id }}" data-disciplina="{{ turma.disciplina.id }}"
-                data-professor="{{ turma.professor.id }}">
+                data-professor="{{ turma.professor.id }}" data-turno="{{ turma.turno }}">
                 <td>{{ turma.codigo_turma }}</td>
                 <td>{{ turma.disciplina.disciplina_nome }}</td>
                 <td>{{ turma.professor.user.get_full_name }}</td>
@@ -211,21 +210,16 @@
                 </td>
               </tr>
               {% endfor %}
-              {% else %}
-              <tr>
-                <td colspan="9" class="empty-state">
-                  <h3>Nenhuma turma encontrada</h3>
-                  <p>Não há turmas cadastradas no período selecionado.</p>
-                </td>
-              </tr>
-              {% endif %}
             </tbody>
           </table>
         </div>
+      {% else %}
+      <div class="empty-state">
+        <p class="empty-message">Nenhuma turma encontrada.</p>
+        <p>Não há turmas cadastradas no sistema.</p>
       </div>
+      {% endif %}
     </div>
-  </div>
-
   </div>
 
   <script>
@@ -443,38 +437,99 @@
   <script>
     // Usar as funções globais, mantendo apenas as específicas da página
     
-    // Função para filtrar turmas - específica desta página
-    function filtrarTurmas() {
-      const periodo = document.getElementById("filtro-periodo").value;
-      const disciplina = document.getElementById("filtro-disciplina").value;
-      const professor = document.getElementById("filtro-professor").value;
+        // Configuração específica para filtros de turmas usando funções globais
+    document.addEventListener('DOMContentLoaded', function() {
+      // Função personalizada de filtro para turmas
+      function filtrarTurmas() {
+        const periodo = document.getElementById("filtro-periodo")?.value || "";
+        const disciplina = document.getElementById("filtro-disciplina")?.value || "";
+        const professor = document.getElementById("filtro-professor")?.value || "";
+        const turno = document.getElementById("filtro-turno")?.value || "";
+        const busca = document.getElementById("busca-turma")?.value.toLowerCase() || "";
 
-      const linhas = document.querySelectorAll("#tabela-turmas tbody tr");
+        const linhas = document.querySelectorAll("#tabela-turmas tbody tr");
+        let visibleCount = 0;
 
-      linhas.forEach((linha) => {
-        let mostrar = true;
+        linhas.forEach((linha) => {
+          let mostrar = true;
 
-        if (periodo && linha.getAttribute("data-periodo") !== periodo) {
-          mostrar = false;
+          // Filtros por atributos data-*
+          if (periodo && linha.getAttribute("data-periodo") !== periodo) {
+            mostrar = false;
+          }
+          if (disciplina && linha.getAttribute("data-disciplina") !== disciplina) {
+            mostrar = false;
+          }
+          if (professor && linha.getAttribute("data-professor") !== professor) {
+            mostrar = false;
+          }
+          if (turno && linha.getAttribute("data-turno") !== turno) {
+            mostrar = false;
+          }
+
+          // Filtro de busca por texto
+          if (busca) {
+            const textoLinha = linha.textContent.toLowerCase();
+            if (!textoLinha.includes(busca)) {
+              mostrar = false;
+            }
+          }
+
+          linha.style.display = mostrar ? "" : "none";
+          if (mostrar) visibleCount++;
+        });
+
+        // Atualiza contador
+        const header = document.querySelector('.section-header h2');
+        if (header) {
+          header.textContent = `📚 Turmas Cadastradas (${visibleCount})`;
         }
+      }
 
-        if (disciplina && linha.getAttribute("data-disciplina") !== disciplina) {
-          mostrar = false;
+      // Função para limpar filtros específica de turmas
+      window.limparFiltrosTurmas = function() {
+        const campos = ['filtro-periodo', 'filtro-disciplina', 'filtro-professor', 'filtro-turno', 'busca-turma'];
+        campos.forEach(campo => {
+          const elemento = document.getElementById(campo);
+          if (elemento) elemento.value = '';
+        });
+        filtrarTurmas();
+      };
+
+      // Configurar event listeners
+      const buscaTurma = document.getElementById('busca-turma');
+      const filtros = ['filtro-periodo', 'filtro-disciplina', 'filtro-professor', 'filtro-turno'];
+
+      if (buscaTurma) {
+        buscaTurma.addEventListener('input', filtrarTurmas);
+      }
+
+      filtros.forEach(filtroId => {
+        const filtro = document.getElementById(filtroId);
+        if (filtro) {
+          filtro.addEventListener('change', filtrarTurmas);
         }
-
-        if (professor && linha.getAttribute("data-professor") !== professor) {
-          mostrar = false;
-        }
-
-        linha.style.display = mostrar ? "" : "none";
       });
-    }
+
+      console.log('✅ Filtros de turmas configurados usando funções globais');
+    });
+
+    // Event listener para fechar modal clicando fora - mantendo para compatibilidade
+    document.addEventListener("click", function (event) {
+      const modals = document.querySelectorAll(".modal-overlay");
+      modals.forEach((modal) => {
+        if (event.target === modal) {
+          modal.classList.remove("active");
+        }
+      });
+    });
 
     // Função para limpar filtros específica da página
-    function limparFiltros() {
+    function limparFiltrosTurmas() {
       document.getElementById("filtro-periodo").value = "";
       document.getElementById("filtro-disciplina").value = "";
       document.getElementById("filtro-professor").value = "";
+      document.getElementById("filtro-turno").value = "";
       filtrarTurmas();
     }
 
@@ -487,7 +542,30 @@
         }
       });
     });
+
+    // Configurar event listeners para filtros automáticos
+    document.addEventListener('DOMContentLoaded', function() {
+      const buscaTurma = document.getElementById('busca-turma');
+      const filtroPeriodo = document.getElementById('filtro-periodo');
+      const filtroDisciplina = document.getElementById('filtro-disciplina');
+      const filtroProfessor = document.getElementById('filtro-professor');
+      const filtroTurno = document.getElementById('filtro-turno');
+
+      // Aplicar filtros automaticamente ao digitar na busca
+      if (buscaTurma) {
+        buscaTurma.addEventListener('input', filtrarTurmas);
+      }
+
+      // Aplicar filtros automaticamente ao mudar os selects
+      if (filtroPeriodo) filtroPeriodo.addEventListener('change', filtrarTurmas);
+      if (filtroDisciplina) filtroDisciplina.addEventListener('change', filtrarTurmas);
+      if (filtroProfessor) filtroProfessor.addEventListener('change', filtrarTurmas);
+      if (filtroTurno) filtroTurno.addEventListener('change', filtrarTurmas);
+    });
   </script>
+
+  <!-- JavaScript Global -->
+  <script src="{% static 'js/gerenciar-global.js' %}"></script>
 
 </body>
 

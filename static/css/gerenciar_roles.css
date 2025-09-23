@@ -71,44 +71,6 @@
     color: white;
 }
 
-/* Seção de filtros */
-.filters-section {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #dee2e6;
-}
-
-.filter-row {
-    display: grid;
-    grid-template-columns: 2fr 1fr auto auto;
-    gap: 15px;
-    align-items: end;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.filter-group label {
-    font-size: 0.9em;
-    font-weight: 600;
-    color: var(--cor03);
-    margin-bottom: 5px;
-}
-
-.btn-filter {
-    background: var(--cor03);
-    color: white;
-    padding: 10px 20px;
-}
-
-.btn-filter:hover {
-    background: var(--cor04);
-}
-
 /* Caixa de busca */
 .search-box {
     position: relative;
@@ -234,10 +196,6 @@
 
 /* Responsividade específica da página */
 @media (max-width: 768px) {
-    .filter-row {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
 
     /* Extensão responsiva do .section-header (base no gerenciar.css) */
     .section-header {

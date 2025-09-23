@@ -23,11 +23,7 @@
     </header>
     <main>
       <form method="post" id="loginForm">
-        {% if messages %} {% for message in messages %}
-        <div class="login-error">
-          <p><strong>{{ message }}</strong></p>
-        </div>
-        {% endfor %} {% endif %}
+        {% include "partials/messages.html" %}
 
         <aside id="perfilImg">
           <img src="{% static 'assets/saad_logo.svg' %}" alt="SUAP Logo" />

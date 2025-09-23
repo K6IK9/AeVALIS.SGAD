@@ -369,6 +369,60 @@ function addMessageAnimations() {
   document.head.appendChild(style);
 }
 
+/**
+ * Gerencia as mensagens Django que aparecem no template
+ * Adiciona funcionalidades de auto-dismiss e fechamento manual
+ */
+function setupDjangoMessages() {
+  const messages = document.querySelectorAll('.messages li');
+
+  if (messages.length === 0) return;
+
+  messages.forEach((message, index) => {
+    // Adiciona delay na animação para mensagens múltiplas
+    message.style.animationDelay = `${index * 0.1}s`;
+
+    // Auto-dismiss após 5 segundos (exceto para mensagens de erro)
+    if (!message.classList.contains('error')) {
+      setTimeout(() => {
+        if (message.parentNode) {
+          message.style.animation = 'message-dismiss 0.5s ease-in forwards';
+          setTimeout(() => {
+            if (message.parentNode) {
+              message.remove();
+            }
+          }, 500);
+        }
+      }, 5000 + (index * 1000)); // Cada mensagem adiciona 1s ao delay
+    }
+
+    // Adiciona evento de clique para fechar mensagem
+    message.addEventListener('click', function () {
+      this.style.animation = 'message-dismiss 0.3s ease-in forwards';
+      setTimeout(() => {
+        if (this.parentNode) {
+          this.remove();
+        }
+      }, 300);
+    });
+
+    // Melhora a acessibilidade
+    message.setAttribute('role', 'alert');
+    message.setAttribute('tabindex', '0');
+    message.title = 'Clique para fechar esta mensagem';
+
+    // Suporte a teclado
+    message.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.click();
+      }
+    });
+  });
+
+  console.log(`✅ ${messages.length} mensagem(ns) Django configurada(s)`);
+}
+
 // =================================
 // INICIALIZAÇÃO GLOBAL
 // =================================
@@ -385,6 +439,9 @@ function initGlobalFeatures() {
 
   // Adicionar animações de mensagens
   addMessageAnimations();
+
+  // Configurar mensagens Django
+  setupDjangoMessages();
 
   console.log('✅ Funcionalidades globais de gerenciamento inicializadas');
 }
@@ -417,3 +474,4 @@ window.filterTable = filterTable;
 window.confirmarAcao = confirmarAcao;
 window.mostrarMensagem = mostrarMensagem;
 window.setupAutoSearch = setupAutoSearch;
+window.setupDjangoMessages = setupDjangoMessages;

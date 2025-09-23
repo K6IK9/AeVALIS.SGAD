@@ -168,7 +168,7 @@ class Turma(models.Model):
         ("finalizada", "Finalizada"),
     ]
 
-    codigo_turma = models.CharField(max_length=20, unique=True)  # Ex: "INFO3A-2024.1"
+    codigo_turma = models.CharField(max_length=100, unique=True)  # Ex: "INFO3A-2024.1"
     disciplina = models.ForeignKey(
         Disciplina, on_delete=models.CASCADE, related_name="turmas"
     )
@@ -190,7 +190,14 @@ class Turma(models.Model):
     def save(self, *args, **kwargs):
         # Auto-gera código da turma se não existir
         if not self.codigo_turma:
-            self.codigo_turma = f"{self.disciplina.disciplina_sigla}-{self.periodo_letivo.ano}.{self.periodo_letivo.semestre}-{self.turno[:3].upper()}"
+            # Usa sigla da disciplina (max 10 chars) + ano + semestre + turno abreviado
+            sigla = self.disciplina.disciplina_sigla[:10]  # Limita sigla a 10 chars
+            ano = str(self.periodo_letivo.ano)
+            semestre = str(self.periodo_letivo.semestre)
+            turno_map = {"matutino": "M", "vespertino": "V", "noturno": "N"}
+            turno_abrev = turno_map.get(self.turno, self.turno[:1].upper())
+
+            self.codigo_turma = f"{sigla}-{ano}.{semestre}{turno_abrev}"
         super().save(*args, **kwargs)
 
     def __str__(self):

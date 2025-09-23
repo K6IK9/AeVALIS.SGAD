@@ -33,54 +33,41 @@
             <span>🔐 Permissões</span>
         </div>
 
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="message {{ message.tags }}">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
+        {% include "partials/messages.html" %}
 
+        <!-- Seção de Filtros -->
+        <div class="filters-section" id="filtersSection">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="searchUsuario">Buscar por Nome/Matrícula:</label>
+                    <input type="text" id="searchUsuario" placeholder="Digite o nome ou matrícula do usuário">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="filterRole">Filtrar por Role:</label>
+                    <select id="filterRole">
+                        <option value="">Todas as roles</option>
+                        <option value="admin">Admin</option>
+                        <option value="coordenador">Coordenador</option>
+                        <option value="professor">Professor</option>
+                        <option value="aluno">Aluno</option>
+                        <option value="sem_role">Sem Role</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-row">
+                <div class="filter-group">
+                    <button type="button" onclick="clearFilters()" class="btn btn-clear">Limpar Filtros</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Usuários com Permissões -->
         <div class="form-section">
             <div class="section-header">
-                <h2>Usuários Cadastrados</h2>
+                <h2>👥 Gerenciamento de Permissões ({{ usuarios_com_roles|length }})</h2>
             </div>
-
-            <!-- Filtros -->
-            <div class="filters-section">
-                <h3 class="filters-title">Filtros e Busca</h3>
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label for="searchUsuario">Buscar por Nome/Matrícula:</label>
-                        <div class="search-box">
-                            <input type="text" id="searchUsuario" class="form-control"
-                                placeholder="Digite o nome ou matrícula do usuário...">
-                        </div>
-                    </div>
-                    <div class="filter-group">
-                        <label for="filterRole">Filtrar por Role:</label>
-                        <select id="filterRole" class="form-control">
-                            <option value="">Todas as roles</option>
-                            <option value="admin">Admin</option>
-                            <option value="coordenador">Coordenador</option>
-                            <option value="professor">Professor</option>
-                            <option value="aluno">Aluno</option>
-                            <option value="sem_role">Sem Role</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <button type="button" class="btn-filter" onclick="clearFilters()">Limpar Filtros</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lista de Usuários com Permissões -->
-            <div class="form-section">
-                <div class="section-header">
-                    <h2>👥 Gerenciamento de Permissões ({{ usuarios_com_roles|length }})</h2>
-                </div>
 
                 {% if usuarios_com_roles %}
                 <div class="table-scroll-hint">

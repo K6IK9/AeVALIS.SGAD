@@ -28,13 +28,7 @@
         <span>🎓 Cursos</span>
       </div>
 
-      {% if messages %}
-      <div class="messages">
-        {% for message in messages %}
-        <div class="message {{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-      </div>
-      {% endif %}
+      {% include "partials/messages.html" %}
 
       <div class="form-section">
         <h2>
