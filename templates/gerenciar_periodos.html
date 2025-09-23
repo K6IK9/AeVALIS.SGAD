@@ -82,7 +82,9 @@
           </div>
           {% endif %}
 
-          <button type="submit" class="btn">Criar Período Letivo</button>
+          <div class="actions-end">
+            <button type="submit" class="btn">✓ Criar Período Letivo</button>
+          </div>
         </form>
       </div>
 
@@ -149,7 +151,7 @@
               <td>
                 <div class="btn-group">
                   <button type="button" class="btn btn-sm btn-secondary" title="Editar Período"
-                          onclick="editarPeriodo({{ periodo.id }}, '{{ periodo.nome }}', {{ periodo.ano }}, '{{ periodo.semestre }}')">>
+                          onclick="editarPeriodo({{ periodo.id }}, '{{ periodo.nome }}', {{ periodo.ano }}, '{{ periodo.semestre }}')">
                     ✏️ Editar
                   </button>
                   <form method="post" action="{% url 'excluir_periodo' periodo.id %}" 
@@ -223,19 +225,13 @@
                 </select>
               </div>
             </div>
-            <div class="modal-actions">
-              <button
-                type="button"
-                class="btn-action btn-cancel"
-                onclick="closeEditModal()"
-              >
+            <div class="actions-end">
+              <button type="button" class="btn btn-secondary"
+                      onclick="closeEditModal()">
                 Cancelar
               </button>
-              <button
-                type="submit"
-                class="btn-action btn-primary-color"
-              >
-                Salvar Alterações
+              <button type="submit" class="btn">
+                ✓ Salvar Alterações
               </button>
             </div>
           </form>

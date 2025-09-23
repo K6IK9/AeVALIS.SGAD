@@ -229,20 +229,22 @@
               <td>
                 <div class="btn-group">
                   <a href="{% url 'editar_categoria_simples' categoria.id %}" 
-                     class="btn btn-sm btn-secondary" title="Editar Categoria">
+                     class="btn btn-sm btn-secondary" 
+                     title="Editar categoria">
                     ✏️ Editar
                   </a>
                   {% if categoria.perguntas.count == 0 %}
                     <form method="post" action="{% url 'excluir_categoria' categoria.id %}" 
                           class="inline-form"
-                          onsubmit="return confirm('Tem certeza que deseja excluir a categoria \'{{ categoria.nome|escapejs }}\'?\n\nEsta ação não pode ser desfeita.')">
+                          onsubmit="return confirm('Tem certeza que deseja excluir a categoria \'{{ categoria.nome|escapejs }}\'?\n\nEsta ação não poderá ser desfeita.')">
                       {% csrf_token %}
-                      <button type="submit" class="btn btn-sm btn-danger" title="Excluir Categoria">
+                      <button type="submit" class="btn btn-sm btn-danger" 
+                              title="Excluir categoria">
                         🗑️ Excluir
                       </button>
                     </form>
                   {% else %}
-                    <button type="button" class="btn btn-sm btn-danger disabled" 
+                    <button type="button" class="btn btn-sm btn-danger disabled-state" 
                             title="Não é possível excluir esta categoria pois ela possui {{ categoria.perguntas.count }} pergunta(s) associada(s)"
                             onclick="alert('Não é possível excluir esta categoria pois ela possui {{ categoria.perguntas.count }} pergunta(s) associada(s).')">
                       🗑️ Excluir
