@@ -423,11 +423,6 @@
         padding: 10px;
     }
 
-    .action-buttons {
-        flex-direction: column;
-        gap: 3px;
-    }
-
     .section-header {
         flex-direction: column;
         gap: 15px;

@@ -353,7 +353,7 @@ class PeriodoLetivoForm(forms.ModelForm):
         widget=forms.NumberInput(
             attrs={
                 "class": "form-control",
-                "placeholder": "2024",
+                "placeholder": "2025",
                 "min": "2020",
                 "max": "2030",
             }
@@ -554,9 +554,18 @@ class QuestionarioAvaliacaoForm(forms.ModelForm):
     class Meta:
         model = QuestionarioAvaliacao
         fields = ["titulo", "descricao", "ativo"]
+        labels = {
+            "titulo": "Título do Questionário",
+            "descricao": "Descrição",
+            "ativo": "Questionário ativo",
+        }
         widgets = {
             "titulo": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Título do questionário"}
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Título do questionário",
+                    "maxlength": "100",
+                }
             ),
             "descricao": forms.Textarea(
                 attrs={
@@ -567,6 +576,12 @@ class QuestionarioAvaliacaoForm(forms.ModelForm):
             ),
             "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
+
+    def clean_titulo(self):
+        titulo = self.cleaned_data.get("titulo")
+        if titulo and len(titulo) > 100:
+            raise forms.ValidationError("O título deve ter no máximo 100 caracteres.")
+        return titulo
 
 
 class CategoriaPerguntaForm(forms.ModelForm):
@@ -929,22 +944,24 @@ class CategoriaPerguntaForm(forms.ModelForm):
 
     def clean_ordem(self):
         ordem = self.cleaned_data.get("ordem")
-        
+
         # Validar se a ordem é válida
         if ordem is not None:
             if ordem < 1:
-                raise forms.ValidationError("A ordem deve ser um número maior que zero (mínimo: 1).")
-            
+                raise forms.ValidationError(
+                    "A ordem deve ser um número maior que zero (mínimo: 1)."
+                )
+
             # Verificar se já existe uma categoria com esta ordem
             qs = CategoriaPergunta.objects.filter(ordem=ordem)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
-            
+
             if qs.exists():
                 categoria_existente = qs.first()
                 raise forms.ValidationError(
                     f"Já existe uma categoria com ordem {ordem}: '{categoria_existente.nome}'. "
                     f"Escolha uma ordem diferente."
                 )
-        
+
         return ordem

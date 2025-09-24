@@ -206,7 +206,7 @@
     overflow: hidden;
 }
 
-.scroll-hint {
+.admin-scroll-hint {
     display: none;
     text-align: center;
     padding: 10px;

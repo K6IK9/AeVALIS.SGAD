@@ -1,5 +1,5 @@
 {% load static %}
-
+{% load user_tags %} 
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -235,6 +235,9 @@
                     </div>
                     {% else %}
                     <!-- Exibição para administradores/coordenadores - mostra avaliações docentes como tabela -->
+                                        <div class="table-scroll-hint">
+                        <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead class="table-light">
@@ -318,6 +321,9 @@
 
         </div>
     </main>
+
+    <!-- Script global para funcionalidades de gerenciamento -->
+    <script src="{% static 'js/gerenciar-global.js' %}"></script>
 
 </body>
 
