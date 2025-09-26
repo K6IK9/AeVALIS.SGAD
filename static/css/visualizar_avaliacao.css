@@ -53,16 +53,28 @@
 /* ===== ESCALA LIKERT ===== */
 .likert-scale {
   margin: 20px 0;
+  position: relative;
 }
 
-.likert-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  width: 100%;
+.likert-scale .likert-labels:first-child {
+  position: absolute;
+  left: 0;
+  top: -25px;
   font-size: 0.75rem;
   color: #666;
-  gap: 8px;
+  white-space: nowrap;
+  max-width: calc(50% - 10px);
+}
+
+.likert-scale .likert-labels:last-child {
+  position: absolute;
+  right: 0;
+  top: -25px;
+  font-size: 0.75rem;
+  color: #666;
+  white-space: nowrap;
+  max-width: calc(50% - 10px);
+  text-align: right;
 }
 
 .likert-options {
@@ -291,9 +303,15 @@
   transition: all var(--transition-fast);
   display: inline-block;
   text-align: center;
+  background: var(--cor02);
+  color: var(--cor05);
+  border: 2px solid var(--cor02);
 }
 
 .btn-custom:hover {
+  background: var(--cor06);
+  border-color: var(--cor06);
+  color: var(--cor05);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -312,8 +330,17 @@
     margin: 15px 0 0 0;
   }
 
-  .likert-labels {
+  .likert-scale .likert-labels:first-child,
+  .likert-scale .likert-labels:last-child {
+    position: static;
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
     font-size: 0.65rem;
+  }
+
+  .likert-scale .likert-labels:last-child {
+    text-align: right;
   }
 
   .sim-nao {
