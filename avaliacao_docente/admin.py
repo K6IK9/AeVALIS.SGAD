@@ -125,14 +125,13 @@ class PerguntaAvaliacaoAdmin(admin.ModelAdmin):
         "enunciado_resumido",
         "tipo",
         "categoria",
-        "ordem",
         "obrigatoria",
         "ativa",
     )
     list_filter = ("tipo", "categoria", "obrigatoria", "ativa")
-    list_editable = ("ordem", "obrigatoria", "ativa")
+    list_editable = ("obrigatoria", "ativa")
     search_fields = ("enunciado",)
-    ordering = ("categoria__ordem", "ordem")
+    ordering = ("categoria__ordem",)
 
     def enunciado_resumido(self, obj):
         return obj.enunciado[:80] + "..." if len(obj.enunciado) > 80 else obj.enunciado

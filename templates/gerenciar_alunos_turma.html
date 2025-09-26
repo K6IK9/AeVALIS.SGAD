@@ -57,24 +57,19 @@
         <!-- Filtros e Busca -->
         <div class="filters-section">
             <h3 class="filters-title">Filtros e Busca</h3>
-            <form method="get" id="filtros-form">
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label for="busca_aluno">Buscar por Nome/Matrícula/Email:</label>
-                        <div class="search-box">
-                            <input type="text" name="busca_aluno" id="busca_aluno" class="form-control"
-                                   value="{{ busca_aluno }}" 
-                                   placeholder="Digite o nome, matrícula ou email do aluno..." />
-                        </div>
-                    </div>
-                    <div class="filter-group">
-                        <button type="submit" class="btn-filter">🔍 Pesquisar</button>
-                    </div>
-                    <div class="filter-group">
-                        <button type="button" class="btn-filter" onclick="limparFiltros()">Limpar Filtros</button>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="busca_aluno">Buscar por Nome/Matrícula/Email:</label>
+                    <div class="search-box">
+                        <input type="text" name="busca_aluno" id="busca_aluno" class="form-control"
+                               value="{{ busca_aluno }}" 
+                               placeholder="Digite o nome, matrícula ou email do aluno..." />
                     </div>
                 </div>
-            </form>
+                <div class="filter-group">
+                    <button type="button" class="btn-filter" onclick="limparFiltros()">Limpar Filtros</button>
+                </div>
+            </div>
         </div>
 
         <!-- Formulário de Ações em Massa -->
@@ -104,7 +99,11 @@
                 <div class="alunos-container">
                     {% if alunos %}
                     {% for aluno in alunos %}
-                    <div class="aluno-card {% if aluno.matriculado %}matriculado{% endif %}">
+                    <div class="aluno-card {% if aluno.matriculado %}matriculado{% endif %}"
+                         data-nome="{{ aluno.nome|lower }}"
+                         data-username="{{ aluno.username|lower }}"
+                         data-email="{{ aluno.email|lower }}"
+                         data-matriculado="{% if aluno.matriculado %}true{% else %}false{% endif %}">
                         <div class="aluno-checkbox">
                             <input type="checkbox" name="alunos_selecionados" value="{{ aluno.id }}" 
                                    id="aluno_{{ aluno.id }}" />
@@ -146,9 +145,59 @@
     </div>
 
     <script>
+        // Função para filtrar os cards de alunos
+        function filterAlunos() {
+            const searchFilter = document.getElementById('busca_aluno').value.toLowerCase().trim();
+            
+            const alunoCards = document.querySelectorAll('.aluno-card');
+            let visibleCount = 0;
+            let matriculadosCount = 0;
+            let disponiveisCount = 0;
+
+            alunoCards.forEach(card => {
+                const nome = card.dataset.nome || '';
+                const username = card.dataset.username || '';
+                const email = card.dataset.email || '';
+                const matriculado = card.dataset.matriculado === 'true';
+
+                // A busca procura em nome, username e email
+                const searchMatch = !searchFilter || 
+                    nome.includes(searchFilter) || 
+                    username.includes(searchFilter) || 
+                    email.includes(searchFilter);
+
+                if (searchMatch) {
+                    card.style.display = '';
+                    visibleCount++;
+                    if (matriculado) {
+                        matriculadosCount++;
+                    } else {
+                        disponiveisCount++;
+                    }
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Atualizar estatísticas
+            const totalCount = document.getElementById('total-count');
+            const matriculadosCountEl = document.getElementById('alunos_matriculados');
+            const disponiveisCountEl = document.getElementById('alunos_disponiveis');
+
+            if (totalCount) totalCount.textContent = visibleCount;
+            if (matriculadosCountEl) matriculadosCountEl.textContent = matriculadosCount;
+            if (disponiveisCountEl) disponiveisCountEl.textContent = disponiveisCount;
+
+            // Mostrar/ocultar mensagem de empty state
+            const emptyState = document.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        }
+
         // Função para selecionar/desmarcar todos os checkboxes
         function toggleTodos() {
-            const checkboxes = document.querySelectorAll('input[name="alunos_selecionados"]');
+            const checkboxes = document.querySelectorAll('input[name="alunos_selecionados"]:not([style*="display: none"])');
             const todosMarcados = Array.from(checkboxes).every(cb => cb.checked);
             
             checkboxes.forEach(cb => {
@@ -170,8 +219,27 @@
         // Função para limpar filtros
         function limparFiltros() {
             document.getElementById('busca_aluno').value = '';
-            document.getElementById('filtros-form').submit();
+            filterAlunos();
         }
+
+        // Adicionar event listener para busca automática
+        document.addEventListener('DOMContentLoaded', function() {
+            const buscaInput = document.getElementById('busca_aluno');
+            
+            // Busca automática com debounce
+            let timeoutId;
+            buscaInput.addEventListener('input', function() {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    filterAlunos();
+                }, 300); // 300ms de debounce
+            });
+
+            // Aplicar filtro inicial se há valor
+            if (buscaInput.value.trim()) {
+                filterAlunos();
+            }
+        });
     </script>
 </body>
 </html>

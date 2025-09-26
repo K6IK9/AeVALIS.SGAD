@@ -21,6 +21,11 @@
     /* Fontes */
     --font01: "Poppins", sans-serif;
     --font02: "Vidaloka", serif;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-md: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
 
     /* Sombras e efeitos */
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -48,6 +53,10 @@
     --transition-fast: 0.2s ease-in-out;
     --transition-medium: 0.3s ease-in-out;
     --transition-slow: 0.5s ease-in-out;
+
+    /* Formulários */
+    --form-success: #28a745;
+    --form-danger: #dc3545;
 }
 
 /* ===== RESET GLOBAL ===== */

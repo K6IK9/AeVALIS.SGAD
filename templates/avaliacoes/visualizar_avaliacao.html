@@ -1,4 +1,7 @@
-{% load static %} <!DOCTYPE html>
+{% load static %} 
+{% load user_tags %} 
+
+<!DOCTYPE html>
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
@@ -94,9 +97,9 @@
               <div class="likert-scale">
                 <span class="likert-labels">Discordo Totalmente</span>
                 <div class="likert-options">
-                  {% for i in "12345"|make_list %}
+                  {% for i in "12345" %}
                   <div
-                    class="likert-option {% if resposta.valor_numerico == i|add:0 %}selected{% endif %}"
+                    class="likert-option {% if resposta.valor_numerico|stringformat:"d" == i %}selected{% endif %}"
                   >
                     {{ i }}
                   </div>
@@ -111,13 +114,14 @@
               </div>
 
               {% elif resposta.pergunta.tipo == 'nps' %}
+              {% nps_scale as escala %}
               <div class="nps-container">
                 <div class="nps-labels">
                   <span>0 - Nunca recomendaria</span>
                   <span>10 - Certamente recomendaria</span>
                 </div>
                 <div class="nps-options">
-                  {% nps_scale as escala %} {% for i in escala %}
+                  {% for i in escala %}
                   <div
                     class="nps-option {% if resposta.valor_numerico == i %}selected{% endif %}"
                   >

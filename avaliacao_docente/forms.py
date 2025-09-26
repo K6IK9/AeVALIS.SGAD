@@ -502,13 +502,16 @@ class CicloAvaliacaoForm(forms.ModelForm):
             pass
         if self.instance and self.instance.pk:
             try:
-                # Tentar acessar o período letivo apenas se a instância já foi salva
-                periodo_letivo = self.instance.periodo_letivo
-                self.fields["turmas"].queryset = Turma.objects.filter(
-                    periodo_letivo=periodo_letivo, status="ativa"
-                )
+                # Para edição, mostrar todas as turmas ativas mais as turmas já selecionadas
+                # Isso garante que turmas selecionadas apareçam mesmo se mudaram de período
+                turmas_ativas = Turma.objects.filter(status="ativa")
+                turmas_selecionadas = self.instance.turmas.all()
+                # Combinar os querysets sem duplicatas
+                self.fields["turmas"].queryset = (
+                    turmas_ativas | turmas_selecionadas
+                ).distinct()
             except:
-                # Se não conseguir acessar o período letivo, mostra todas as turmas ativas
+                # Se não conseguir acessar as turmas, mostra todas as turmas ativas
                 self.fields["turmas"].queryset = Turma.objects.filter(status="ativa")
         else:
             # Para novas instâncias, mostrar todas as turmas ativas
@@ -636,7 +639,6 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
             "enunciado",
             "tipo",
             "categoria",
-            "ordem",
             "obrigatoria",
             "ativa",
             "opcoes_multipla_escolha",
@@ -651,7 +653,6 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
             ),
             "tipo": forms.Select(attrs={"class": "form-control"}),
             "categoria": forms.Select(attrs={"class": "form-control"}),
-            "ordem": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
             "obrigatoria": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "ativa": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
@@ -660,7 +661,6 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Definir valores padrão para campos obrigatórios
         if not self.instance.pk:
-            self.fields["ordem"].initial = 0
             self.fields["obrigatoria"].initial = True
             self.fields["ativa"].initial = True
 

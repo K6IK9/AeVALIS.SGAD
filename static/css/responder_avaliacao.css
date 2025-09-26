@@ -1,16 +1,5 @@
 /* ===== Responder Avaliação CSS ===== */
 
-/* Variáveis específicas para resposta de avaliação */
-:root {
-    --form-primary: var(--cor03);
-    --form-success: #28a745;
-    --form-danger: #dc3545;
-    --form-focus-shadow: rgba(0, 253, 148, 0.25);
-    --form-blue-shadow: rgba(0, 202, 253, 0.25);
-    --form-green-shadow: rgba(40, 167, 69, 0.25);
-    --form-red-shadow: rgba(220, 53, 69, 0.25);
-}
-
 /* Card principal da avaliação */
 .avaliacao-card {
     padding: 20px;
@@ -118,7 +107,7 @@
     margin: 0;
 }
 
-.likert-options .form-check-input + .form-check-label {
+.likert-options .form-check-input+.form-check-label {
     cursor: pointer;
     padding: 10px;
     border: 2px solid var(--cor01);
@@ -127,17 +116,17 @@
     transition: all var(--transition-fast);
 }
 
-.likert-options .form-check-input + .form-check-label:hover {
+.likert-options .form-check-input+.form-check-label:hover {
     transform: translateY(-1px);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
 }
 
-.likert-options .form-check-input:focus + .form-check-label {
+.likert-options .form-check-input:focus+.form-check-label {
     outline: 3px solid var(--form-blue-shadow);
     outline-offset: 2px;
 }
 
-.likert-options .form-check-input:checked + .form-check-label {
+.likert-options .form-check-input:checked+.form-check-label {
     background: var(--cor02);
     color: var(--cor05);
     border-color: var(--cor02);
@@ -187,7 +176,7 @@
     transition: all var(--transition-fast);
 }
 
-.rating-option input[type="radio"] + label {
+.rating-option input[type="radio"]+label {
     cursor: pointer;
 }
 
@@ -200,18 +189,18 @@
     pointer-events: none;
 }
 
-.rating-option input[type="radio"] + label .rating-value:hover {
+.rating-option input[type="radio"]+label .rating-value:hover {
     border-color: var(--cor06);
     box-shadow: 0 3px 8px rgba(0, 202, 253, 0.15);
     transform: translateY(-1px);
 }
 
-.rating-option input[type="radio"]:focus + label .rating-value {
+.rating-option input[type="radio"]:focus+label .rating-value {
     outline: 3px solid var(--form-blue-shadow);
     outline-offset: 2px;
 }
 
-.rating-option input[type="radio"]:checked + label .rating-value {
+.rating-option input[type="radio"]:checked+label .rating-value {
     background: var(--cor02);
     color: var(--cor05);
     border-color: var(--cor02);
@@ -229,7 +218,7 @@
     margin-bottom: 10px;
 }
 
-.multipla-escolha .form-check-input + .form-check-label {
+.multipla-escolha .form-check-input+.form-check-label {
     cursor: pointer;
     padding: 12px;
     border: 2px solid var(--cor01);
@@ -238,17 +227,17 @@
     transition: all var(--transition-fast);
 }
 
-.multipla-escolha .form-check-input + .form-check-label:hover {
+.multipla-escolha .form-check-input+.form-check-label:hover {
     transform: translateY(-1px);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
 }
 
-.multipla-escolha .form-check-input:focus + .form-check-label {
+.multipla-escolha .form-check-input:focus+.form-check-label {
     outline: 3px solid var(--form-blue-shadow);
     outline-offset: 2px;
 }
 
-.multipla-escolha .form-check-input:checked + .form-check-label {
+.multipla-escolha .form-check-input:checked+.form-check-label {
     background: var(--cor02);
     color: var(--cor05);
     border-color: var(--cor02);
@@ -268,7 +257,7 @@
     flex: 1;
 }
 
-.sim-nao .form-check-input + .form-check-label {
+.sim-nao .form-check-input+.form-check-label {
     cursor: pointer;
     padding: 14px 16px;
     border: 2px solid var(--cor01);
@@ -280,29 +269,29 @@
 }
 
 /* Estado base para opções Sim/Não */
-.sim-nao .form-check-input + .form-check-label.option-yes {
+.sim-nao .form-check-input+.form-check-label.option-yes {
     border-color: #bfe7cc;
     background: rgba(40, 167, 69, 0.06);
     color: #216c39;
 }
 
-.sim-nao .form-check-input + .form-check-label.option-no {
+.sim-nao .form-check-input+.form-check-label.option-no {
     border-color: #f3c2c7;
     background: rgba(220, 53, 69, 0.06);
     color: #842029;
 }
 
-.sim-nao .form-check-input + .form-check-label:hover {
+.sim-nao .form-check-input+.form-check-label:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
 }
 
-.sim-nao .form-check-input:focus + .form-check-label {
+.sim-nao .form-check-input:focus+.form-check-label {
     outline: 3px solid var(--form-blue-shadow);
     outline-offset: 2px;
 }
 
-.sim-nao .form-check-input:checked + .form-check-label.option-yes {
+.sim-nao .form-check-input:checked+.form-check-label.option-yes {
     background: var(--form-success);
     color: #ffffff;
     border-color: var(--form-success);
@@ -310,7 +299,7 @@
     transform: translateY(-2px);
 }
 
-.sim-nao .form-check-input:checked + .form-check-label.option-no {
+.sim-nao .form-check-input:checked+.form-check-label.option-no {
     background: var(--form-danger);
     color: #ffffff;
     border-color: var(--form-danger);
@@ -350,43 +339,43 @@
         padding: 15px;
         margin-bottom: 20px;
     }
-    
+
     .pergunta-card {
         padding: 15px;
         margin-bottom: 20px;
     }
-    
+
     .likert-options {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         gap: 5px;
         margin: 15px 0 0 0;
     }
-    
+
     .likert-labels {
         font-size: 0.65rem;
     }
-    
+
     .sim-nao {
         flex-direction: column;
         gap: 10px;
     }
-    
-    .sim-nao .form-check-input + .form-check-label {
+
+    .sim-nao .form-check-input+.form-check-label {
         padding: 10px;
     }
-    
+
     .pergunta-navegacao {
         flex-direction: column;
         gap: 15px;
     }
-    
+
     .pergunta-navegacao .btn,
     .pergunta-navegacao a {
         width: 100%;
         text-align: center;
     }
-    
+
     .pergunta-navegacao .pergunta-numero {
         order: -1;
         width: 100%;
@@ -399,23 +388,23 @@
     .pergunta-titulo {
         font-size: 1rem;
     }
-    
-    .likert-scale .form-check-input + .form-check-label {
+
+    .likert-scale .form-check-input+.form-check-label {
         padding: 8px 5px;
         font-size: 0.75rem;
     }
-    
+
     .rating-value {
         width: 30px;
         height: 30px;
         font-size: 0.75rem;
     }
-    
-    .multipla-escolha .form-check-input + .form-check-label {
+
+    .multipla-escolha .form-check-input+.form-check-label {
         padding: 10px;
         font-size: 0.875rem;
     }
-    
+
     .btn {
         padding: 8px 15px;
         font-size: 0.875rem;

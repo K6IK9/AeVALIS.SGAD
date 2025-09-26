@@ -1,19 +1,4 @@
 /* Editar Questionário - Seguindo padrão do sistema usando cores globais */
-:root {
-    /* Usando cores do global.css - CORRIGIDO */
-    --cor-principal: #376f6c;
-    /* cor03 - verde escuro - COR PRINCIPAL */
-    --cor-destaque: #00fd94;
-    /* cor02 - verde claro - COR DE DESTAQUE */
-    --cor-texto: #1e3231;
-    /* cor04 - texto escuro */
-    --cor-branco: #ffffff;
-    /* cor07 - branco */
-    --cor-cinza: #f0f0f0;
-    /* cor01 - cinza claro */
-    --cor-erro: #ff3c3c;
-    /* cor08 - vermelho */
-}
 
 /* Container principal seguindo padrão */
 .container {

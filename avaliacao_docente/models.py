@@ -340,7 +340,6 @@ class PerguntaAvaliacao(models.Model):
     categoria = models.ForeignKey(
         CategoriaPergunta, on_delete=models.CASCADE, related_name="perguntas"
     )
-    ordem = models.PositiveIntegerField(default=0)
     obrigatoria = models.BooleanField(default=True)
     ativa = models.BooleanField(default=True)
 
@@ -350,7 +349,7 @@ class PerguntaAvaliacao(models.Model):
     data_criacao = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["categoria__ordem", "ordem"]
+        ordering = ["categoria__ordem"]
         verbose_name = "Pergunta de Avaliação"
         verbose_name_plural = "Perguntas de Avaliação"
 
