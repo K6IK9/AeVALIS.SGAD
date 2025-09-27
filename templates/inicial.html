@@ -20,6 +20,9 @@
   </head>
 
   <body>
+    <!-- Overlay de Inatividade -->
+    <div id="inactivity-overlay"></div>
+
     <main>
       <!-- Navegação integrada -->
       <div class="main-nav">
@@ -157,5 +160,8 @@
       </h2>
       {% endif %}
     </main>
+
+    <!-- Script para Overlay de Inatividade -->
+    <script src="{% static 'js/inactivity-overlay.js' %}"></script>
   </body>
 </html>
