@@ -54,23 +54,23 @@ from .forms import (
     QuestionarioAvaliacaoForm,
     CategoriaPerguntaForm,
     RegistroForm,
-    ConfiguracaoSiteForm
+    ConfiguracaoSiteForm,
 )
 
 
 @login_required
 def gerenciar_configuracao_site(request):
     config = ConfiguracaoSite.obter_config()
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ConfiguracaoSiteForm(request.POST, instance=config)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Configurações do site atualizadas com sucesso!')
-            return redirect('gerenciar_configuracao_site')
+            messages.success(request, "Configurações do site atualizadas com sucesso!")
+            return redirect("gerenciar_configuracao_site")
     else:
         form = ConfiguracaoSiteForm(instance=config)
 
-    return render(request, 'admin/gerenciar_configuracao.html', {'form': form})
+    return render(request, "admin/gerenciar_configuracao.html", {"form": form})
 
 
 @login_required
@@ -674,6 +674,49 @@ def editar_periodo(request, periodo_id):
         "form": form,
         "periodo": periodo,
         "periodos": PeriodoLetivo.objects.all().order_by("-ano", "-semestre"),
+        "editing": True,
+    }
+    return render(request, "gerenciar_periodos.html", context)
+
+
+@login_required
+def editar_periodo_simples(request, periodo_id):
+    """
+    View para editar um período letivo - versão simples sem JavaScript
+    """
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(request, "Você não tem permissão para editar períodos.")
+        return redirect("inicio")
+
+    periodo = get_object_or_404(PeriodoLetivo, id=periodo_id)
+
+    if request.method == "POST":
+        form = PeriodoLetivoForm(request.POST, instance=periodo)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(
+                    request, f"Período '{periodo.nome}' atualizado com sucesso!"
+                )
+                return redirect("gerenciar_periodos")
+            except Exception as e:
+                messages.error(
+                    request, f"Não foi possível atualizar o período: {str(e)}"
+                )
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Erro no campo {field}: {error}")
+    else:
+        form = PeriodoLetivoForm(instance=periodo)
+
+    # Lista todos os períodos
+    periodos = PeriodoLetivo.objects.all().order_by("-ano", "-semestre")
+
+    context = {
+        "form": form,
+        "periodo": periodo,
+        "periodos": periodos,
         "editing": True,
     }
     return render(request, "gerenciar_periodos.html", context)
@@ -1585,7 +1628,9 @@ def editar_questionario_perguntas(request, questionario_id):
                     pergunta_editando = pergunta_para_editar  # Manter no modo de edição
             except PerguntaAvaliacao.DoesNotExist:
                 messages.error(request, "Pergunta não encontrada.")
-                return redirect("editar_questionario_perguntas", questionario_id=questionario.id)
+                return redirect(
+                    "editar_questionario_perguntas", questionario_id=questionario.id
+                )
 
         elif "remover_pergunta" in request.POST:
             pergunta_id = request.POST.get("pergunta_id")

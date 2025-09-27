@@ -47,6 +47,11 @@ urlpatterns = [
         "editar-periodo/<int:periodo_id>/", views.editar_periodo, name="editar_periodo"
     ),
     path(
+        "editar-periodo-simples/<int:periodo_id>/",
+        views.editar_periodo_simples,
+        name="editar_periodo_simples",
+    ),
+    path(
         "excluir-periodo/<int:periodo_id>/",
         views.excluir_periodo,
         name="excluir_periodo",

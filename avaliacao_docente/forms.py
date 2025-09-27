@@ -256,8 +256,11 @@ class CursoForm(forms.ModelForm):
     def clean_curso_nome(self):
         curso_nome = self.cleaned_data.get("curso_nome")
         if curso_nome:
-            # Verifica se o curso já existe
-            if Curso.objects.filter(curso_nome__iexact=curso_nome).exists():
+            # Verifica se o curso já existe (exceto para o próprio curso em edição)
+            queryset = Curso.objects.filter(curso_nome__iexact=curso_nome)
+            if self.instance and self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            if queryset.exists():
                 raise forms.ValidationError("Este curso já existe no sistema.")
         return curso_nome
 
@@ -575,6 +578,7 @@ class QuestionarioAvaliacaoForm(forms.ModelForm):
                     "class": "form-control",
                     "rows": 3,
                     "placeholder": "Descrição opcional",
+                    "maxlength": "200",
                 }
             ),
             "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
@@ -966,7 +970,14 @@ class CategoriaPerguntaForm(forms.ModelForm):
 
         return ordem
 
-from .models import QuestionarioAvaliacao, CategoriaPergunta, PerguntaAvaliacao, RespostaAvaliacao, ConfiguracaoSite
+
+from .models import (
+    QuestionarioAvaliacao,
+    CategoriaPergunta,
+    PerguntaAvaliacao,
+    RespostaAvaliacao,
+    ConfiguracaoSite,
+)
 from django.forms import modelformset_factory
 
 
@@ -988,17 +999,22 @@ class PerguntaForm(forms.ModelForm):
         fields = ["enunciado", "tipo", "categoria", "obrigatoria"]
 
 
-RespostaFormSet = modelformset_factory(RespostaAvaliacao, fields=("valor_texto",), extra=1)
+RespostaFormSet = modelformset_factory(
+    RespostaAvaliacao, fields=("valor_texto",), extra=1
+)
+
 
 class ConfiguracaoSiteForm(forms.ModelForm):
     class Meta:
         model = ConfiguracaoSite
-        fields = ['metodo_envio_email', 'email_notificacao_erros']
+        fields = ["metodo_envio_email", "email_notificacao_erros"]
         widgets = {
-            'metodo_envio_email': forms.RadioSelect,
-            'email_notificacao_erros': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'seuerro@email.com'})
+            "metodo_envio_email": forms.RadioSelect,
+            "email_notificacao_erros": forms.EmailInput(
+                attrs={"class": "form-control", "placeholder": "seuerro@email.com"}
+            ),
         }
         labels = {
-            'metodo_envio_email': 'Método de Envio de E-mail',
-            'email_notificacao_erros': 'E-mail para Notificação de Erros'
+            "metodo_envio_email": "Método de Envio de E-mail",
+            "email_notificacao_erros": "E-mail para Notificação de Erros",
         }

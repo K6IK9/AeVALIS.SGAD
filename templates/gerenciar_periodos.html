@@ -32,7 +32,9 @@
       {% include "partials/messages.html" %}
 
       <div class="form-section">
-        <h2>Criar Novo Período Letivo</h2>
+        <h2>
+          {% if editing %}✏️ Editar Período Letivo{% else %}➕ Criar Novo Período Letivo{% endif %}
+        </h2>
         <form method="post">
           {% csrf_token %}
           <div class="form-row">
@@ -77,11 +79,18 @@
           {% endif %}
 
           <div class="actions-end">
-            <button type="submit" class="btn">✓ Criar Período Letivo</button>
+            <a href="{% if editing %}{% url 'gerenciar_periodos' %}{% else %}{% url 'admin_hub' %}{% endif %}"
+              class="btn btn-secondary">
+              ← Cancelar
+            </a>
+            <button type="submit" class="btn">
+              {% if editing %}✓ Salvar Alterações{% else %}✓ Criar Período Letivo{% endif %}
+            </button>
           </div>
         </form>
       </div>
 
+      {% if not editing %}
       <!-- Seção de Filtros -->
       <div class="filters-section" id="filtersSection">
         <div class="filter-row">
@@ -151,10 +160,9 @@
               <td><strong>{{ periodo.ano }}.{{ periodo.semestre }}</strong></td>
               <td>
                 <div class="btn-group">
-                  <button type="button" class="btn btn-sm btn-secondary" title="Editar Período"
-                          onclick="editarPeriodo({{ periodo.id }}, '{{ periodo.nome }}', {{ periodo.ano }}, '{{ periodo.semestre }}')">
+                  <a href="{% url 'editar_periodo_simples' periodo.id %}" class="btn btn-sm btn-secondary" title="Editar Período">
                     ✏️ Editar
-                  </button>
+                  </a>
                   <form method="post" action="{% url 'excluir_periodo' periodo.id %}" 
                         class="inline-form"
                         onsubmit="return confirm('Tem certeza que deseja excluir o período \'{{ periodo.nome|escapejs }}\'?\n\nEsta ação não poderá ser desfeita.')">
@@ -177,70 +185,11 @@
         </table>
         </div>
       </div>
+      {% endif %}
     </div>
 
-    <!-- Modal de Edição -->
-    <div id="editModal" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>Editar Período Letivo</h3>
-        </div>
-        <div class="modal-content">
-          <form id="editForm" method="post">
-            {% csrf_token %}
-            <div class="form-row">
-              <div class="form-group">
-                <label for="edit_nome">Nome do Período:</label>
-                <input
-                  type="text"
-                  id="edit_nome"
-                  name="nome"
-                  class="form-control"
-                  required
-                />
-              </div>
-              <div class="form-group">
-                <label for="edit_ano">Ano:</label>
-                <input
-                  type="number"
-                  id="edit_ano"
-                  name="ano"
-                  class="form-control"
-                  min="2000"
-                  max="2099"
-                  required
-                />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="edit_semestre">Semestre:</label>
-                <select
-                  id="edit_semestre"
-                  name="semestre"
-                  class="form-control"
-                  required
-                >
-                  <option value="1">1º Semestre</option>
-                  <option value="2">2º Semestre</option>
-                </select>
-              </div>
-            </div>
-            <div class="actions-end">
-              <button type="button" class="btn btn-secondary"
-                      onclick="closeEditModal()">
-                Cancelar
-              </button>
-              <button type="submit" class="btn">
-                ✓ Salvar Alterações
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <script>
+    <!-- Script global para funcionalidades de gerenciamento -->
+    <script src="{% static 'js/gerenciar-global.js' %}"></script>    <script>
       // Variáveis globais para controle dos modais
       let currentEditId = null;
 
