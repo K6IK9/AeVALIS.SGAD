@@ -15,3 +15,6 @@ __pycache__
 .env.production.local
 /venv
 db.sqlite3
+.github/
+.gemini/
+gha-creds-*.json
