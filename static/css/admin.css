@@ -73,6 +73,11 @@
     font-size: 1.5em;
 }
 
+/* Helper para forçar fundo branco em cards */
+.card-white-bg {
+    background-color: var(--cor07) !important;
+}
+
 /* ===== SEÇÃO DE ESTATÍSTICAS ===== */
 .stats-section {
     background: var(--cor07);

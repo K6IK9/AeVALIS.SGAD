@@ -10,7 +10,7 @@
     <!-- CSS Global -->
     <link rel="stylesheet" href="{% static 'css/global.css' %}" />
     <!-- CSS Administrativo -->
-    <link rel="stylesheet" href="{% static 'css/admin.css' %}"
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
   </head>
 
   <body>
@@ -158,6 +158,22 @@
             <a href="{% url 'exportar_turmas_csv' %}" class="btn btn-secondary">📥 Relatório CSV</a>
           </div>
         </div>
+
+        <!-- Configuração do Site -->
+        <div class="admin-card">
+          <div class="card-content">
+            <h3>
+              <span class="icon">⚙️</span> Configuração do Site
+            </h3>
+            <p>
+              Ajuste configurações globais do sistema, como e-mails para notificação de erros.
+            </p>
+          </div>
+          <div class="card-actions">
+            <a href="{% url 'gerenciar_configuracao_site' %}" class="btn">Acessar Configurações</a>
+          </div>
+        </div>
+
       </div>
     </div>
   </body>

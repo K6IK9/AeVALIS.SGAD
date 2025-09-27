@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #eeeeee;
+            padding-bottom: 10px;
+        }
+        .header h1 {
+            color: #333333;
+            margin: 0;
+        }
+        .content {
+            padding: 20px 0;
+            color: #555555;
+            line-height: 1.6;
+        }
+        .content p {
+            margin: 0 0 10px;
+        }
+        .button-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .button {
+            background-color: #0056b3;
+            color: #ffffff;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #999999;
+            padding-top: 20px;
+            border-top: 1px solid #eeeeee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Nova Avaliação Docente</h1>
+        </div>
+        <div class="content">
+            <p>Olá, {{ nome_aluno }}!</p>
+            <p>Uma nova avaliação docente já está disponível para você responder. Sua opinião é muito importante para a melhoria contínua da nossa instituição.</p>
+            <p>
+                <strong>Disciplina:</strong> {{ disciplina }}<br>
+                <strong>Professor(a):</strong> {{ professor }}
+            </p>
+            <p>Por favor, acesse o link abaixo para completar a avaliação.</p>
+        </div>
+        <div class="button-container">
+            <a href="{{ link_avaliacao }}" class="button">Responder Avaliação</a>
+        </div>
+        <div class="footer">
+            <p>Este é um e-mail automático, por favor, não responda.</p>
+            <p>IF SADD - Sistema de Avaliação Docente</p>
+        </div>
+    </div>
+</body>
+</html>

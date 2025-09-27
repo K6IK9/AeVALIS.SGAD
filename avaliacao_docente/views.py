@@ -17,14 +17,14 @@ from .models import (
     Curso,
     PeriodoLetivo,
     Turma,
+    MatriculaTurma,
     PerguntaAvaliacao,
     AvaliacaoDocente,
     RespostaAvaliacao,
     CicloAvaliacao,
+    ConfiguracaoSite,
 )
 from .models import (
-    Avaliacao,
-    MatriculaTurma,
     QuestionarioAvaliacao,
     CategoriaPergunta,
     QuestionarioPergunta,
@@ -54,7 +54,23 @@ from .forms import (
     QuestionarioAvaliacaoForm,
     CategoriaPerguntaForm,
     RegistroForm,
+    ConfiguracaoSiteForm
 )
+
+
+@login_required
+def gerenciar_configuracao_site(request):
+    config = ConfiguracaoSite.obter_config()
+    if request.method == 'POST':
+        form = ConfiguracaoSiteForm(request.POST, instance=config)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Configurações do site atualizadas com sucesso!')
+            return redirect('gerenciar_configuracao_site')
+    else:
+        form = ConfiguracaoSiteForm(instance=config)
+
+    return render(request, 'admin/gerenciar_configuracao.html', {'form': form})
 
 
 @login_required
@@ -1066,7 +1082,6 @@ class Avaliacoes(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["avaliacoes"] = Avaliacao.objects.all()
         return context
 
 
@@ -1551,7 +1566,7 @@ def editar_questionario_perguntas(request, questionario_id):
             else:
                 print(f"DEBUG: Form inválido - erros: {form.errors}")
                 messages.error(request, f"Erro ao adicionar pergunta: {form.errors}")
-        elif "editar_pergunta" in request.POST:
+        elif "salvar_edicao" in request.POST:
             print("DEBUG: Tentando editar pergunta")
             pergunta_id = request.POST.get("pergunta_id")
             try:
@@ -1570,6 +1585,7 @@ def editar_questionario_perguntas(request, questionario_id):
                     pergunta_editando = pergunta_para_editar  # Manter no modo de edição
             except PerguntaAvaliacao.DoesNotExist:
                 messages.error(request, "Pergunta não encontrada.")
+                return redirect("editar_questionario_perguntas", questionario_id=questionario.id)
 
         elif "remover_pergunta" in request.POST:
             pergunta_id = request.POST.get("pergunta_id")

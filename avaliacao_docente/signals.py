@@ -2,23 +2,21 @@ from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from django.apps import apps
 from .models import CicloAvaliacao, AvaliacaoDocente
+from .utils import enviar_email_notificacao_avaliacao
 
 
 @receiver(m2m_changed, sender=CicloAvaliacao.turmas.through)
 def criar_avaliacoes_automaticamente(sender, instance, action, pk_set, **kwargs):
     """
-    Signal para criar automaticamente as avaliações quando turmas são adicionadas a um ciclo
+    Signal para criar automaticamente as avaliações e notificar alunos.
     """
     if action == "post_add":
-        # Obter o modelo Turma
         Turma = apps.get_model("avaliacao_docente", "Turma")
 
-        # Criar avaliações para as turmas adicionadas
         for turma_id in pk_set:
             try:
                 turma = Turma.objects.get(id=turma_id)
 
-                # Criar avaliação para a turma
                 avaliacao, created = AvaliacaoDocente.objects.get_or_create(
                     ciclo=instance,
                     turma=turma,
@@ -29,6 +27,21 @@ def criar_avaliacoes_automaticamente(sender, instance, action, pk_set, **kwargs)
 
                 if created:
                     print(f"Avaliação criada: {avaliacao}")
+
+                    # Se a notificação estiver ativa no ciclo, enviar e-mails
+                    if instance.enviar_lembrete_email:
+                        # Buscar todos os alunos com matrícula ativa na turma
+                        matriculas = turma.matriculas.filter(status="ativa").select_related(
+                            "aluno__user"
+                        )
+                        print(f"Notificando {matriculas.count()} alunos da turma {turma.codigo_turma}...")
+                        for matricula in matriculas:
+                            try:
+                                enviar_email_notificacao_avaliacao(matricula.aluno.user, avaliacao)
+                            except Exception as e:
+                                print(
+                                    f"ERRO ao enviar e-mail para {matricula.aluno.user.email}: {e}"
+                                )
 
             except Turma.DoesNotExist:
                 print(f"Turma com ID {turma_id} não encontrada")

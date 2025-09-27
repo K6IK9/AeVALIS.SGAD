@@ -158,7 +158,7 @@
             {% elif qp.pergunta.tipo == 'texto_livre' %}
             <!-- Texto Livre -->
             <div class="texto-livre">
-              <textarea class="form-control" name="pergunta_{{ qp.pergunta.id }}" id="texto_{{ qp.pergunta.id }}" rows="4" placeholder="Digite sua resposta..." {% if qp.pergunta.obrigatoria %}required{% endif %}></textarea>
+              <textarea class="form-control" name="pergunta_{{ qp.pergunta.id }}" id="texto_{{ qp.pergunta.id }}" rows="4" placeholder="Digite sua resposta..." {% if qp.pergunta.obrigatoria %}required{% endif %} maxlength="200"></textarea>
             </div>
             {% endif %}
           </div>

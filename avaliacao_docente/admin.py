@@ -20,11 +20,13 @@ from .models import (
     AvaliacaoDocente,
     RespostaAvaliacao,
     # Modelos deprecated (manter compatibilidade)
-    Avaliacao,
-    Pergunta,
-    AvaliacaoPergunta,
-    RespostaAluno,
+    ConfiguracaoSite
 )
+
+
+# ============ CONFIGURAÇÕES DO SITE =============
+
+admin.site.register(ConfiguracaoSite)
 
 
 class PerfilAlunoInline(admin.StackedInline):
@@ -307,50 +309,48 @@ admin.site.register(HorarioTurma)
 
 # ============ MODELOS DEPRECATED ============
 
+# Os modelos abaixo foram marcados como obsoletos e suas classes de admin foram removidas
+# para evitar erros no sistema. O código foi mantido comentado para referência futura,
+# caso seja necessário consultar a estrutura antiga.
 
-# Registra os modelos deprecated com indicação
-@admin.register(Avaliacao)
-class AvaliacaoDeprecatedAdmin(admin.ModelAdmin):
-    list_display = ("__str__", "data_inicio", "data_fim", "status_avaliacao")
-    readonly_fields = (
-        "data_inicio",
-        "data_fim",
-        "status_avaliacao",
-        "professor_disciplina",
-    )
+# @admin.register(Avaliacao)
+# class AvaliacaoDeprecatedAdmin(admin.ModelAdmin):
+#     list_display = ("aluno", "turma", "ciclo_avaliacao", "respondida", "data_respondida")
+#     readonly_fields = ("aluno", "turma", "ciclo_avaliacao", "respondida", "data_respondida")
+#
+#     def has_add_permission(self, request):
+#         return False  # Não permite adicionar novos
+#
+#     class Meta:
+#         verbose_name = "Avaliação (DEPRECATED - Use AvaliacaoDocente)"
+#
+#
+# @admin.register(Pergunta)
+# class PerguntaDeprecatedAdmin(admin.ModelAdmin):
+#     list_display = ("__str__", "tipo_pergunta")
+#     readonly_fields = ("enunciado_pergunta", "tipo_pergunta")
+#
+#     def has_add_permission(self, request):
+#         return False
+#
+#     class Meta:
+#         verbose_name = "Pergunta (DEPRECATED - Use PerguntaAvaliacao)"
+#
+#
+# @admin.register(AvaliacaoPergunta)
+# class AvaliacaoPerguntaDeprecatedAdmin(admin.ModelAdmin):
+#     list_display = ("__str__",)
+#     readonly_fields = ("avaliacao", "pergunta")
+#
+#     def has_add_permission(self, request):
+#         return False
+#
+#
+# @admin.register(RespostaAluno)
+# class RespostaAlunoDeprecatedAdmin(admin.ModelAdmin):
+#     list_display = ("__str__",)
+#     readonly_fields = ("resposta_pergunta", "aluno", "avaliacao_pergunta")
+#
+#     def has_add_permission(self, request):
+#         return False
 
-    def has_add_permission(self, request):
-        return False  # Não permite adicionar novos
-
-    class Meta:
-        verbose_name = "Avaliação (DEPRECATED - Use AvaliacaoDocente)"
-
-
-@admin.register(Pergunta)
-class PerguntaDeprecatedAdmin(admin.ModelAdmin):
-    list_display = ("__str__", "tipo_pergunta")
-    readonly_fields = ("enunciado_pergunta", "tipo_pergunta")
-
-    def has_add_permission(self, request):
-        return False
-
-    class Meta:
-        verbose_name = "Pergunta (DEPRECATED - Use PerguntaAvaliacao)"
-
-
-@admin.register(AvaliacaoPergunta)
-class AvaliacaoPerguntaDeprecatedAdmin(admin.ModelAdmin):
-    list_display = ("__str__",)
-    readonly_fields = ("avaliacao", "pergunta")
-
-    def has_add_permission(self, request):
-        return False
-
-
-@admin.register(RespostaAluno)
-class RespostaAlunoDeprecatedAdmin(admin.ModelAdmin):
-    list_display = ("__str__",)
-    readonly_fields = ("resposta_pergunta", "aluno", "avaliacao_pergunta")
-
-    def has_add_permission(self, request):
-        return False

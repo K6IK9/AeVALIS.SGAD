@@ -11,8 +11,15 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config, Csv
+from decouple import config, Csv, RepositoryEnv
 import os
+
+# Carrega o arquivo .env explicitamente da pasta raiz do projeto
+DOTENV_FILE = Path(__file__).resolve().parent.parent / '.env'
+if DOTENV_FILE.exists():
+    # Usa um repositório customizado para o decouple ler o arquivo
+    custom_repo = RepositoryEnv(DOTENV_FILE)
+    config.repository = custom_repo
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -133,33 +140,37 @@ LANGUAGE_CODE = "pt-br"
 
 TIME_ZONE = "America/Cuiaba"
 
-USE_I18N = True
+USE_L10N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = "static/"
-
-# Diretórios onde o Django procura arquivos estáticos durante desenvolvimento
-# STATICFILES_DIRS = [
-#  BASE_DIR / "static",
-# ]
-
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
-
-# Diretório onde os arquivos estáticos são coletados para produção
-# STATIC_ROOT = BASE_DIR / "staticfiles"
-
+STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Configuração de Logging para enviar e-mails de erro
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'mail_admins_dynamic': {
+            'level': 'ERROR',
+            'class': 'avaliacao_docente.utils.DynamicAdminEmailHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins_dynamic'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
+
+
 
 # ============ CONFIGURAÇÕES DE AUTENTICAÇÃO ============
 

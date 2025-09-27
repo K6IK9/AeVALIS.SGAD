@@ -39,14 +39,18 @@
         <!-- Mensagens -->
         {% include "partials/messages.html" %}
 
-        <!-- Formulário de Nova/Editar Pergunta -->
-        <div class="form-section">
+        <div class="admin-card card-white-bg">
+            <!-- Formulário de Nova/Editar Pergunta -->
+            <div class="form-section">
             <h2>
                 {% if editando %}Editar Pergunta{% else %}Criar Nova Pergunta{% endif %}
             </h2>
 
             <form method="post" class="question-form">
                 {% csrf_token %}
+                {% if editando %}
+                    <input type="hidden" name="pergunta_id" value="{{ pergunta_editando.id }}">
+                {% endif %}
 
                 {% if form.errors %}
                 <div class="error-message">
@@ -141,6 +145,7 @@
                 </div>
             </form>
         </div>
+    </div>
 
         <!-- Filtros e Busca -->
         {% if not editando %}
@@ -178,8 +183,9 @@
         </div>
         {% endif %}
 
-        <!-- Lista de Perguntas -->
-        <div class="form-section">
+        <div class="admin-card card-white-bg">
+            <!-- Lista de Perguntas -->
+            <div class="form-section">
             <h2>📋 Perguntas do Questionário</h2>
 
             <div class="item-count">
@@ -274,6 +280,7 @@
             </div>
             {% endif %}
         </div>
+    </div>
     </div>
 
     <script>

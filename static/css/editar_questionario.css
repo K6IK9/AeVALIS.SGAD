@@ -12,9 +12,9 @@
     text-align: center;
     margin-bottom: 30px;
     padding: 30px 20px;
-    background-color: var(--cor-principal);
+    background-color: var(--cor03);
     border-radius: 15px;
-    color: var(--cor-branco);
+    color: var(--cor07);
 }
 
 .header h1 {
@@ -32,7 +32,7 @@
 
 /* Navegação breadcrumb seguindo padrão */
 .nav-breadcrumb {
-    background-color: var(--cor-branco);
+    background-color: var(--cor07);
     padding: 15px 20px;
     border-radius: 10px;
     margin-bottom: 25px;
@@ -41,17 +41,17 @@
 }
 
 .nav-breadcrumb a {
-    color: var(--cor-principal);
+    color: var(--cor03);
     text-decoration: none;
     transition: color 0.2s ease;
 }
 
 .nav-breadcrumb a:hover {
-    color: var(--cor-destaque);
+    color: var(--cor02);
 }
 
 .nav-breadcrumb span {
-    color: var(--cor-texto);
+    color: var(--cor05);
     margin: 0 8px;
 }
 
@@ -68,13 +68,13 @@
 }
 
 .message.success {
-    background-color: var(--cor-destaque);
-    color: var(--cor-branco);
+    background-color: var(--cor02);
+    color: var(--cor07);
 }
 
 .message.error {
-    background-color: var(--cor-erro);
-    color: var(--cor-branco);
+    background-color: var(--cor08);
+    color: var(--cor07);
 }
 
 /* Container principal em layout vertical */
@@ -87,7 +87,7 @@
 
 /* Seção do formulário - AGORA ACIMA */
 .form-section {
-    background-color: var(--cor-branco);
+    background-color: var(--cor07);
     border: 1px solid #e5e7eb;
     border-radius: 15px;
     padding: 25px;
@@ -97,10 +97,10 @@
 .form-header h2 {
     font-size: 1.3rem;
     font-weight: 700;
-    color: var(--cor-texto);
+    color: var(--cor05);
     margin: 0 0 25px 0;
     padding-bottom: 15px;
-    border-bottom: 2px solid var(--cor-principal);
+    border-bottom: 2px solid var(--cor03);
 }
 
 /* Formulário */
@@ -118,7 +118,7 @@
 
 .form-group label {
     font-weight: 600;
-    color: var(--cor-texto);
+    color: var(--cor05);
     font-size: 0.9rem;
 }
 
@@ -129,7 +129,7 @@
     border: 1px solid #d1d5db;
     border-radius: 8px;
     font-size: 0.9rem;
-    color: var(--cor-texto);
+    color: var(--cor05);
     transition: all 0.2s ease;
 }
 
@@ -137,7 +137,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: var(--cor-principal);
+    border-color: var(--cor03);
     box-shadow: 0 0 0 3px rgba(55, 111, 108, 0.1);
 }
 
@@ -147,7 +147,7 @@
 }
 
 .form-group small {
-    color: var(--cor-texto);
+    color: var(--cor05);
     opacity: 0.7;
     font-size: 0.8rem;
 }
@@ -165,7 +165,7 @@
 
 /* Seção de perguntas - AGORA ABAIXO */
 .questions-section {
-    background-color: var(--cor-branco);
+    background-color: var(--cor07);
     border: 1px solid #e5e7eb;
     border-radius: 15px;
     padding: 25px;
@@ -178,19 +178,19 @@
     align-items: center;
     margin-bottom: 25px;
     padding-bottom: 20px;
-    border-bottom: 2px solid var(--cor-principal);
+    border-bottom: 2px solid var(--cor03);
 }
 
 .section-header h2 {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--cor-texto);
+    color: var(--cor05);
     margin: 0;
 }
 
 .questions-count {
-    background-color: var(--cor-principal);
-    color: var(--cor-branco);
+    background-color: var(--cor03);
+    color: var(--cor07);
     padding: 8px 16px;
     border-radius: 25px;
     font-size: 0.9rem;
@@ -208,17 +208,17 @@
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 20px;
-    background-color: var(--cor-branco);
+    background-color: var(--cor07);
     transition: all 0.3s ease;
 }
 
 .question-card:hover {
-    border-color: var(--cor-principal);
+    border-color: var(--cor03);
     box-shadow: 0 6px 20px rgba(55, 111, 108, 0.15);
 }
 
 .question-card.editing {
-    border-color: var(--cor-principal);
+    border-color: var(--cor03);
     background-color: #f0fdf4;
     box-shadow: 0 6px 20px rgba(55, 111, 108, 0.15);
 }
@@ -231,8 +231,8 @@
 }
 
 .question-number {
-    background-color: var(--cor-principal);
-    color: var(--cor-branco);
+    background-color: var(--cor03);
+    color: var(--cor07);
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -250,7 +250,7 @@
 .question-header h3 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--cor-texto);
+    color: var(--cor05);
     margin: 0 0 8px 0;
     line-height: 1.4;
 }
@@ -263,8 +263,8 @@
 }
 
 .question-type {
-    background-color: var(--cor-principal);
-    color: var(--cor-branco);
+    background-color: var(--cor03);
+    color: var(--cor07);
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 0.8rem;
@@ -275,8 +275,8 @@
 }
 
 .question-required {
-    background-color: var(--cor-erro);
-    color: var(--cor-branco);
+    background-color: var(--cor08);
+    color: var(--cor07);
     padding: 4px 8px;
     border-radius: 6px;
     font-size: 0.7rem;
@@ -297,18 +297,18 @@
     gap: 8px;
     margin-bottom: 10px;
     font-weight: 600;
-    color: var(--cor-texto);
+    color: var(--cor05);
     font-size: 0.9rem;
 }
 
 .option {
     padding: 8px 15px;
     margin: 6px 0;
-    background-color: var(--cor-cinza);
+    background-color: var(--cor01);
     border-radius: 8px;
-    color: var(--cor-texto);
+    color: var(--cor05);
     font-size: 0.9rem;
-    border-left: 3px solid var(--cor-principal);
+    border-left: 3px solid var(--cor03);
 }
 
 .question-actions {
@@ -321,12 +321,12 @@
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    color: var(--cor-texto);
+    color: var(--cor05);
 }
 
 .empty-state i {
     font-size: 4rem;
-    color: var(--cor-principal);
+    color: var(--cor03);
     margin-bottom: 20px;
 }
 
@@ -359,56 +359,56 @@
 }
 
 .btn-primary {
-    background-color: var(--cor-principal);
-    color: var(--cor-branco);
+    background-color: var(--cor03);
+    color: var(--cor07);
 }
 
 .btn-primary:hover {
-    background-color: var(--cor-destaque);
-    color: var(--cor-texto);
+    background-color: var(--cor02);
+    color: var(--cor05);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 253, 148, 0.3);
 }
 
 .btn-secondary {
-    background-color: var(--cor-principal);
-    color: var(--cor-branco);
+    background-color: var(--cor03);
+    color: var(--cor07);
 }
 
 .btn-secondary:hover {
-    background-color: var(--cor-texto);
+    background-color: var(--cor05);
     transform: translateY(-2px);
 }
 
 .btn-edit {
-    background-color: var(--cor-principal);
-    color: var(--cor-branco);
+    background-color: var(--cor03);
+    color: var(--cor07);
     padding: 8px 15px;
     font-size: 0.8rem;
 }
 
 .btn-edit:hover {
-    background-color: var(--cor-destaque);
-    color: var(--cor-texto);
+    background-color: var(--cor02);
+    color: var(--cor05);
     text-decoration: none;
 }
 
 .btn-remove {
-    background-color: var(--cor-texto);
-    color: var(--cor-branco);
+    background-color: var(--cor05);
+    color: var(--cor07);
     padding: 8px 15px;
     font-size: 0.8rem;
 }
 
 .btn-remove:hover {
-    background-color: var(--cor-erro);
+    background-color: var(--cor08);
 }
 
 /* Erros */
 .error-message,
 .field-error {
-    color: var(--cor-branco);
-    background-color: var(--cor-erro);
+    color: var(--cor07);
+    background-color: var(--cor08);
     padding: 12px 15px;
     border-radius: 8px;
     font-size: 0.9rem;
@@ -522,8 +522,8 @@
 .category-order-number {
     display: inline-block;
     padding: 8px 12px;
-    background: var(--cor-principal);
-    color: var(--cor-branco);
+    background: var(--cor03);
+    color: var(--cor07);
     border-radius: 20px;
     font-weight: 600;
     font-size: 14px;

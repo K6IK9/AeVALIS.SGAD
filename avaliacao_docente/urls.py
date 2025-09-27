@@ -65,7 +65,12 @@ urlpatterns = [
         views.matricular_alunos_massa,
         name="matricular_alunos_massa",
     ),
-    path("admin-hub/", views.AdminHubView.as_view(), name="admin_hub"),
+    path("admin_hub/", views.AdminHubView.as_view(), name="admin_hub"),
+    path(
+        "admin_hub/configuracao/",
+        views.gerenciar_configuracao_site,
+        name="gerenciar_configuracao_site",
+    ),
     # URLs para exportação CSV do admin hub
     path(
         "admin-hub/exportar-usuarios-csv/",

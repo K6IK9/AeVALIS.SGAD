@@ -965,3 +965,40 @@ class CategoriaPerguntaForm(forms.ModelForm):
                 )
 
         return ordem
+
+from .models import QuestionarioAvaliacao, CategoriaPergunta, PerguntaAvaliacao, RespostaAvaliacao, ConfiguracaoSite
+from django.forms import modelformset_factory
+
+
+class QuestionarioForm(forms.ModelForm):
+    class Meta:
+        model = QuestionarioAvaliacao
+        fields = ["titulo", "descricao"]
+
+
+class CategoriaForm(forms.ModelForm):
+    class Meta:
+        model = CategoriaPergunta
+        fields = ["nome"]
+
+
+class PerguntaForm(forms.ModelForm):
+    class Meta:
+        model = PerguntaAvaliacao
+        fields = ["enunciado", "tipo", "categoria", "obrigatoria"]
+
+
+RespostaFormSet = modelformset_factory(RespostaAvaliacao, fields=("valor_texto",), extra=1)
+
+class ConfiguracaoSiteForm(forms.ModelForm):
+    class Meta:
+        model = ConfiguracaoSite
+        fields = ['metodo_envio_email', 'email_notificacao_erros']
+        widgets = {
+            'metodo_envio_email': forms.RadioSelect,
+            'email_notificacao_erros': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'seuerro@email.com'})
+        }
+        labels = {
+            'metodo_envio_email': 'Método de Envio de E-mail',
+            'email_notificacao_erros': 'E-mail para Notificação de Erros'
+        }

@@ -1,0 +1,115 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IF SADD - Configuração do Site</title>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    <style>
+        .form-group ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .form-group li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'admin_hub' %}" class="back-button">← Voltar ao Hub de Administração</a>
+
+        <div class="header">
+            <h1>⚙️ Configuração do Site</h1>
+            <p>Ajuste configurações globais do sistema, incluindo o método de envio de e-mails.</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="form-section">
+            <h2><span class="icon">⚙️</span> Configurações de E-mail</h2>
+            <p>Configure aqui o e-mail que receberá notificações de erros quando o sistema estiver em modo de produção (DEBUG=False).</p>
+            <form method="post" class="mt-4">
+                {% csrf_token %}
+                
+                <h3>Método de Envio de E-mail</h3>
+                <div class="form-group">
+                    {{ form.metodo_envio_email }}
+                    {% if form.metodo_envio_email.help_text %}
+                        <small class="form-text text-muted">{{ form.metodo_envio_email.help_text }}</small>
+                    {% endif %}
+                </div>
+
+                <hr>
+
+                <h3>Configurações Gerais</h3>
+                <div class="form-group">
+                    <label for="{{ form.email_notificacao_erros.id_for_label }}">{{ form.email_notificacao_erros.label }}</label>
+                    {{ form.email_notificacao_erros }}
+                    {% if form.email_notificacao_erros.help_text %}
+                        <small class="form-text text-muted">{{ form.email_notificacao_erros.help_text }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="card-actions mt-4">
+                    <button type="submit" class="btn">Salvar Configurações</button>
+                </div>
+            </form>
+            <div class="mt-4">
+                <h4>Instruções de Configuração (.env)</h4>
+                <p>As credenciais de e-mail devem ser configuradas no seu arquivo <code>.env</code>.</p>
+                <div id="smtp-instructions" style="display: none;">
+                    <h5>Para SMTP:</h5>
+                    <pre><code>EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST='smtp.seuprovedor.com'
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER='seu-email@provedor.com'
+EMAIL_HOST_PASSWORD='sua-senha'
+DEFAULT_FROM_EMAIL='seu-email@provedor.com'</code></pre>
+                </div>
+                <div id="api-instructions" style="display: none;">
+                    <h5>Para API SendGrid:</h5>
+                    <pre><code># Remova as variáveis EMAIL_* acima e adicione estas:
+SENDGRID_API_KEY='SUA_CHAVE_API_DO_SENDGRID'
+DEFAULT_FROM_EMAIL='email_verificado@sendgrid.com'</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const smtpRadio = document.querySelector('input[name="metodo_envio_email"][value="smtp"]');
+            const apiRadio = document.querySelector('input[name="metodo_envio_email"][value="api"]');
+            const smtpInstructions = document.getElementById('smtp-instructions');
+            const apiInstructions = document.getElementById('api-instructions');
+
+            function toggleInstructions() {
+                if (smtpRadio.checked) {
+                    smtpInstructions.style.display = 'block';
+                    apiInstructions.style.display = 'none';
+                } else {
+                    smtpInstructions.style.display = 'none';
+                    apiInstructions.style.display = 'block';
+                }
+            }
+
+            smtpRadio.addEventListener('change', toggleInstructions);
+            apiRadio.addEventListener('change', toggleInstructions);
+
+            // Initial state
+            toggleInstructions();
+        });
+    </script>
+</body>
+</html>

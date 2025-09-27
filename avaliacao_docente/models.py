@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 
 class PerfilProfessorManager(models.Manager):
@@ -669,84 +670,42 @@ class RespostaAvaliacao(models.Model):
             return self.valor_texto or "Sem resposta"
 
 
+class ConfiguracaoSite(models.Model):
+    """Modelo para armazenar configurações globais do site. Singleton."""
+    METODO_CHOICES = (
+        ('api', 'API (Recomendado para Vercel)'),
+        ('smtp', 'SMTP (Para desenvolvimento local/outros hosts)'),
+    )
+    metodo_envio_email = models.CharField(
+        max_length=10,
+        choices=METODO_CHOICES,
+        default='api',
+        help_text="Escolha o método para enviar e-mails. 'API' é necessário para a Vercel."
+    )
+    email_notificacao_erros = models.EmailField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="E-mail para receber notificações de erros do sistema (quando DEBUG=False)."
+    )
+
+    def save(self, *args, **kwargs):
+        """Garante que apenas uma instância deste modelo exista."""
+        if not self.pk and ConfiguracaoSite.objects.exists():
+            # Impede a criação de uma nova instância se uma já existir
+            raise ValidationError('Só pode haver uma instância de Configuração do Site.')
+        return super(ConfiguracaoSite, self).save(*args, **kwargs)
+
+    @classmethod
+    def obter_config(cls):
+        """Obtém a instância de configuração única, criando-a se não existir."""
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+
 # ============ MODELOS DEPRECATED (MANTER COMPATIBILIDADE) ============
 
+# As definições dos modelos abaixo foram removidas em [data da remoção].
+# Eles foram substituídos pelo novo sistema de avaliação (AvaliacaoDocente, etc.)
+# e mantidos aqui apenas como um comentário histórico.
 
-class Pergunta(models.Model):
-    """
-    DEPRECATED: Use PerguntaAvaliacao no lugar
-    Mantido apenas para compatibilidade com código existente
-    """
-
-    enunciado_pergunta = models.CharField(max_length=150)
-    tipo_pergunta = models.CharField(max_length=20)
-
-    class Meta:
-        verbose_name = "Pergunta (Deprecated)"
-        verbose_name_plural = "Perguntas (Deprecated)"
-
-    def __str__(self):
-        return f"[DEPRECATED] {self.enunciado_pergunta}"
-
-
-class Avaliacao(models.Model):
-    """
-    DEPRECATED: Mantido apenas para compatibilidade com código existente
-    Use AvaliacaoDocente no lugar
-    """
-
-    data_inicio = models.DateField()
-    data_fim = models.DateField()
-    status_avaliacao = models.CharField(max_length=15)
-    professor_disciplina = models.ForeignKey(
-        PerfilProfessor, on_delete=models.CASCADE, related_name="avaliacoes_antigas"
-    )
-
-    class Meta:
-        verbose_name = "Avaliação (Deprecated)"
-        verbose_name_plural = "Avaliações (Deprecated)"
-
-    def __str__(self):
-        return f"[DEPRECATED] Avaliação de {self.professor_disciplina} [{self.status_avaliacao}]"
-
-
-class AvaliacaoPergunta(models.Model):
-    """
-    DEPRECATED: Mantido apenas para compatibilidade
-    """
-
-    avaliacao = models.ForeignKey(
-        Avaliacao, on_delete=models.CASCADE, related_name="perguntas_antigas"
-    )
-    pergunta = models.ForeignKey(
-        Pergunta, on_delete=models.CASCADE, related_name="avaliacoes_antigas"
-    )
-
-    class Meta:
-        verbose_name = "Avaliação-Pergunta (Deprecated)"
-        verbose_name_plural = "Avaliações-Perguntas (Deprecated)"
-
-    def __str__(self):
-        return f"[DEPRECATED] {self.pergunta} na {self.avaliacao}"
-
-
-class RespostaAluno(models.Model):
-    """
-    DEPRECATED: Mantido apenas para compatibilidade
-    Use RespostaAvaliacao no lugar
-    """
-
-    resposta_pergunta = models.CharField(max_length=300)
-    aluno = models.ForeignKey(
-        PerfilAluno, on_delete=models.CASCADE, related_name="respostas_antigas"
-    )
-    avaliacao_pergunta = models.ForeignKey(
-        AvaliacaoPergunta, on_delete=models.CASCADE, related_name="respostas_antigas"
-    )
-
-    class Meta:
-        verbose_name = "Resposta Aluno (Deprecated)"
-        verbose_name_plural = "Respostas Alunos (Deprecated)"
-
-    def __str__(self):
-        return f"[DEPRECATED] {self.aluno} respondeu '{self.resposta_pergunta[:30]}...'"
