@@ -178,6 +178,38 @@ def gerenciar_usuarios(request):
         messages.error(request, "Você não tem permissão para acessar esta página.")
         return redirect("inicio")
 
+    if request.method == "POST":
+        form = GerenciarRoleForm(request.POST)
+        if form.is_valid():
+            usuario = form.cleaned_data["usuario"]
+            nova_role = form.cleaned_data["role"]
+
+            # Remove todas as roles existentes
+            for role in ["admin", "coordenador", "professor", "aluno"]:
+                if has_role(usuario, role):
+                    remove_role(usuario, role)
+
+            # Atribui a nova role
+            assign_role(usuario, nova_role)
+
+            # Marcar que a role foi alterada manualmente para evitar sobrescrita no próximo login
+            mark_role_manually_changed(usuario)
+
+            # Gerenciar perfis usando função utilitária
+            mensagens_perfil = gerenciar_perfil_usuario(usuario, nova_role)
+
+            # Adicionar mensagens informativas sobre mudanças de perfil
+            for msg in mensagens_perfil:
+                messages.info(request, msg)
+
+            messages.success(
+                request,
+                f"Role de {usuario.username} alterada para {nova_role} com sucesso!",
+            )
+            return redirect("gerenciar_usuarios")
+    else:
+        form = GerenciarRoleForm()
+
     # Obter todos os usuários ordenados
     usuarios_queryset = User.objects.all().order_by("username")
 
@@ -200,6 +232,7 @@ def gerenciar_usuarios(request):
     alunos_count = User.objects.filter(groups__name="aluno").count()
 
     context = {
+        "form": form,
         "usuarios_detalhados": usuarios_detalhados,
         "usuarios": usuarios_detalhados,  # Todos os usuários para filtragem client-side
         "total_usuarios": total_usuarios,

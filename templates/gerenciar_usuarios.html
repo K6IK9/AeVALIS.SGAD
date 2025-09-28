@@ -210,6 +210,9 @@
               <td data-label="Funções">
                 <span class="role-badge {{ item.usuario|get_user_role_class }}">
                   {{ item.role }}
+                  {% if item.role_manual %}
+                    <small title="Role definida manualmente (não será alterada pelo SUAP)">🔒</small>
+                  {% endif %}
                 </span>
               </td>
               <td data-label="Status">
@@ -230,6 +233,18 @@
                      title="Editar usuário">
                     ✏️ Editar
                   </a>
+                  {% endif %}
+                  <button class="btn btn-sm btn-primary"
+                    onclick="alterarRole({{ item.usuario.id }}, '{{ item.usuario.first_name }} {{ item.usuario.last_name }}', '{{ item.usuario.username }}', '{{ item.role }}')"
+                    title="Alterar permissões do usuário">
+                    🔐 Alterar Role
+                  </button>
+                  {% if item.role_manual and user|get_user_role == 'Administrador' %}
+                  <button class="btn btn-sm btn-warning"
+                    onclick="resetarRoleAutomatica({{ item.usuario.id }}, '{{ item.usuario.username }}')"
+                    title="Permitir que o SUAP volte a gerenciar automaticamente a role">
+                    🔓 Resetar Auto
+                  </button>
                   {% endif %}
                   {% if user.is_superuser and user != item.usuario %}
                   <form method="post" action="{% url 'excluir_usuario' item.usuario.id %}" 
@@ -266,12 +281,58 @@
     {% endif %}
   </div>
 
+  <!-- Modal para Alteração de Role -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div id="role-modal" class="role-modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Alterar Permissões do Usuário</h3>
+        <button type="button" class="btn-close-modal" onclick="closeModal('modal-overlay'); usuarioAtual = null; document.getElementById('role-form').reset();">
+          ✕ Fechar
+        </button>
+      </div>
+
+      <div class="modal-content">
+        <div id="user-info" class="user-info">
+          <!-- Informações do usuário serão carregadas aqui -->
+        </div>
+
+        <form id="role-form" method="post">
+          {% csrf_token %}
+          <input type="hidden" id="usuario-id" name="usuario" value="">
+
+          <div class="form-group">
+            <label for="role-select">Nova Role:</label>
+            <select id="role-select" name="role" class="form-control" required>
+              <option value="">Selecione uma role</option>
+              <option value="admin">Admin</option>
+              <option value="coordenador">Coordenador</option>
+              <option value="professor">Professor</option>
+              <option value="aluno">Aluno</option>
+            </select>
+          </div>
+
+          <div class="actions-end">
+            <button type="button" class="btn btn-secondary"
+              onclick="closeModal('modal-overlay'); usuarioAtual = null; document.getElementById('role-form').reset();">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-success">
+              Alterar Permissões
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Script global de gerenciamento -->
   <script src="{% static 'js/gerenciar-global.js' %}"></script>
 
   <!-- Scripts específicos da página -->
   {% if not editing %}
     <script>
+    let usuarioAtual = null;
+
     // Função para filtrar a tabela de usuários usando a função global
     function filterTableUsuarios() {
       const searchFilter = document.getElementById('searchUsuario').value.toLowerCase();
@@ -356,6 +417,34 @@
       document.getElementById('filterRole').value = '';
       document.getElementById('filterStatus').value = '';
       filterTableUsuarios();
+    }
+
+    // Funções para alteração de roles
+    function alterarRole(userId, nome, matricula, roleAtual) {
+      usuarioAtual = userId;
+
+      // Atualizar informações do usuário
+      document.getElementById('user-info').innerHTML = `
+        <h4>Dados do Usuário</h4>
+        <p><strong>Nome:</strong> ${nome}</p>
+        <p><strong>Matrícula:</strong> ${matricula}</p>
+        <p><strong>Role Atual:</strong> <span class="role-badge role-${roleAtual.toLowerCase()}">${roleAtual}</span></p>
+      `;
+
+      // Definir o ID do usuário no formulário
+      document.getElementById('usuario-id').value = userId;
+
+      // Limpar seleção anterior
+      document.getElementById('role-select').value = '';
+
+      // Mostrar modal usando a função global
+      openModal('modal-overlay');
+    }
+
+    function resetarRoleAutomatica(userId, username) {
+      if (confirm(`Tem certeza que deseja permitir que o SUAP volte a gerenciar automaticamente a role do usuário ${username}?\n\nIsso significa que a role será redefinida baseada no tipo de usuário no SUAP no próximo login.`)) {
+        window.location.href = `/resetar-role-automatica/${userId}/`;
+      }
     }
 
     // Adiciona event listeners aos campos de filtro

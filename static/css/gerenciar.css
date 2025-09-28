@@ -1495,8 +1495,6 @@ input[type="checkbox"] {
     margin-bottom: 15px;
 }
 
-
-
 /* Inline forms */
 .inline-form {
     display: inline;
@@ -2098,3 +2096,63 @@ input[type="checkbox"] {
 .required {
     color: var(--cor-danger);
 }
+
+/* ========== ESTILOS ESPECÍFICOS PARA MODAL DE ROLES ========== */
+
+/* Modal específico para alteração de roles */
+.role-modal {
+    background: white;
+    border-radius: 15px;
+    padding: 0;
+    margin: 20px;
+    max-width: 500px;
+    width: 90%;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease;
+}
+
+.btn-close-modal {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 12px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-close-modal:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.user-info {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.user-info h4 {
+    color: var(--cor03);
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+/* Responsividade para modal de roles */
+@media (max-width: 480px) {
+    .role-modal {
+        margin: 10px;
+        width: calc(100% - 20px);
+    }
+}
+
+/* Estilos específicos para cada tipo de role */
+.role-admin { background: var(--cor08); }
+.role-coordenador { background: #6f42c1; }
+.role-professor { background: #fd7e14; }
+.role-aluno { background: #198754; }
+.role-servidor { background: #17a2b8; }
+.role-sem-role { background: #6c757d; }

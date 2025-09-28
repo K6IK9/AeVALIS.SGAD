@@ -4,7 +4,6 @@ from . import views
 from .views import AdminHubView, IndexView
 
 urlpatterns = [
-    path("gerenciar-roles/", views.gerenciar_roles, name="gerenciar_roles"),
     path(
         "resetar-role-automatica/<int:usuario_id>/",
         views.resetar_role_automatica,
