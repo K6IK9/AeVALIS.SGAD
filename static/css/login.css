@@ -85,9 +85,17 @@ header p {
 }
 
 @keyframes errorPulse {
-    0% { box-shadow: 0 0 0 0 rgba(255, 60, 60, 0.4); }
-    70% { box-shadow: 0 0 0 6px rgba(255, 60, 60, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 60, 60, 0); }
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 60, 60, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(255, 60, 60, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 60, 60, 0);
+    }
 }
 
 .login-error p {
@@ -276,9 +284,99 @@ footer span {
     margin: 10px 0 0 0;
 }
 
-/* ===== TEXTO INSTITUCIONAL ===== */
-.institucional {
-    margin-top: 5px;
+/* ===== MODOS DE LOGIN ===== */
+.login-mode {
+    display: none;
+    flex-direction: column;
+    gap: 25px;
+    width: 100%;
+}
+
+.login-mode.active {
+    display: flex;
+}
+
+.login-mode .form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* ===== BOTÃO DE ALTERNÂNCIA ===== */
+.alternar-login {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--cor02);
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.btn-link:hover {
+    color: #00e085;
+}
+
+/* ===== BOTÃO DE LOGIN TRADICIONAL ===== */
+#buttonLoginTraditional {
+    width: 200px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: none;
+    box-shadow: var(--shadow);
+
+    background: var(--cor02);
+    color: var(--cor05);
+
+    font-weight: bold;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    /* Mantém o botão dentro da caixa */
+    display: block;
+    margin: 0 auto;
+}
+
+#buttonLoginTraditional:hover {
+    background: #00e085;
+    box-shadow: 0 6px 12px rgba(0, 253, 148, 0.3);
+    color: var(--cor05);
+}
+
+/* ===== ANIMAÇÕES DE TRANSIÇÃO ===== */
+.login-mode {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.login-mode.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+body.loaded .login-mode.active {
+    animation: fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ===== RESPONSIVIDADE DO LOGIN ===== */
@@ -288,16 +386,16 @@ footer span {
         text-align: center;
         top: 2vh;
     }
-    
+
     body header img {
         margin-right: 0;
         margin-bottom: 10px;
     }
-    
+
     body main {
         padding: 20px 0;
     }
-    
+
     #loginForm {
         padding: 80px 25px 40px 25px;
     }
@@ -312,20 +410,21 @@ footer span {
 }
 
 @media (max-width: 480px) {
-    body header, 
+
+    body header,
     body footer {
         width: 95%;
     }
-    
+
     body header h1 {
         font-size: 1.5rem;
     }
-    
+
     #perfilImg {
         width: 120px;
         height: 120px;
     }
-    
+
     #perfilImg img {
         width: 60px;
     }

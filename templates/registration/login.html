@@ -23,24 +23,63 @@
     </header>
     <main>
       <form method="post" id="loginForm">
+        {% csrf_token %}
         {% include "partials/messages.html" %}
 
         <aside id="perfilImg">
           <img src="{% static 'assets/saad_logo.svg' %}" alt="SUAP Logo" />
         </aside>
 
-        <!-- Botão de login com SUAP -->
-        <div class="botao-login-container">
-          <a href="{% url 'social:begin' 'suap' %}" id="buttonLogin">
-            Entrar com SUAP
-          </a>
+        <!-- Modo SUAP (padrão) -->
+        <div id="suapMode" class="login-mode active">
+          <div class="botao-login-container">
+            <a href="{% url 'social:begin' 'suap' %}" id="buttonLogin">
+              Entrar com SUAP
+            </a>
+          </div>
+
+          <div class="info-texto">
+            <p>
+              Clique no botão acima para fazer login<br />
+              usando suas credenciais do SUAP
+            </p>
+          </div>
+
+          <div class="alternar-login">
+            <button type="button" id="toggleLoginMode" class="btn-link">
+              Não sou aluno? Clique aqui
+            </button>
+          </div>
         </div>
 
-        <div class="info-texto">
-          <p>
-            Clique no botão acima para fazer login<br />
-            usando suas credenciais do SUAP
-          </p>
+        <!-- Modo Login Tradicional -->
+        <div id="traditionalMode" class="login-mode">
+          <div class="form-fields">
+            <label for="id_username" class="labelInput">
+              <img src="{% static 'assets/perfil.svg' %}" alt="Usuário">
+              <input type="text" name="username" id="id_username" placeholder="Matrícula ou Username" required>
+            </label>
+
+            <label for="id_password" class="labelInput">
+              <img src="{% static 'assets/lock.svg' %}" alt="Senha">
+              <input type="password" name="password" id="id_password" placeholder="Senha" required>
+              <button type="button" class="toggle-password" data-target="id_password">
+                <img src="{% static 'assets/eye.svg' %}" alt="Mostrar senha">
+              </button>
+            </label>
+          </div>
+
+          <div class="botao-login-container">
+            <button type="submit" id="buttonLoginTraditional">
+              Entrar
+            </button>
+          </div>
+
+          <div class="alternar-login">
+            <button type="button" id="backToSuap" class="btn-link">
+              ← Voltar ao login com SUAP
+            </button>
+          </div>
         </div>
       </form>
     </main>
@@ -50,5 +89,8 @@
         Use suas credenciais institucionais para acessar
       </p>
     </footer>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/login.js' %}"></script>
   </body>
 </html>
