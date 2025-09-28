@@ -100,9 +100,10 @@
             <label for="filterCoordenador">Filtrar por Coordenador:</label>
             <select id="filterCoordenador">
               <option value="">Todos os coordenadores</option>
+              <option value="sem coordenador">Sem Coordenador</option>
               {% for coord in coordenadores %}
-              <option value="{{ coord.user.get_full_name }}">
-                {{ coord.user.get_full_name }}
+              <option value="{{ coord }}">
+                {{ coord }}
               </option>
               {% endfor %}
             </select>
@@ -142,7 +143,7 @@
               {% for curso in cursos %}
               <tr data-nome="{{ curso.curso_nome }}" 
                   data-sigla="{{ curso.curso_sigla }}" 
-                  data-coordenador="{{ curso.coordenador_curso.get_full_name|default:'' }}">
+                  data-coordenador="{% if curso.coordenador_curso %}{{ curso.coordenador_curso }}{% else %}sem coordenador{% endif %}">
                 <td class="col-id">{{ curso.id }}</td>
                 <td class="col-nome">
                   <strong>{{ curso.curso_nome }}</strong>

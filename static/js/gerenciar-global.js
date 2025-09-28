@@ -1,8 +1,14 @@
 /**
  * gerenciar-global.js
  * Arquivo JavaScript global para funcionalidades comuns das páginas de gerenciamento
- * 
- * Funcionalidades incluídas:
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.style.display = 'none';
+    modal.classList.remove('show', 'active');
+    document.body.style.overflow = ''; // Restaurar scroll normal
+  }
+}uncionalidades incluídas:
  * - Drag scroll em tabelas
  * - Gerenciamento de modais
  * - Filtros e busca

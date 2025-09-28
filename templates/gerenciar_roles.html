@@ -151,11 +151,11 @@
             </div>
 
         <!-- Modal para Alteração de Role -->
-        <div id="modal-overlay" class="modal-overlay" onclick="fecharModal(event)">
+        <div id="modal-overlay" class="modal-overlay">
             <div id="role-modal" class="role-modal" onclick="event.stopPropagation()">
                 <div class="modal-header">
                     <h3>Alterar Permissões do Usuário</h3>
-                    <button type="button" class="btn-close-modal" onclick="fecharModal()">
+                    <button type="button" class="btn-close-modal" onclick="closeModal('modal-overlay'); usuarioAtual = null; document.getElementById('role-form').reset();">
                         ✕ Fechar
                     </button>
                 </div>
@@ -182,7 +182,7 @@
 
                         <div class="actions-end">
                             <button type="button" class="btn btn-secondary"
-                                onclick="fecharModal()">
+                                onclick="closeModal('modal-overlay'); usuarioAtual = null; document.getElementById('role-form').reset();">
                                 Cancelar
                             </button>
                             <button type="submit" class="btn btn-success">
@@ -201,12 +201,7 @@
     <script>
         let usuarioAtual = null;
 
-        // Fechar modal com tecla Escape
-        document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape') {
-                fecharModal();
-            }
-        });
+        // Fechar modal com tecla Escape (removido - agora usa o global)
 
         // Filtros client-side
         function filterTableRoles() {
@@ -290,8 +285,8 @@
             // Limpar seleção anterior
             document.getElementById('role-select').value = '';
 
-            // Mostrar modal
-            document.getElementById('modal-overlay').classList.add('active');
+            // Mostrar modal usando a função global
+            openModal('modal-overlay');
         }
 
         function resetarRoleAutomatica(userId, username) {
@@ -300,18 +295,7 @@
             }
         }
 
-        function fecharModal(event) {
-            // Se o evento for fornecido e não for clique no overlay, não fechar
-            if (event && event.target !== event.currentTarget && !event.target.classList.contains('btn-close-modal')) {
-                return;
-            }
-
-            document.getElementById('modal-overlay').classList.remove('active');
-            usuarioAtual = null;
-
-            // Limpar formulário
-            document.getElementById('role-form').reset();
-        }
+        // Função fecharModal removida - agora usa closeModal global
 
         // Inicializar componentes quando a página carrega
         document.addEventListener('DOMContentLoaded', function() {

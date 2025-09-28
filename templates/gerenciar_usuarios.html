@@ -156,7 +156,7 @@
     {% if not editing %}
     <div class="form-section">
       <div class="section-header">
-        <h2>👤 Lista de Usuários ({{ usuarios.count }})</h2>
+        <h2>👤 Lista de Usuários</h2>
         {% if user.is_superuser %}
         <a href="{% url 'registro' %}?next={% url 'gerenciar_usuarios' %}" class="btn">➕ Novo Usuário</a>
         {% endif %}
@@ -270,34 +270,28 @@
   <!-- Scripts específicos da página -->
   {% if not editing %}
     <script>
-    // Função para filtrar a tabela de usuários
+    // Função para filtrar a tabela de usuários usando a função global
     function filterTableUsuarios() {
       const searchFilter = document.getElementById('searchUsuario').value.toLowerCase();
       const roleFilter = document.getElementById('filterRole').value.toLowerCase();
       const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
-      
+
       const tableRows = document.querySelectorAll('.data-table tbody tr');
       let visibleCount = 0;
 
       tableRows.forEach(row => {
         const cells = row.querySelectorAll('td');
-        
+
         // Verifica se a linha tem células (não é a linha "Nenhum usuário encontrado")
         if (cells.length > 1) {
-          const userName = cells[1].textContent.toLowerCase(); // Nome
-          const userEmail = cells[2].textContent.toLowerCase(); // Email  
-          const userMatricula = cells[3].textContent.toLowerCase(); // Matrícula
-          const userRole = cells[4].textContent.toLowerCase(); // Role
-          const userStatus = cells[5].textContent.toLowerCase(); // Status
+          // Busca personalizada em múltiplos campos data-
+          const searchMatch = !searchFilter ||
+            (row.getAttribute('data-nome') || '').toLowerCase().includes(searchFilter) ||
+            (row.getAttribute('data-email') || '').toLowerCase().includes(searchFilter) ||
+            (row.getAttribute('data-matricula') || '').toLowerCase().includes(searchFilter);
 
-          // A busca procura em nome, email e matrícula
-          const searchMatch = !searchFilter || 
-            userName.includes(searchFilter) || 
-            userEmail.includes(searchFilter) || 
-            userMatricula.includes(searchFilter);
-          
-          const roleMatch = !roleFilter || userRole.includes(roleFilter);
-          const statusMatch = !statusFilter || userStatus.includes(statusFilter);
+          const roleMatch = !roleFilter || (row.getAttribute('data-role') || '').toLowerCase().includes(roleFilter);
+          const statusMatch = !statusFilter || (row.getAttribute('data-status') || '').toLowerCase().includes(statusFilter);
 
           if (searchMatch && roleMatch && statusMatch) {
             row.style.display = '';
@@ -308,37 +302,49 @@
         }
       });
 
+      // Atualizar contador específico desta página
+      updateUserCounter();
+
+      // Lidar com empty state
+      handleEmptyState();
+    }
+
+    // Função para atualizar o contador de usuários
+    function updateUserCounter() {
+      const visibleRows = document.querySelectorAll('.data-table tbody tr:not([style*="display: none"])');
+      let visibleCount = 0;
+
+      visibleRows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        // Conta apenas linhas que têm células (não é a linha "Nenhum usuário encontrado")
+        if (cells.length > 1) {
+          visibleCount++;
+        }
+      });
+
       // Atualiza o contador no título
       const sectionTitle = document.querySelector('.section-header h2');
       if (sectionTitle) {
         sectionTitle.textContent = `👤 Lista de Usuários (${visibleCount})`;
       }
 
-      // Mostra mensagem se nenhum resultado for encontrado
+      return visibleCount;
+    }
+
+    // Função para lidar com estado vazio
+    function handleEmptyState() {
+      const visibleCount = updateUserCounter(); // Reutiliza a contagem
       const emptyState = document.querySelector('.empty-state');
+
+      // Mostra/esconde empty state baseado na contagem
       if (emptyState) {
         emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
       }
-      
-      // Se não há resultados, mostra mensagem
-      if (visibleCount === 0 && !emptyState) {
-        // Se não existe uma mensagem de empty state, cria uma temporária
-        const tbody = document.querySelector('.data-table tbody');
-        let noResultsRow = tbody.querySelector('.no-results-row');
-        
-        if (!noResultsRow) {
-          noResultsRow = document.createElement('tr');
-          noResultsRow.className = 'no-results-row';
-          noResultsRow.innerHTML = '<td colspan="8" style="text-align: center; padding: 20px; color: #666;">Nenhum usuário encontrado com os filtros aplicados.</td>';
-          tbody.appendChild(noResultsRow);
-        }
-        noResultsRow.style.display = '';
-      } else {
-        // Remove mensagem temporária se existir
-        const noResultsRow = document.querySelector('.no-results-row');
-        if (noResultsRow) {
-          noResultsRow.style.display = 'none';
-        }
+
+      // Remove mensagem temporária se existir
+      const noResultsRow = document.querySelector('.no-results-row');
+      if (noResultsRow) {
+        noResultsRow.remove();
       }
     }
 
@@ -359,6 +365,9 @@
       if (searchUsuario) searchUsuario.addEventListener('input', filterTableUsuarios);
       if (filterRole) filterRole.addEventListener('change', filterTableUsuarios);
       if (filterStatus) filterStatus.addEventListener('change', filterTableUsuarios);
+
+      // Inicializa o contador na carga da página
+      updateUserCounter();
     });
   </script>
   {% endif %}
