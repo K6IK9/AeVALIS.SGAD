@@ -1,0 +1,224 @@
+/* ================================================
+   REGISTER PAGE STYLES - Sistema de Avaliação Docente
+   ================================================ */
+
+/* ===== LAYOUT ESPECÍFICO DA PÁGINA DE REGISTRO ===== */
+body {
+  background: linear-gradient(135deg, var(--cor01) 0%, var(--cor01-alt) 100%);
+  min-height: 100vh;
+}
+
+/* ===== FORMULÁRIO DE REGISTRO ===== */
+#registerForm {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Container para campos de senha */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-container .form-control {
+  padding-right: 50px;
+  /* Espaço para o botão */
+}
+
+/* Botão de mostrar/ocultar senha */
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.toggle-password:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.toggle-password img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.toggle-password:hover img {
+  opacity: 1;
+}
+
+/* ===== AÇÕES DO FORMULÁRIO ===== */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.form-actions .btn {
+  flex: 1;
+  max-width: 200px;
+}
+
+/* ===== SEÇÃO DE INFORMAÇÕES ===== */
+.info-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.info-card {
+  background: var(--cor07);
+  padding: 25px;
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--cor02);
+  transition: all var(--transition-fast);
+}
+
+.info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.info-card h3 {
+  color: var(--cor03);
+  margin-bottom: 15px;
+  font-size: 1.2em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.info-card p {
+  color: var(--cor05);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ===== ERROS DE CAMPO ===== */
+.field-error {
+  color: var(--cor08);
+  font-size: 0.85rem;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: rgba(255, 60, 60, 0.1);
+  border-radius: 6px;
+  border-left: 3px solid var(--cor08);
+  animation: fadeInError 0.3s ease-in-out;
+  display: block;
+}
+
+@keyframes fadeInError {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+  .info-section {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .info-card {
+    padding: 20px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .form-actions .btn {
+    max-width: none;
+    width: 100%;
+  }
+
+  .form-row {
+    gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 15px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+  }
+
+  .header h1 {
+    font-size: 1.8em;
+  }
+
+  .form-section {
+    padding: 20px;
+  }
+
+  .info-card {
+    padding: 15px;
+  }
+
+  .info-card h3 {
+    font-size: 1.1em;
+  }
+}
+
+/* ===== ANIMAÇÕES ===== */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-section {
+  animation: slideInUp 0.6s ease-out;
+}
+
+.info-section {
+  animation: slideInUp 0.8s ease-out 0.2s both;
+}
+
+/* ===== ESTADOS DE FOCUS ===== */
+.form-control:focus+.toggle-password,
+.toggle-password:focus {
+  opacity: 1;
+}
+
+/* ===== UTILITÁRIOS ===== */
+.required-field::after {
+  content: " *";
+  color: var(--cor08);
+  font-weight: bold;
+}

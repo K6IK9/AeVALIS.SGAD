@@ -4,534 +4,135 @@
 <html lang="pt-br">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IF SADD - Registro</title>
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Vidaloka&display=swap');
-
-        @import url('https://fonts.googleapis.com/css2?family=Vidaloka&display=swap');
-
-        :root {
-            --cor01: #f1f1f1;
-            --cor02: #00fd94;
-            --cor03: #376f6c;
-            --cor04: #1e3231;
-            --cor05: #090909;
-
-            --cor06: #00cafd;
-            --cor07: #ffffff;
-            --cor08: #ff3c3c;
-
-            --font01: "Poppins", sans-serif;
-            --font02: "Vidaloka", serif;
-
-            --shadow: 4px 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-
-            font-family: var(--font01);
-        }
-
-        body {
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            position: relative;
-
-            background: linear-gradient(-45deg, var(--cor04), var(--cor03));
-
-            header,
-            main,
-            footer {
-                width: 90%;
-                max-width: 1000px;
-                margin: auto;
-            }
-
-            header,
-            footer {
-                height: auto;
-                position: absolute;
-            }
-
-            header {
-                top: 5vh;
-            }
-
-            footer {
-                bottom: 5vh;
-            }
-
-            main {
-                height: auto;
-                min-height: 400px;
-                padding: 40px 0;
-            }
-        }
-        
-        /* Media queries para responsividade */
-        @media (max-width: 768px) {
-            body header {
-                flex-direction: column;
-                text-align: center;
-                top: 2vh;
-            }
-            
-            body header img {
-                margin-right: 0;
-                margin-bottom: 10px;
-            }
-            
-            body main {
-                padding: 80px 0 40px;
-                margin-top: 60px;
-            }
-            
-            #loginForm {
-                padding: 80px 25px 40px 25px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            body header, 
-            body footer {
-                width: 95%;
-            }
-            
-            body header h1 {
-                font-size: 1.5rem;
-            }
-            
-            #perfilImg {
-                width: 120px;
-                height: 120px;
-            }
-            
-            #perfilImg img {
-                width: 60px;
-            }
-            
-            body main {
-                padding: 60px 0 40px;
-                margin-top: 80px;
-            }
-        }
-
-
-
-
-        /* --------- LOGIN --------- */
-
-        header {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-
-            img {
-                width: 70px;
-                height: 70px;
-                background: var(--cor01);
-                border-radius: 20px;
-                margin-right: 20px;
-            }
-
-            h1,
-            p {
-                color: var(--cor01);
-            }
-        }
-
-        .login-error {
-            background-color: rgba(255, 0, 0, 0.15);
-            border-left: 4px solid var(--cor08);
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-            animation: errorPulse 2s infinite;
-        }
-        
-        @keyframes errorPulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 60, 60, 0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(255, 60, 60, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 60, 60, 0); }
-        }
-
-        .login-error p {
-            color: var(--cor07);
-            margin-bottom: 5px;
-        }
-
-        .login-error p:first-child {
-            font-weight: 600;
-        }
-
-        .login-error strong {
-            color: white;
-        }
-        
-        .login-error ul {
-            list-style-type: none;
-            padding-left: 0;
-            margin-top: 8px;
-        }
-        
-        .login-error li {
-            color: var(--cor07);
-            margin-bottom: 5px;
-            padding-left: 0;
-        }
-
-
-        main {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #perfilImg {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            background: var(--cor07);
-
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translate(-50%, -50%);
-
-
-            img {
-                width: 80px;
-            }
-        }
-
-        #loginForm {
-            width: 100%;
-            max-width: 800px;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-
-            background: var(--cor03);
-            box-shadow: var(--shadow);
-            border-radius: 25px;
-            padding: 100px 40px 40px 40px;
-
-            position: relative;
-
-            .form-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 25px;
-            }
-
-            .form-grid .labelInput {
-                width: 100%;
-            }
-
-            .full-width {
-                grid-column: 1 / -1;
-            }
-
-            #buttonLogin {
-                width: 120px;
-                padding: 10px 16px;
-                border-radius: 0 0 10px 10px;
-                border: none;
-                box-shadow: var(--shadow);
-
-                background: var(--cor02);
-                color: var(--cor05);
-
-                font-weight: bold;
-                font-size: 1rem;
-                letter-spacing: 0.5px;
-
-                cursor: pointer;
-                transition: all 0.2s ease;
-
-                position: absolute;
-                bottom: 0;
-                left: 50%;
-                transform: translate(-50%, 100%);
-            }
-            
-            #buttonLogin:hover {
-                background: #00e085;
-                box-shadow: 0 6px 12px rgba(0, 253, 148, 0.3);
-            }
-        }
-
-        @media (max-width: 768px) {
-            #loginForm .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            #loginForm {
-                max-width: 95%;
-                padding: 100px 25px 40px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            #loginForm {
-                max-width: 100%;
-                padding: 80px 20px 40px;
-            }
-            
-            #loginForm .form-grid {
-                gap: 15px;
-            }
-            
-            .labelInput input {
-                padding: 12px 10px 12px 30px;
-                font-size: 14px;
-            }
-            
-            .login-error {
-                padding: 12px;
-                font-size: 0.9rem;
-            }
-            
-            .login-error strong {
-                display: block;
-                margin-bottom: 3px;
-            }
-            
-            .field-error {
-                font-size: 0.75rem;
-                padding: 4px 6px;
-            }
-        }
-
-        .labelInput {
-            width: 100%;
-
-            display: flex;
-            align-items: center;
-
-            position: relative;
-
-
-            img {
-                width: 15px;
-
-                position: absolute;
-                left: 10px;
-            }
-
-            input {
-                width: 100%;
-                padding: 10px 10px 10px 30px;
-
-                border-radius: 5px;
-                border: none;
-                box-shadow: var(--shadow);
-
-                background: var(--cor07);
-            }
-
-            input:focus {
-                outline: 1px solid var(--cor02);
-            }
-        }
-
-        .labelInput input[type="password"],
-        .labelInput input[type="text"] {
-            padding-right: 40px !important;
-        }
-
-        .field-error {
-            color: var(--cor08);
-            font-size: 0.8rem;
-            margin-top: 5px;
-            padding: 5px 8px;
-            display: block;
-            font-weight: 500;
-            background-color: rgba(255, 60, 60, 0.1);
-            border-radius: 5px;
-            border-left: 3px solid var(--cor08);
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .labelInput.error input {
-            border: 2px solid var(--cor08) !important;
-            background-color: rgba(255, 60, 60, 0.05);
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            z-index: 2;
-            padding: 0;
-            display: flex;
-            align-items: center;
-        }
-
-        .toggle-password img {
-            width: 22px;
-            height: 22px;
-        }
-
-        footer {
-            text-align: center;
-
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            gap: 10px;
-
-            p {
-                color: var(--cor01);
-                font-size: 0.75rem;
-            }
-
-            span {
-                color: var(--cor06);
-                font-weight: 600;
-                cursor: pointer;
-                text-decoration: underline;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IF SADD - Registro</title>
+
+  <!-- CSS Global -->
+  <link rel="stylesheet" href="{% static 'css/global.css' %}">
+  <!-- CSS Específico da Página de Registro -->
+  <link rel="stylesheet" href="{% static 'css/register.css' %}">
 </head>
 
 <body>
-    <header>
-        <img src="{% static 'assets/saad_logo.svg' %}" alt="SADD Logo">
-        <div>
-            <h1>Registro no SADD</h1>
-            <p>Sistema de Avaliação e Desenvolvimento Docente</p>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>👤 Registro no Sistema</h1>
+      <p>Crie sua conta no Sistema de Avaliação e Desenvolvimento Docente</p>
+    </div>
+
+    <!-- Formulário de Registro -->
+    <div class="form-section">
+      <h2>📝 Informações Pessoais</h2>
+
+      {% include "partials/messages.html" %}
+
+      <form method="post" id="registerForm">
+        {% csrf_token %}
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="id_username">Matrícula *</label>
+            <input type="text" name="username" id="id_username" class="form-control"
+                   placeholder="Digite sua matrícula" required maxlength="20"
+                   value="{{ form.username.value|default_if_none:'' }}">
+            {% if form.username.errors %}
+              <div class="field-error">{{ form.username.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="id_email">Email *</label>
+            <input type="email" name="email" id="id_email" class="form-control"
+                   placeholder="Digite seu email" required maxlength="254"
+                   value="{{ form.email.value|default_if_none:'' }}">
+            {% if form.email.errors %}
+              <div class="field-error">{{ form.email.errors.0 }}</div>
+            {% endif %}
+          </div>
         </div>
-    </header>
-    <main>
 
+        <div class="form-row">
+          <div class="form-group">
+            <label for="id_first_name">Nome *</label>
+            <input type="text" name="first_name" id="id_first_name" class="form-control"
+                   placeholder="Digite seu nome" required maxlength="30"
+                   value="{{ form.first_name.value|default_if_none:'' }}">
+            {% if form.first_name.errors %}
+              <div class="field-error">{{ form.first_name.errors.0 }}</div>
+            {% endif %}
+          </div>
 
-        <form method="post" id="loginForm">
-            {% if form.errors %}
-        <div class="login-error">
-            <p><strong>Erro no registro:</strong></p>
-            <ul>
-                {% for field in form %}
-                    {% if field.errors %}
-                        {% for error in field.errors %}
-                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-                        {% endfor %}
-                    {% endif %}
-                {% endfor %}
-                {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
+          <div class="form-group">
+            <label for="id_last_name">Sobrenome *</label>
+            <input type="text" name="last_name" id="id_last_name" class="form-control"
+                   placeholder="Digite seu sobrenome" required maxlength="150"
+                   value="{{ form.last_name.value|default_if_none:'' }}">
+            {% if form.last_name.errors %}
+              <div class="field-error">{{ form.last_name.errors.0 }}</div>
+            {% endif %}
+          </div>
         </div>
-        {% endif %}
 
-            {% csrf_token %}
-
-            <aside id="perfilImg">
-                <img src="{% static 'assets/perfil.svg' %}" alt="AA">
-            </aside>
-
-            <div class="form-grid">
-                <label for="username" class="labelInput">
-                    <img src="{% static 'assets/perfil.svg' %}" alt="Matricula">
-                    <input type="text" name="username" id="id_username" placeholder="Matrícula" required maxlength="20" {% if form.username.value %}value="{{ form.username.value }}"{% endif %}>
-                    {% if form.username.errors %}
-                    <span class="field-error">{{ form.username.errors.0 }}</span>
-                    {% endif %}
-                </label>
-
-                <label for="email" class="labelInput">
-                    <img src="{% static 'assets/email.svg' %}" alt="Email">
-                    <input type="email" name="email" id="id_email" placeholder="Email" required maxlength="254" {% if form.email.value %}value="{{ form.email.value }}"{% endif %}>
-                    {% if form.email.errors %}
-                    <span class="field-error">{{ form.email.errors.0 }}</span>
-                    {% endif %}
-                </label>
-
-                <label for="first_name" class="labelInput">
-                    <img src="{% static 'assets/perfil.svg' %}" alt="Nome">
-                    <input type="text" name="first_name" id="id_first_name" placeholder="Nome" required maxlength="30" {% if form.first_name.value %}value="{{ form.first_name.value }}"{% endif %}>
-                    {% if form.first_name.errors %}
-                    <span class="field-error">{{ form.first_name.errors.0 }}</span>
-                    {% endif %}
-                </label>
-
-                <label for="last_name" class="labelInput">
-                    <img src="{% static 'assets/perfil.svg' %}" alt="Sobrenome">
-                    <input type="text" name="last_name" id="id_last_name" placeholder="Sobrenome" required maxlength="150" {% if form.last_name.value %}value="{{ form.last_name.value }}"{% endif %}>
-                    {% if form.last_name.errors %}
-                    <span class="field-error">{{ form.last_name.errors.0 }}</span>
-                    {% endif %}
-                </label>
-
-                <label for="password1" class="labelInput" style="position:relative;">
-                    <img src="{% static 'assets/lock.svg' %}" alt="Senha">
-                    <input type="password" name="password1" id="id_password1" placeholder="Senha" required maxlength="128">
-                    <button type="button" class="toggle-password" tabindex="-1" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer;">
-                        <img src="{% static 'assets/eye.svg' %}" alt="Mostrar senha" style="width:22px;">
-                    </button>
-                    {% if form.password1.errors %}
-                    <span class="field-error">{{ form.password1.errors.0 }}</span>
-                    {% endif %}
-                </label>
-
-                <label for="password2" class="labelInput" style="position:relative;">
-                    <img src="{% static 'assets/lock.svg' %}" alt="Confirmar senha">
-                    <input type="password" name="password2" id="id_password2" placeholder="Confirmar Senha" required maxlength="128">
-                    <button type="button" class="toggle-password" tabindex="-1" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer;">
-                        <img src="{% static 'assets/eye.svg' %}" alt="Mostrar senha" style="width:22px;">
-                    </button>
-                    {% if form.password2.errors %}
-                    <span class="field-error">{{ form.password2.errors.0 }}</span>
-                    {% endif %}
-                </label>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="id_password1">Senha *</label>
+            <div class="password-input-container">
+              <input type="password" name="password1" id="id_password1" class="form-control"
+                     placeholder="Digite sua senha" required maxlength="128">
+              <button type="button" class="toggle-password" data-target="id_password1">
+                <img src="{% static 'assets/eye.svg' %}" alt="Mostrar senha">
+              </button>
             </div>
+            {% if form.password1.errors %}
+              <div class="field-error">{{ form.password1.errors.0 }}</div>
+            {% endif %}
+          </div>
 
-            <input id="buttonLogin" type="submit" value="Registrar">
+          <div class="form-group">
+            <label for="id_password2">Confirmar Senha *</label>
+            <div class="password-input-container">
+              <input type="password" name="password2" id="id_password2" class="form-control"
+                     placeholder="Confirme sua senha" required maxlength="128">
+              <button type="button" class="toggle-password" data-target="id_password2">
+                <img src="{% static 'assets/eye.svg' %}" alt="Mostrar senha">
+              </button>
+            </div>
+            {% if form.password2.errors %}
+              <div class="field-error">{{ form.password2.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
 
-        </form>
-    </main>
-    <footer>
-        <p>Já tem uma conta? <a href="{% url 'login' %}"><span>Faça login</span></a></p>
-    </footer>
-    <script>
-        document.querySelectorAll('.toggle-password').forEach(function(btn) {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                var input = btn.parentElement.querySelector('input[type="password"], input[type="text"]');
-                if (input.type === 'password') {
-                    input.type = 'text';
-                } else {
-                    input.type = 'password';
-                }
-            });
-        });
-    </script>
+        <div class="form-actions">
+          <a href="{% url 'login' %}" class="btn btn-secondary">← Já tenho conta</a>
+          <button type="submit" class="btn btn-primary">✓ Criar Conta</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Informações Adicionais -->
+    <div class="info-section">
+      <div class="info-card">
+        <h3>🔒 Segurança</h3>
+        <p>Sua senha deve ter pelo menos 8 caracteres e incluir letras maiúsculas, minúsculas e números.</p>
+      </div>
+
+      <div class="info-card">
+        <h3>📋 Requisitos</h3>
+        <p>Para se registrar, você precisa de uma matrícula válida do IF SADD e um email institucional.</p>
+      </div>
+
+      <div class="info-card">
+        <h3>❓ Precisa de ajuda?</h3>
+        <p>Entre em contato com a coordenação do seu curso para obter sua matrícula ou resolver dúvidas.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="{% static 'js/register.js' %}"></script>
 </body>
 
 </html>
