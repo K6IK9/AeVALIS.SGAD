@@ -1088,7 +1088,6 @@ class AdminHubView(LoginRequiredMixin, TemplateView):
         context["total_periodos"] = PeriodoLetivo.objects.count()
 
         # Avaliaições realizadas - contar respostas únicas
-        from django.db.models import Count
 
         context["total_avaliacoes"] = (
             RespostaAvaliacao.objects.values("avaliacao").distinct().count()
@@ -2230,7 +2229,6 @@ def gerar_csv_avaliacoes(
             "Total Alunos",
             "Respondentes",
             "Taxa de Resposta (%)",
-            "Pergunta",
             "Tipo Pergunta",
             "Categoria",
             "Média",

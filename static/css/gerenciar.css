@@ -2150,9 +2150,26 @@ input[type="checkbox"] {
 }
 
 /* Estilos específicos para cada tipo de role */
-.role-admin { background: var(--cor08); }
-.role-coordenador { background: #6f42c1; }
-.role-professor { background: #fd7e14; }
-.role-aluno { background: #198754; }
-.role-servidor { background: #17a2b8; }
-.role-sem-role { background: #6c757d; }
+.role-admin {
+    background: var(--cor08);
+}
+
+.role-coordenador {
+    background: #6f42c1;
+}
+
+.role-professor {
+    background: #fd7e14;
+}
+
+.role-aluno {
+    background: #198754;
+}
+
+.role-servidor {
+    background: #17a2b8;
+}
+
+.role-sem-role {
+    background: #6c757d;
+}
