@@ -24,3 +24,5 @@ gha-creds-*.json
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
 .codacy/
+.vscode/
+.playwright-mcp/
