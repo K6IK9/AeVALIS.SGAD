@@ -271,10 +271,38 @@ def editar_usuario(request, usuario_id):
             usuario.last_name = request.POST.get("last_name", usuario.last_name)
             usuario.is_active = request.POST.get("is_active") == "on"
 
-            # Atualizar senha se fornecida
+            # Atualizar senha se fornecida com validação
             password = request.POST.get("password")
             if password:
-                usuario.set_password(password)
+                # Importar validadores de senha do Django
+                from django.contrib.auth.password_validation import validate_password
+                from django.core.exceptions import ValidationError
+
+                try:
+                    # Validar a senha usando os validadores do Django
+                    validate_password(password, usuario)
+                    usuario.set_password(password)
+                except ValidationError as e:
+                    # Se a validação falhar, mostrar erros ao usuário
+                    for error in e.messages:
+                        messages.error(request, error)
+                    # Retornar ao formulário de edição mantendo os dados
+                    matricula = ""
+                    if hasattr(usuario, "perfil_aluno") and usuario.perfil_aluno:
+                        matricula = usuario.perfil_aluno.matricula or ""
+                    elif (
+                        hasattr(usuario, "perfil_professor")
+                        and usuario.perfil_professor
+                    ):
+                        matricula = usuario.perfil_professor.registro_academico or ""
+                    else:
+                        matricula = usuario.username or ""
+                    context = {
+                        "usuario": usuario,
+                        "matricula": matricula,
+                        "editing": True,
+                    }
+                    return render(request, "gerenciar_usuarios.html", context)
 
             usuario.save()
 

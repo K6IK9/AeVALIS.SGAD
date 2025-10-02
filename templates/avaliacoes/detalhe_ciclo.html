@@ -8,190 +8,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalhe do Ciclo - IF SADD</title>
-
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <title>IF SADD - Detalhe do Ciclo</title>
 
     <!-- CSS Global -->
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
-    <!-- CSS específico desta página -->
-    <link rel="stylesheet" href="{% static 'css/detalhe_ciclo.css' %}">
+    <!-- CSS de Gerenciamento -->
+    <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}">
 </head>
 
 <body>
-    <main>
-        <div class="container">
-            <a href="{% url 'gerenciar_ciclos' %}" class="back-button">← Voltar</a>
+    <div class="container">
+        <!-- Header da página -->
+        <div class="header">
+            <h1>📋 Detalhe do Ciclo</h1>
+            <p>Visualize informações detalhadas do ciclo de avaliação</p>
+        </div>
 
-            <!-- Header da página -->
-            <div class="header">
-                <h1>Detalhe do Ciclo</h1>
-                <p>Visualize informações detalhadas do ciclo de avaliação</p>
-            </div>
+        <!-- Navegação Breadcrumb -->
+        <div class="nav-breadcrumb">
+            <a href="{% url 'inicio' %}">🏠 Início</a>
+            <span>→</span>
+            <a href="{% url 'listar_avaliacoes' %}">📊 Avaliações</a>
+            <span>→</span>
+            <a href="{% url 'gerenciar_ciclos' %}">🔄 Ciclos</a>
+            <span>→</span>
+            <span>📋 Detalhe do Ciclo</span>
+        </div>
 
-            <!-- Mensagens -->
-            {% include "partials/messages.html" %}
+        <!-- Mensagens -->
+        {% include "partials/messages.html" %}
 
-            <!-- Conteúdo principal -->
-<div class="row">
-    <!-- Informações do Ciclo -->
-    <div class="col-md-4">
-        <div class="card card-custom">
-            <div class="card-header">
-                <h6 class="card-title mb-0">
-                    <i class="bi bi-calendar-check"></i> Informações do Ciclo
-                </h6>
-            </div>
-            <div class="card-body">
-                <h5>{{ ciclo.nome }}</h5>
-                <p class="text-muted">{{ ciclo.descricao }}</p>
-                
-                <hr>
-                
-                <div class="d-flex justify-content-between mb-2">
-                    <span><strong>Status:</strong></span>
-                    {% if ciclo.ativo %}
-                        <span class="badge bg-success">Ativo</span>
-                    {% else %}
-                        <span class="badge bg-secondary">Inativo</span>
-                    {% endif %}
-                </div>
-                
-                <div class="d-flex justify-content-between mb-2">
-                    <span><strong>Tipo:</strong></span>
-                    <span class="badge bg-info">Anônima</span>
-                </div>
-                
-                <div class="d-flex justify-content-between mb-2">
-                    <span><strong>Início:</strong></span>
-                    <span>{{ ciclo.data_inicio|date:"d/m/Y" }}</span>
-                </div>
-                
-                <div class="d-flex justify-content-between mb-2">
-                    <span><strong>Fim:</strong></span>
-                    <span>{{ ciclo.data_fim|date:"d/m/Y" }}</span>
-                </div>
-                
-                <div class="d-flex justify-content-between mb-2">
-                    <span><strong>Período:</strong></span>
-                    <span>{{ ciclo.periodo_letivo.nome }}</span>
-                </div>
-                
-                <div class="d-flex justify-content-between mb-2">
-                    <span><strong>Questionário:</strong></span>
-                    <span>{{ ciclo.questionario.titulo }}</span>
-                </div>
-                
-                <hr>
-                
-                <div class="d-flex justify-content-between mb-2">
-                    <span><strong>Criado por:</strong></span>
-                    <span>{{ ciclo.criado_por.get_full_name|default:ciclo.criado_por.username }}</span>
-                </div>
-                
-                <div class="d-flex justify-content-between mb-2">
-                    <span><strong>Criado em:</strong></span>
-                    <small>{{ ciclo.data_criacao|date:"d/m/Y H:i" }}</small>
-                </div>
-                
-                <hr>
-                
-                <a href="{% url 'listar_avaliacoes' %}" class="btn btn-outline-secondary btn-sm w-100">
-                    <i class="bi bi-arrow-left"></i> Voltar para Lista
-                </a>
-                {% if ciclo.ativo %}
-                    {% if user|has_role:"coordenador" or user|has_role:"admin" %}
-                    <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" class="mt-2" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"? Alunos não poderão mais responder.');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
-                            <i class="bi bi-stop-circle"></i> Encerrar Ciclo
-                        </button>
-                    </form>
-                    {% endif %}
+        <!-- Botão Voltar -->
+        <a href="{% url 'gerenciar_ciclos' %}" class="btn btn-secondary" style="margin-bottom: 20px;">
+            ← Voltar para Ciclos
+        </a>
+
+        <!-- Informações do Ciclo -->
+        <div class="form-section">
+            <h2>📅 Informações do Ciclo</h2>
+            <div style="margin-bottom: 20px;">
+                <h3 style="margin-bottom: 5px; color: var(--cor03);">{{ ciclo.nome }}</h3>
+                {% if ciclo.descricao %}
+                <p style="color: var(--cor04); margin-bottom: 0;">{{ ciclo.descricao }}</p>
                 {% endif %}
             </div>
+            
+            <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; overflow: hidden;">
+                <div class="info-item" style="overflow: hidden;">
+                    <strong>Status:</strong>
+                    {% if ciclo.ativo %}
+                        <span class="status-badge status-active">✅ Ativo</span>
+                    {% else %}
+                        <span class="status-badge status-inactive">❌ Inativo</span>
+                    {% endif %}
+                </div>
+                
+                <div class="info-item" style="overflow: hidden;">
+                    <strong>Tipo:</strong>
+                    <span style="color: var(--cor06); overflow-wrap: break-word;">🔒 Anônima</span>
+                </div>
+                
+                <div class="info-item" style="overflow: hidden;">
+                    <strong>Início:</strong>
+                    <span style="overflow-wrap: break-word;">{{ ciclo.data_inicio|date:"d/m/Y" }}</span>
+                </div>
+                
+                <div class="info-item" style="overflow: hidden;">
+                    <strong>Fim:</strong>
+                    <span style="overflow-wrap: break-word;">{{ ciclo.data_fim|date:"d/m/Y" }}</span>
+                </div>
+                
+                <div class="info-item" style="overflow: hidden;">
+                    <strong>Período:</strong>
+                    <span style="overflow-wrap: break-word;">{{ ciclo.periodo_letivo.nome }}</span>
+                </div>
+                
+                <div class="info-item" style="overflow: hidden;">
+                    <strong>Questionário:</strong>
+                    <span style="overflow-wrap: break-word;">{{ ciclo.questionario.titulo }}</span>
+                </div>
+                
+                <div class="info-item" style="overflow: hidden;">
+                    <strong>Criado por:</strong>
+                    <span style="overflow-wrap: break-word;">{{ ciclo.criado_por.get_full_name|default:ciclo.criado_por.username }}</span>
+                </div>
+                
+                <div class="info-item" style="overflow: hidden;">
+                    <strong>Criado em:</strong>
+                    <span style="overflow-wrap: break-word;">{{ ciclo.data_criacao|date:"d/m/Y H:i" }}</span>
+                </div>
+            </div>
+            
+            {% if ciclo.ativo %}
+                {% if user|has_role:"coordenador" or user|has_role:"admin" %}
+                <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" style="margin-top: 20px;" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"? Alunos não poderão mais responder.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        🔒 Encerrar Ciclo
+                    </button>
+                </form>
+                {% endif %}
+            {% endif %}
         </div>
 
         <!-- Estatísticas -->
-        <div class="card card-custom mt-4">
-            <div class="card-header">
-                <h6 class="card-title mb-0">
-                    <i class="bi bi-graph-up"></i> Estatísticas
-                </h6>
+        <div class="form-section">
+            <h2>📊 Estatísticas</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_avaliacoes }}</div>
+                    <div class="stat-label">Total de Avaliações</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ avaliacoes_respondidas }}</div>
+                    <div class="stat-label">Respondidas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ percentual_respondidas|floatformat:1 }}%</div>
+                    <div class="stat-label">Progresso</div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6">
-                        <div class="border-end">
-                            <h3 class="text-primary">{{ total_avaliacoes }}</h3>
-                            <small class="text-muted">Total de Avaliações</small>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <h3 class="text-success">{{ avaliacoes_respondidas }}</h3>
-                        <small class="text-muted">Respondidas</small>
-                    </div>
-                </div>
-                
-                <div class="mt-3">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span>Progresso</span>
-                        <span>{{ percentual_respondidas|floatformat:1 }}%</span>
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar bg-success" role="progressbar" 
-                             aria-valuenow="{{ percentual_respondidas }}" 
-                             aria-valuemin="0" aria-valuemax="100"
-                             style="width: {{ percentual_respondidas }}%">
-                        </div>
-                    </div>
-                </div>
-                
-                {% if user|has_role:"coordenador" or user|has_role:"admin" %}
-                <div class="mt-3">
-                    <a href="{% url 'relatorio_avaliacoes' %}?ciclo={{ ciclo.id }}" 
-                       class="btn btn-outline-primary btn-sm w-100">
-                        <i class="bi bi-graph-up"></i> Ver Relatório Completo
-                    </a>
-                </div>
-                {% endif %}
+            
+            {% if user|has_role:"coordenador" or user|has_role:"admin" %}
+            <div style="margin-top: 20px;">
+                <a href="{% url 'relatorio_avaliacoes' %}?ciclo={{ ciclo.id }}" 
+                   class="btn">
+                    📊 Ver Relatório Completo
+                </a>
             </div>
+            {% endif %}
         </div>
-    </div>
 
-    <!-- Lista de Avaliações -->
-    <div class="col-md-8">
-        <div class="card card-custom">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0">
-                    <i class="bi bi-list-check"></i> Avaliações do Ciclo
-                </h6>
-                <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-secondary" onclick="filtrarAvaliacoes('todas')">
-                        Todas
-                    </button>
-                    <button class="btn btn-outline-success" onclick="filtrarAvaliacoes('respondidas')">
-                        Respondidas
-                    </button>
-                    <button class="btn btn-outline-warning" onclick="filtrarAvaliacoes('pendentes')">
-                        Pendentes
-                    </button>
+        <!-- Lista de Avaliações -->
+        <div class="form-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>📝 Avaliações do Ciclo</h2>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="filtrarAvaliacoes('todas')">
+                            Todas
+                        </button>
+                        <button class="btn" onclick="filtrarAvaliacoes('respondidas')">
+                            Respondidas
+                        </button>
+                        <button class="btn btn-secondary" onclick="filtrarAvaliacoes('pendentes')">
+                            Pendentes
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="card-body">
                 {% if avaliacoes_docentes %}
-                                    <div class="table-scroll-hint">
+                <div class="table-scroll-hint">
                     <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
                 </div>
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Professor</th>
                                     <th>Disciplina</th>
                                     <th>Turma</th>
-                                    <th>Aluno</th>
                                     <th>Status</th>
                                     <th>Ações</th>
                                 </tr>
@@ -209,42 +183,41 @@
                                     <td>
                                         {{ avaliacao.turma.codigo_turma }}
                                     </td>
-                                    <td><span class="text-muted">Anônima</span></td>
                                     <td>
                                         {% if avaliacao.respostas.exists %}
-                                            <span class="badge bg-success">
-                                                <i class="bi bi-check-circle"></i> Respondida
+                                            <span class="status-badge status-active">
+                                                ✅ Respondida
                                             </span>
                                         {% elif avaliacao.status == 'finalizada' %}
-                                            <span class="badge bg-secondary">
-                                                <i class="bi bi-stop-circle"></i> Encerrada
+                                            <span class="status-badge" style="background: var(--cor04); color: var(--cor07);">
+                                                🔒 Encerrada
                                             </span>
                                         {% else %}
-                                            <span class="badge bg-warning">
-                                                <i class="bi bi-clock"></i> Pendente
+                                            <span class="status-badge" style="background: #ffc107; color: #212529;">
+                                                ⏰ Pendente
                                             </span>
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <div class="btn-group btn-group-sm">
+                                        <div class="btn-group">
                                             {% if avaliacao.respostas.exists %}
                                                 <a href="{% url 'visualizar_avaliacao' avaliacao.id %}" 
-                                                   class="btn btn-outline-primary" title="Visualizar">
-                                                    <i class="bi bi-eye"></i>
+                                                   class="btn btn-sm" title="Visualizar">
+                                                    👁️ Ver
                                                 </a>
                                             {% else %}
                                                 {% if user.perfil_aluno and avaliacao.status != 'finalizada' and ciclo.ativo %}
                                                     <a href="{% url 'responder_avaliacao' avaliacao.id %}" 
-                                                       class="btn btn-outline-success" title="Responder">
-                                                        <i class="bi bi-pencil"></i>
+                                                       class="btn btn-sm" title="Responder">
+                                                        ✏️ Responder
                                                     </a>
                                                 {% endif %}
                                                 {% if avaliacao.status != 'finalizada' %}
                                                     {% if user|has_role:"coordenador" or user|has_role:"admin" %}
-                                                        <form method="post" action="{% url 'encerrar_avaliacao' avaliacao.id %}" class="form-inline" onsubmit="return confirm('Encerrar esta avaliação?');">
+                                                        <form method="post" action="{% url 'encerrar_avaliacao' avaliacao.id %}" class="inline-form" onsubmit="return confirm('Encerrar esta avaliação?');">
                                                             {% csrf_token %}
-                                                            <button type="submit" class="btn btn-outline-secondary" title="Encerrar Avaliação">
-                                                                <i class="bi bi-stop-circle"></i>
+                                                            <button type="submit" class="btn btn-sm btn-secondary" title="Encerrar Avaliação">
+                                                                🔒 Encerrar
                                                             </button>
                                                         </form>
                                                     {% endif %}
@@ -258,61 +231,55 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-clipboard-x empty-state-icon"></i>
-                        <p class="mt-3 text-muted">Nenhuma avaliação encontrada para este ciclo.</p>
-                        {% if user|has_role:"coordenador" or user|has_role:"admin" %}
-                        <p class="text-muted">
-                            As avaliações são criadas automaticamente quando alunos são matriculados em turmas 
-                            que têm professores atribuídos durante o período do ciclo.
-                        </p>
-                        {% endif %}
-                    </div>
+                <div class="empty-state">
+                    <p class="empty-message">📋 Nenhuma avaliação encontrada para este ciclo.</p>
+                    {% if user|has_role:"coordenador" or user|has_role:"admin" %}
+                    <p style="color: var(--cor04); font-size: 0.9em;">
+                        As avaliações são criadas automaticamente quando alunos são matriculados em turmas 
+                        que têm professores atribuídos durante o período do ciclo.
+                    </p>
+                    {% endif %}
+                </div>
                 {% endif %}
             </div>
         </div>
     </div>
-</div>
 
+    <script>
+    function filtrarAvaliacoes(status) {
+        const rows = document.querySelectorAll('.avaliacao-row');
+        const buttons = document.querySelectorAll('.btn-group .btn');
+        
+        // Remover classe ativa de todos os botões
+        buttons.forEach(btn => btn.classList.remove('active'));
+        
+        rows.forEach(row => {
+            if (status === 'todas') {
+                row.style.display = '';
+            } else if (status === 'respondidas' && row.dataset.status === 'respondida') {
+                row.style.display = '';
+            } else if (status === 'pendentes' && row.dataset.status === 'pendente') {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Adicionar classe ativa ao botão clicado
+        event.target.classList.add('active');
+    }
 
-<script>
-function filtrarAvaliacoes(status) {
-    const rows = document.querySelectorAll('.avaliacao-row');
-    const buttons = document.querySelectorAll('.btn-group .btn');
-    
-    // Remover classe ativa de todos os botões
-    buttons.forEach(btn => btn.classList.remove('active'));
-    
-    rows.forEach(row => {
-        if (status === 'todas') {
-            row.style.display = '';
-        } else if (status === 'respondidas' && row.dataset.status === 'respondida') {
-            row.style.display = '';
-        } else if (status === 'pendentes' && row.dataset.status === 'pendente') {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
+    // Definir filtro padrão
+    document.addEventListener('DOMContentLoaded', function() {
+        const primeiroBtn = document.querySelector('.btn-group .btn');
+        if (primeiroBtn) {
+            primeiroBtn.classList.add('active');
         }
     });
-    
-    // Adicionar classe ativa ao botão clicado
-    event.target.classList.add('active');
-}
-
-// Definir filtro padrão
-document.addEventListener('DOMContentLoaded', function() {
-    const primeiroBtn = document.querySelector('.btn-group .btn');
-    if (primeiroBtn) {
-        primeiroBtn.classList.add('active');
-    }
-});
-</script>
+    </script>
 
     <!-- Script global para funcionalidades de gerenciamento -->
     <script src="{% static 'js/gerenciar-global.js' %}"></script>
-
-        </div>
-    </main>
 </body>
 
 </html>
