@@ -81,8 +81,10 @@
             <div class="password-input-container">
               <input type="password" name="password1" id="id_password1" class="form-control"
                      placeholder="Digite sua senha" required maxlength="128">
-              <button type="button" class="toggle-password" data-target="id_password1">
-                <img src="{% static 'assets/eye.svg' %}" alt="Mostrar senha">
+              <button type="button" class="toggle-password" data-target="id_password1"
+                      data-icon-show="{% static 'assets/eye.svg' %}"
+                      data-icon-hide="{% static 'assets/eye-off.svg' %}" aria-label="Mostrar senha">
+                <img src="{% static 'assets/eye.svg' %}" alt="">
               </button>
             </div>
             {% if form.password1.errors %}
@@ -95,8 +97,10 @@
             <div class="password-input-container">
               <input type="password" name="password2" id="id_password2" class="form-control"
                      placeholder="Confirme sua senha" required maxlength="128">
-              <button type="button" class="toggle-password" data-target="id_password2">
-                <img src="{% static 'assets/eye.svg' %}" alt="Mostrar senha">
+              <button type="button" class="toggle-password" data-target="id_password2"
+                      data-icon-show="{% static 'assets/eye.svg' %}"
+                      data-icon-hide="{% static 'assets/eye-off.svg' %}" aria-label="Mostrar senha">
+                <img src="{% static 'assets/eye.svg' %}" alt="">
               </button>
             </div>
             {% if form.password2.errors %}

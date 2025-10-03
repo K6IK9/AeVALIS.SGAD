@@ -31,18 +31,25 @@ function initializePasswordToggles() {
         const isPassword = targetInput.type === 'password';
         targetInput.type = isPassword ? 'text' : 'password';
 
-        // Atualiza o ícone (opcional - pode ser feito com CSS)
+        const showIcon = this.dataset.iconShow;
+        const hideIcon = this.dataset.iconHide || showIcon;
+        const isVisible = targetInput.type === 'text';
+
         const img = this.querySelector('img');
         if (img) {
-          const iconName = isPassword ? 'eye-slash.svg' : 'eye.svg';
-          img.src = img.src.replace(isPassword ? 'eye.svg' : 'eye-slash.svg', iconName);
-          img.alt = isPassword ? 'Ocultar senha' : 'Mostrar senha';
+          const nextIcon = isVisible ? hideIcon : showIcon;
+          if (nextIcon) {
+            img.src = nextIcon;
+          }
         }
 
-        // Feedback visual
-        this.style.transform = 'scale(0.95)';
+        this.setAttribute('aria-label', isVisible ? 'Ocultar senha' : 'Mostrar senha');
+        this.setAttribute('aria-pressed', isVisible ? 'true' : 'false');
+
+        // Feedback visual mantendo posicionamento
+        this.classList.add('is-pressed');
         setTimeout(() => {
-          this.style.transform = 'scale(1)';
+          this.classList.remove('is-pressed');
         }, 150);
       }
     });
@@ -196,20 +203,36 @@ function showFieldError(input, message) {
   const errorDiv = document.createElement('div');
   errorDiv.className = 'field-error';
   errorDiv.textContent = message;
+  errorDiv.setAttribute('role', 'alert');
 
-  input.parentNode.appendChild(errorDiv);
+  const container = getFieldContainer(input);
+  if (container) {
+    container.appendChild(errorDiv);
+  }
+
   input.classList.add('error');
+  input.setAttribute('aria-invalid', 'true');
 }
 
 /**
  * Limpa erro de um campo
  */
 function clearFieldError(input) {
-  const existingError = input.parentNode.querySelector('.field-error');
+  const container = getFieldContainer(input);
+  const existingError = container ? container.querySelector('.field-error') : null;
   if (existingError) {
     existingError.remove();
   }
   input.classList.remove('error');
+  input.removeAttribute('aria-invalid');
+}
+
+/**
+ * Obtém o container do campo para exibir mensagens de erro corretamente
+ */
+function getFieldContainer(input) {
+  if (!input) return null;
+  return input.closest('.form-group') || input.parentNode;
 }
 
 /**
