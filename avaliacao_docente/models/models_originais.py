@@ -2,6 +2,11 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
+# Imports das abstrações
+from .base import BaseModel
+from .mixins import TimestampMixin, SoftDeleteMixin
+from .managers import SoftDeleteManager
+
 
 class PerfilProfessorManager(models.Manager):
     """Manager customizado para excluir usuários admin"""
@@ -93,12 +98,16 @@ class PerfilProfessor(models.Model):
         return f"{self.user.get_full_name()} ({self.registro_academico})"
 
 
-class Curso(models.Model):
+class Curso(BaseModel, TimestampMixin, SoftDeleteMixin):
     curso_nome = models.CharField(max_length=45)
     curso_sigla = models.CharField(max_length=10)
     coordenador_curso = models.ForeignKey(
         PerfilProfessor, on_delete=models.CASCADE, related_name="cursos"
     )
+
+    # Managers
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     def __str__(self):
         return f"{self.curso_nome} ({self.curso_sigla})"
@@ -130,7 +139,7 @@ class PeriodoLetivo(models.Model):
         return f"{self.nome} - {self.ano}.{self.semestre}"
 
 
-class Disciplina(models.Model):
+class Disciplina(BaseModel, TimestampMixin, SoftDeleteMixin):
     TIPO_CHOICES = [
         ("Obrigatória", "Obrigatória"),
         ("Optativa", "Optativa"),
@@ -149,11 +158,15 @@ class Disciplina(models.Model):
         PeriodoLetivo, on_delete=models.CASCADE, related_name="disciplinas"
     )
 
+    # Managers
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     def __str__(self):
         return f"{self.disciplina_nome} ({self.disciplina_sigla})"
 
 
-class Turma(models.Model):
+class Turma(BaseModel, TimestampMixin, SoftDeleteMixin):
     """
     Modelo principal para gerenciar turmas
     """
@@ -173,32 +186,44 @@ class Turma(models.Model):
     disciplina = models.ForeignKey(
         Disciplina, on_delete=models.CASCADE, related_name="turmas"
     )
-    professor = models.ForeignKey(
-        PerfilProfessor, on_delete=models.CASCADE, related_name="turmas"
-    )
-    periodo_letivo = models.ForeignKey(
-        PeriodoLetivo, on_delete=models.CASCADE, related_name="turmas"
-    )
-
     turno = models.CharField(max_length=15, choices=TURNO_CHOICES)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default="ativa")
-    data_criacao = models.DateTimeField(auto_now_add=True)
+
+    # Managers
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
-        unique_together = ["disciplina", "periodo_letivo", "turno"]
-        ordering = ["periodo_letivo", "disciplina__disciplina_nome"]
+        unique_together = ["disciplina", "turno"]
+        ordering = ["disciplina__periodo_letivo", "disciplina__disciplina_nome"]
+
+    @property
+    def professor(self):
+        """
+        Retorna o professor da disciplina associada à turma.
+        Propriedade para compatibilidade com código legado.
+        """
+        return self.disciplina.professor
+
+    @property
+    def periodo_letivo(self):
+        """
+        Retorna o período letivo da disciplina associada à turma.
+        Propriedade para compatibilidade com código legado.
+        """
+        return self.disciplina.periodo_letivo
 
     def save(self, *args, **kwargs):
         # Auto-gera código da turma se não existir
         if not self.codigo_turma:
             # Usa sigla da disciplina (max 10 chars) + ano + semestre + turno abreviado
             sigla = self.disciplina.disciplina_sigla[:10]  # Limita sigla a 10 chars
-            ano = str(self.periodo_letivo.ano)
-            semestre = str(self.periodo_letivo.semestre)
-            turno_map = {"matutino": "M", "vespertino": "V", "noturno": "N"}
-            turno_abrev = turno_map.get(self.turno, self.turno[:1].upper())
+            ano = str(self.disciplina.periodo_letivo.ano)
+            semestre = str(self.disciplina.periodo_letivo.semestre)
+            turno_map = {"matutino": "MAT", "vespertino": "VES", "noturno": "NOT"}
+            turno_abrev = turno_map.get(self.turno, self.turno[:3].upper())
 
-            self.codigo_turma = f"{sigla}-{ano}.{semestre}{turno_abrev}"
+            self.codigo_turma = f"{sigla}-{ano}.{semestre}-{turno_abrev}"
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -217,7 +242,7 @@ class Turma(models.Model):
         return count
 
 
-class MatriculaTurma(models.Model):
+class MatriculaTurma(BaseModel, TimestampMixin, SoftDeleteMixin):
     """
     Relacionamento entre alunos e turmas (matrícula)
     """
@@ -240,6 +265,10 @@ class MatriculaTurma(models.Model):
     status = models.CharField(
         max_length=15, choices=STATUS_MATRICULA_CHOICES, default="ativa"
     )
+
+    # Managers
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         unique_together = ["aluno", "turma"]
@@ -279,18 +308,20 @@ class HorarioTurma(models.Model):
 # ============ NOVO SISTEMA DE AVALIAÇÃO DOCENTE ============
 
 
-class QuestionarioAvaliacao(models.Model):
+class QuestionarioAvaliacao(BaseModel, TimestampMixin, SoftDeleteMixin):
     """
     Template de questionário que pode ser reutilizado para diferentes avaliações
     """
 
     titulo = models.CharField(max_length=100)
     descricao = models.TextField(blank=True)
-    ativo = models.BooleanField(default=True)
-    data_criacao = models.DateTimeField(auto_now_add=True)
     criado_por = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="questionarios_criados"
     )
+
+    # Managers
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         ordering = ["-data_criacao"]
@@ -301,7 +332,7 @@ class QuestionarioAvaliacao(models.Model):
         return self.titulo
 
 
-class CategoriaPergunta(models.Model):
+class CategoriaPergunta(BaseModel, TimestampMixin, SoftDeleteMixin):
     """
     Categorias para organizar as perguntas (ex: Didática, Relacionamento, Infraestrutura)
     """
@@ -309,7 +340,10 @@ class CategoriaPergunta(models.Model):
     nome = models.CharField(max_length=50, unique=True)
     descricao = models.TextField(blank=True)
     ordem = models.PositiveIntegerField(default=0)
-    ativa = models.BooleanField(default=True)
+
+    # Managers
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         ordering = ["ordem", "nome"]
@@ -320,7 +354,7 @@ class CategoriaPergunta(models.Model):
         return self.nome
 
 
-class PerguntaAvaliacao(models.Model):
+class PerguntaAvaliacao(BaseModel, TimestampMixin, SoftDeleteMixin):
     """
     Modelo aprimorado para perguntas da avaliação
     """
@@ -342,12 +376,13 @@ class PerguntaAvaliacao(models.Model):
         CategoriaPergunta, on_delete=models.CASCADE, related_name="perguntas"
     )
     obrigatoria = models.BooleanField(default=True)
-    ativa = models.BooleanField(default=True)
 
     # Para perguntas de múltipla escolha
     opcoes_multipla_escolha = models.JSONField(blank=True, null=True)
 
-    data_criacao = models.DateTimeField(auto_now_add=True)
+    # Managers
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         ordering = ["categoria__ordem"]
@@ -358,7 +393,7 @@ class PerguntaAvaliacao(models.Model):
         return f"{self.categoria.nome}: {self.enunciado[:50]}..."
 
 
-class QuestionarioPergunta(models.Model):
+class QuestionarioPergunta(BaseModel, TimestampMixin, SoftDeleteMixin):
     """
     Relacionamento entre questionários e perguntas
     """
@@ -371,6 +406,10 @@ class QuestionarioPergunta(models.Model):
     )
     ordem_no_questionario = models.PositiveIntegerField(default=0)
 
+    # Managers
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     class Meta:
         unique_together = ["questionario", "pergunta"]
         ordering = ["ordem_no_questionario"]
@@ -381,7 +420,7 @@ class QuestionarioPergunta(models.Model):
         return f"{self.questionario.titulo} - {self.pergunta.enunciado[:30]}..."
 
 
-class CicloAvaliacao(models.Model):
+class CicloAvaliacao(BaseModel, TimestampMixin, SoftDeleteMixin):
     """
     Representa um período/ciclo de avaliação institucional
     """
@@ -395,7 +434,6 @@ class CicloAvaliacao(models.Model):
     questionario = models.ForeignKey(
         QuestionarioAvaliacao, on_delete=models.CASCADE, related_name="ciclos"
     )
-    ativo = models.BooleanField(default=True)
 
     # Configurações do ciclo
     permite_avaliacao_anonima = models.BooleanField(default=True)
@@ -411,10 +449,13 @@ class CicloAvaliacao(models.Model):
         help_text="Selecione as turmas que devem participar desta avaliação",
     )
 
-    data_criacao = models.DateTimeField(auto_now_add=True)
     criado_por = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="ciclos_criados"
     )
+
+    # Managers
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         ordering = ["-data_inicio"]
@@ -486,7 +527,7 @@ class CicloAvaliacao(models.Model):
         return round((respondidas / previstas) * 100, 2)
 
 
-class AvaliacaoDocente(models.Model):
+class AvaliacaoDocente(BaseModel, TimestampMixin, SoftDeleteMixin):
     """
     Representa uma avaliação específica de um professor/disciplina em uma turma
     """
@@ -513,9 +554,9 @@ class AvaliacaoDocente(models.Model):
 
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default="pendente")
 
-    # Metadados
-    data_criacao = models.DateTimeField(auto_now_add=True)
-    data_atualizacao = models.DateTimeField(auto_now=True)
+    # Managers
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         unique_together = ["ciclo", "turma", "professor", "disciplina"]
@@ -602,7 +643,7 @@ class AvaliacaoDocente(models.Model):
         return categorias
 
 
-class RespostaAvaliacao(models.Model):
+class RespostaAvaliacao(BaseModel, TimestampMixin, SoftDeleteMixin):
     """
     Resposta de um aluno a uma pergunta específica de uma avaliação
     """
@@ -632,6 +673,10 @@ class RespostaAvaliacao(models.Model):
 
     # Para controle de sessão anônima
     session_key = models.CharField(max_length=40, blank=True)
+
+    # Managers
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         unique_together = ["avaliacao", "aluno", "pergunta", "session_key"]
@@ -672,28 +717,31 @@ class RespostaAvaliacao(models.Model):
 
 class ConfiguracaoSite(models.Model):
     """Modelo para armazenar configurações globais do site. Singleton."""
+
     METODO_CHOICES = (
-        ('api', 'API (Recomendado para Vercel)'),
-        ('smtp', 'SMTP (Para desenvolvimento local/outros hosts)'),
+        ("api", "API (Recomendado para Vercel)"),
+        ("smtp", "SMTP (Para desenvolvimento local/outros hosts)"),
     )
     metodo_envio_email = models.CharField(
         max_length=10,
         choices=METODO_CHOICES,
-        default='api',
-        help_text="Escolha o método para enviar e-mails. 'API' é necessário para a Vercel."
+        default="api",
+        help_text="Escolha o método para enviar e-mails. 'API' é necessário para a Vercel.",
     )
     email_notificacao_erros = models.EmailField(
         max_length=255,
         blank=True,
         null=True,
-        help_text="E-mail para receber notificações de erros do sistema (quando DEBUG=False)."
+        help_text="E-mail para receber notificações de erros do sistema (quando DEBUG=False).",
     )
 
     def save(self, *args, **kwargs):
         """Garante que apenas uma instância deste modelo exista."""
         if not self.pk and ConfiguracaoSite.objects.exists():
             # Impede a criação de uma nova instância se uma já existir
-            raise ValidationError('Só pode haver uma instância de Configuração do Site.')
+            raise ValidationError(
+                "Só pode haver uma instância de Configuração do Site."
+            )
         return super(ConfiguracaoSite, self).save(*args, **kwargs)
 
     @classmethod
@@ -701,11 +749,3 @@ class ConfiguracaoSite(models.Model):
         """Obtém a instância de configuração única, criando-a se não existir."""
         obj, created = cls.objects.get_or_create(pk=1)
         return obj
-
-
-# ============ MODELOS DEPRECATED (MANTER COMPATIBILIDADE) ============
-
-# As definições dos modelos abaixo foram removidas em [data da remoção].
-# Eles foram substituídos pelo novo sistema de avaliação (AvaliacaoDocente, etc.)
-# e mantidos aqui apenas como um comentário histórico.
-

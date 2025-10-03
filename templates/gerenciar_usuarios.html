@@ -59,7 +59,7 @@
     {% if editing %}
     <div class="form-section">
       <h2>✏️ Editar Usuário</h2>
-      
+
       {% include "partials/messages.html" %}
 
       <form method="post">
@@ -67,7 +67,8 @@
         <div class="form-row">
           <div class="form-group">
             <label for="username">Nome de usuário:</label>
-            <input type="text" id="username" name="username" value="{{ usuario.username }}" class="form-control" required>
+            <input type="text" id="username" name="username" value="{{ usuario.username }}" class="form-control"
+              required>
           </div>
           <div class="form-group">
             <label for="email">Email:</label>
@@ -78,29 +79,33 @@
         <div class="form-row">
           <div class="form-group">
             <label for="first_name">Nome:</label>
-            <input type="text" id="first_name" name="first_name" value="{{ usuario.first_name }}" class="form-control" required>
+            <input type="text" id="first_name" name="first_name" value="{{ usuario.first_name }}" class="form-control"
+              required>
           </div>
           <div class="form-group">
             <label for="last_name">Sobrenome:</label>
-            <input type="text" id="last_name" name="last_name" value="{{ usuario.last_name }}" class="form-control" required>
+            <input type="text" id="last_name" name="last_name" value="{{ usuario.last_name }}" class="form-control"
+              required>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="matricula">Matrícula:</label>
-            <input type="text" id="matricula" name="matricula" value="{{ matricula }}" class="form-control" placeholder="Opcional">
+            <input type="text" id="matricula" name="matricula" value="{{ matricula }}" class="form-control"
+              placeholder="Opcional">
           </div>
           <div class="form-group">
             <label for="password">Nova senha:</label>
-            <input type="password" id="password" name="password" class="form-control" placeholder="Deixe em branco para manter a atual">
+            <input type="password" id="password" name="password" class="form-control"
+              placeholder="Deixe em branco para manter a atual">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <div class="checkbox-group">
-              <input type="checkbox" name="is_active" id="is_active" {% if usuario.is_active %}checked{% endif %}> 
+              <input type="checkbox" name="is_active" id="is_active" {% if usuario.is_active %}checked{% endif %}>
               <label for="is_active">Usuário ativo</label>
             </div>
           </div>
@@ -165,8 +170,8 @@
       </div>
 
       {% if usuarios %}
-            <div class="table-scroll-hint">
-          <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
+      <div class="table-scroll-hint">
+        <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
       </div>
       <div class="table-responsive">
         <table class="data-table users-table">
@@ -184,11 +189,10 @@
           </thead>
           <tbody>
             {% for item in usuarios %}
-            <tr data-nome="{{ item.usuario.get_full_name|default:item.usuario.username }}" 
-                data-email="{{ item.usuario.email|default:'' }}" 
-                data-matricula="{% if item.usuario.perfil_aluno %}{{ item.usuario.perfil_aluno.matricula|default:'' }}{% elif item.usuario.perfil_professor %}{{ item.usuario.perfil_professor.registro_academico|default:'' }}{% else %}{{ item.usuario.username|default:'' }}{% endif %}" 
-                data-role="{{ item.role }}" 
-                data-status="{{ item.status }}">
+            <tr data-nome="{{ item.usuario.get_full_name|default:item.usuario.username }}"
+              data-email="{{ item.usuario.email|default:'' }}"
+              data-matricula="{% if item.usuario.perfil_aluno %}{{ item.usuario.perfil_aluno.matricula|default:'' }}{% elif item.usuario.perfil_professor %}{{ item.usuario.perfil_professor.registro_academico|default:'' }}{% else %}{{ item.usuario.username|default:'' }}{% endif %}"
+              data-role="{{ item.role }}" data-status="{{ item.status }}">
               <td>
                 <div class="user-avatar">
                   {{ item.usuario.first_name|first|upper|default:"U" }}
@@ -200,18 +204,18 @@
               <td data-label="Email">{{ item.usuario.email|default:"Não informado" }}</td>
               <td data-label="Matrícula">
                 {% if item.usuario.perfil_aluno %}
-                  {{ item.usuario.perfil_aluno.matricula|default:"Não informada" }}
+                {{ item.usuario.perfil_aluno.matricula|default:"Não informada" }}
                 {% elif item.usuario.perfil_professor %}
-                  {{ item.usuario.perfil_professor.registro_academico|default:"Não informada" }}
+                {{ item.usuario.perfil_professor.registro_academico|default:"Não informada" }}
                 {% else %}
-                  {{ item.usuario.username|default:"Não informada" }}
+                {{ item.usuario.username|default:"Não informada" }}
                 {% endif %}
               </td>
               <td data-label="Funções">
                 <span class="role-badge {{ item.usuario|get_user_role_class }}">
                   {{ item.role }}
                   {% if item.role_manual %}
-                    <small title="Role definida manualmente (não será alterada pelo SUAP)">🔒</small>
+                  <small title="Role definida manualmente (não será alterada pelo SUAP)">🔒</small>
                   {% endif %}
                 </span>
               </td>
@@ -228,9 +232,8 @@
               <td data-label="Ações" class="actions-column">
                 <div class="btn-group">
                   {% if user.is_superuser or user == item.usuario %}
-                  <a href="{% url 'editar_usuario' item.usuario.id %}" 
-                     class="btn btn-sm btn-secondary" 
-                     title="Editar usuário">
+                  <a href="{% url 'editar_usuario' item.usuario.id %}" class="btn btn-sm btn-secondary"
+                    title="Editar usuário">
                     ✏️ Editar
                   </a>
                   {% endif %}
@@ -247,13 +250,12 @@
                   </button>
                   {% endif %}
                   {% if user.is_superuser and user != item.usuario %}
-                  <form method="post" action="{% url 'excluir_usuario' item.usuario.id %}" 
-                        class="inline-form" 
-                        onsubmit="return confirm('Tem certeza que deseja excluir o usuário {{ item.usuario.get_full_name|escapejs }}? Esta ação não pode ser desfeita.')">
+                  <form method="post" action="{% url 'excluir_usuario' item.usuario.id %}" class="inline-form"
+                    onsubmit="return confirm('Tem certeza que deseja desativar o usuário {{ item.usuario.get_full_name|escapejs }}?\n\nO usuário será desativado e seus dados históricos (avaliações, matrículas) serão preservados.\nEsta ação pode ser revertida reativando o usuário posteriormente.')">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger" 
-                            title="Excluir usuário">
-                      🗑️ Excluir
+                    <button type="submit" class="btn btn-sm btn-danger"
+                      title="Desativar usuário">
+                      � Desativar
                     </button>
                   </form>
                   {% endif %}
@@ -286,7 +288,8 @@
     <div id="role-modal" class="role-modal" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h3>Alterar Permissões do Usuário</h3>
-        <button type="button" class="btn-close-modal" onclick="closeModal('modal-overlay'); usuarioAtual = null; document.getElementById('role-form').reset();">
+        <button type="button" class="btn-close-modal"
+          onclick="closeModal('modal-overlay'); usuarioAtual = null; document.getElementById('role-form').reset();">
           ✕ Fechar
         </button>
       </div>
@@ -330,7 +333,7 @@
 
   <!-- Scripts específicos da página -->
   {% if not editing %}
-    <script>
+  <script>
     let usuarioAtual = null;
 
     // Função para filtrar a tabela de usuários usando a função global
@@ -448,7 +451,7 @@
     }
 
     // Adiciona event listeners aos campos de filtro
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const searchUsuario = document.getElementById('searchUsuario');
       const filterRole = document.getElementById('filterRole');
       const filterStatus = document.getElementById('filterStatus');
@@ -463,4 +466,5 @@
   </script>
   {% endif %}
 </body>
+
 </html>

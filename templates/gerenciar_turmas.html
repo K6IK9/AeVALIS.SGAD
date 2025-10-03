@@ -41,31 +41,12 @@
           <div class="form-group">
             <label for="{{ form.disciplina.id_for_label }}">{{ form.disciplina.label }}</label>
             {{ form.disciplina }}
+            {% if form.disciplina.help_text %}
+            <div class="help-text">{{ form.disciplina.help_text }}</div>
+            {% endif %}
             {% if form.disciplina.errors %}
             <div class="error-text">
               {% for error in form.disciplina.errors %} {{ error }} {% endfor %}
-            </div>
-            {% endif %}
-          </div>
-
-          <div class="form-group">
-            <label for="{{ form.professor.id_for_label }}">{{ form.professor.label }}</label>
-            {{ form.professor }}
-            {% if form.professor.errors %}
-            <div class="error-text">
-              {% for error in form.professor.errors %} {{ error }} {% endfor %}
-            </div>
-            {% endif %}
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="{{ form.periodo_letivo.id_for_label }}">{{ form.periodo_letivo.label }}</label>
-            {{ form.periodo_letivo }}
-            {% if form.periodo_letivo.errors %}
-            <div class="error-text">
-              {% for error in form.periodo_letivo.errors %} {{ error }} {% endfor %}
             </div>
             {% endif %}
           </div>
@@ -79,6 +60,13 @@
             </div>
             {% endif %}
           </div>
+        </div>
+
+        <!-- Nota: Professor e Período são automaticamente definidos pela Disciplina -->
+        <div class="info-box"
+          style="background-color: #e3f2fd; padding: 10px; margin: 10px 0; border-left: 4px solid #2196F3;">
+          <small>ℹ️ <strong>Informação:</strong> O professor e período letivo são automaticamente associados com base na
+            disciplina selecionada.</small>
         </div>
 
         {% if form.non_field_errors %}
@@ -157,65 +145,64 @@
       </div>
 
       {% if turmas %}
-            <div class="table-scroll-hint">
-          <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
+      <div class="table-scroll-hint">
+        <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
       </div>
       <div class="table-responsive">
         <table class="turmas-table data-table" id="tabela-turmas">
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Disciplina</th>
-                <th>Professor</th>
-                <th>Período</th>
-                <th>Turno</th>
-                <th>Status</th>
-                <th>Matrículas</th>
-                <th>Data Criação</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for turma in turmas %}
-              <tr data-periodo="{{ turma.periodo_letivo.id }}" data-disciplina="{{ turma.disciplina.id }}"
-                data-professor="{{ turma.professor.id }}" data-turno="{{ turma.turno }}">
-                <td>{{ turma.codigo_turma }}</td>
-                <td>{{ turma.disciplina.disciplina_nome }}</td>
-                <td>{{ turma.professor.user.get_full_name }}</td>
-                <td>{{ turma.periodo_letivo }}</td>
-                <td>
-                  <span class="turno-badge">{{ turma.get_turno_display }}</span>
-                </td>
-                <td>
-                  <span class="status-badge status-{{ turma.status|lower }}">
-                    {{ turma.get_status_display }}
-                  </span>
-                </td>
-                <td>
-                  {{ turma.alunos.count }} aluno{{ turma.alunos.count|pluralize }}
-                </td>
-                <td>{{ turma.data_criacao|date:"d/m/Y" }}</td>
-                <td>
-                  <div class="btn-group">
-                    <a href="{% url 'gerenciar_alunos_turma' turma.id %}" 
-                       class="btn btn-sm btn-secondary" title="Gerenciar Alunos">
-                      👥 Alunos
-                    </a>
-                    <form method="post" action="{% url 'excluir_turma' turma.id %}" 
-                          class="inline-form"
-                          onsubmit="return confirm('Tem certeza que deseja excluir a turma \'{{ turma.disciplina.disciplina_nome }} - {{ turma.professor.user.get_full_name|escapejs }}\'?\n\nEsta ação não poderá ser desfeita.')">
-                      {% csrf_token %}
-                      <button type="submit" class="btn btn-sm btn-danger" title="Excluir Turma">
-                        🗑️ Excluir
-                      </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Disciplina</th>
+              <th>Professor</th>
+              <th>Período</th>
+              <th>Turno</th>
+              <th>Status</th>
+              <th>Matrículas</th>
+              <th>Data Criação</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for turma in turmas %}
+            <tr data-periodo="{{ turma.disciplina.periodo_letivo.id }}" data-disciplina="{{ turma.disciplina.id }}"
+              data-professor="{{ turma.disciplina.professor.id }}" data-turno="{{ turma.turno }}">
+              <td>{{ turma.codigo_turma }}</td>
+              <td>{{ turma.disciplina.disciplina_nome }}</td>
+              <td>{{ turma.disciplina.professor.user.get_full_name }}</td>
+              <td>{{ turma.disciplina.periodo_letivo }}</td>
+              <td>
+                <span class="turno-badge">{{ turma.get_turno_display }}</span>
+              </td>
+              <td>
+                <span class="status-badge status-{{ turma.status|lower }}">
+                  {{ turma.get_status_display }}
+                </span>
+              </td>
+              <td>
+                {{ turma.alunos.count }} aluno{{ turma.alunos.count|pluralize }}
+              </td>
+              <td>{{ turma.data_criacao|date:"d/m/Y" }}</td>
+              <td>
+                <div class="btn-group">
+                  <a href="{% url 'gerenciar_alunos_turma' turma.id %}" class="btn btn-sm btn-secondary"
+                    title="Gerenciar Alunos">
+                    👥 Alunos
+                  </a>
+                  <form method="post" action="{% url 'excluir_turma' turma.id %}" class="inline-form"
+                    onsubmit="return confirm('Tem certeza que deseja excluir a turma \'{{ turma.disciplina.disciplina_nome }} - {{ turma.professor.user.get_full_name|escapejs }}\'?\n\nEsta ação não poderá ser desfeita.')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger" title="Excluir Turma">
+                      🗑️ Excluir
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
       {% else %}
       <div class="empty-state">
         <p class="empty-message">Nenhuma turma encontrada.</p>
@@ -439,9 +426,9 @@
   <!-- Scripts específicos da página -->
   <script>
     // Usar as funções globais, mantendo apenas as específicas da página
-    
-        // Configuração específica para filtros de turmas usando funções globais
-    document.addEventListener('DOMContentLoaded', function() {
+
+    // Configuração específica para filtros de turmas usando funções globais
+    document.addEventListener('DOMContentLoaded', function () {
       // Função personalizada de filtro para turmas
       function filtrarTurmas() {
         const periodo = document.getElementById("filtro-periodo")?.value || "";
@@ -490,7 +477,7 @@
       }
 
       // Função para limpar filtros específica de turmas
-      window.limparFiltrosTurmas = function() {
+      window.limparFiltrosTurmas = function () {
         const campos = ['filtro-periodo', 'filtro-disciplina', 'filtro-professor', 'filtro-turno', 'busca-turma'];
         campos.forEach(campo => {
           const elemento = document.getElementById(campo);
@@ -547,7 +534,7 @@
     });
 
     // Configurar event listeners para filtros automáticos
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const buscaTurma = document.getElementById('busca-turma');
       const filtroPeriodo = document.getElementById('filtro-periodo');
       const filtroDisciplina = document.getElementById('filtro-disciplina');

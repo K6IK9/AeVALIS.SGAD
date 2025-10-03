@@ -20,7 +20,7 @@ def criar_avaliacoes_automaticamente(sender, instance, action, pk_set, **kwargs)
                 avaliacao, created = AvaliacaoDocente.objects.get_or_create(
                     ciclo=instance,
                     turma=turma,
-                    professor=turma.professor,
+                    professor=turma.disciplina.professor,
                     disciplina=turma.disciplina,
                     defaults={"status": "pendente"},
                 )
@@ -31,13 +31,17 @@ def criar_avaliacoes_automaticamente(sender, instance, action, pk_set, **kwargs)
                     # Se a notificação estiver ativa no ciclo, enviar e-mails
                     if instance.enviar_lembrete_email:
                         # Buscar todos os alunos com matrícula ativa na turma
-                        matriculas = turma.matriculas.filter(status="ativa").select_related(
-                            "aluno__user"
+                        matriculas = turma.matriculas.filter(
+                            status="ativa"
+                        ).select_related("aluno__user")
+                        print(
+                            f"Notificando {matriculas.count()} alunos da turma {turma.codigo_turma}..."
                         )
-                        print(f"Notificando {matriculas.count()} alunos da turma {turma.codigo_turma}...")
                         for matricula in matriculas:
                             try:
-                                enviar_email_notificacao_avaliacao(matricula.aluno.user, avaliacao)
+                                enviar_email_notificacao_avaliacao(
+                                    matricula.aluno.user, avaliacao
+                                )
                             except Exception as e:
                                 print(
                                     f"ERRO ao enviar e-mail para {matricula.aluno.user.email}: {e}"
@@ -83,14 +87,14 @@ def criar_avaliacoes_pos_save(sender, instance, created, **kwargs):
             if not AvaliacaoDocente.objects.filter(
                 ciclo=instance,
                 turma=turma,
-                professor=turma.professor,
+                professor=turma.disciplina.professor,
                 disciplina=turma.disciplina,
             ).exists():
                 # Criar a avaliação
                 avaliacao = AvaliacaoDocente.objects.create(
                     ciclo=instance,
                     turma=turma,
-                    professor=turma.professor,
+                    professor=turma.disciplina.professor,
                     disciplina=turma.disciplina,
                     status="pendente",
                 )

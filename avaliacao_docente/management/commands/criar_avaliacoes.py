@@ -57,7 +57,7 @@ class Command(BaseCommand):
                     existe_avaliacao = AvaliacaoDocente.objects.filter(
                         ciclo=ciclo,
                         turma=turma,
-                        professor=turma.professor,
+                        professor=turma.disciplina.professor,
                         disciplina=turma.disciplina,
                     ).exists()
 
@@ -72,7 +72,7 @@ class Command(BaseCommand):
                         AvaliacaoDocente.objects.filter(
                             ciclo=ciclo,
                             turma=turma,
-                            professor=turma.professor,
+                            professor=turma.disciplina.professor,
                             disciplina=turma.disciplina,
                         ).delete()
                         self.stdout.write(
@@ -84,7 +84,7 @@ class Command(BaseCommand):
                         avaliacao = AvaliacaoDocente.objects.create(
                             ciclo=ciclo,
                             turma=turma,
-                            professor=turma.professor,
+                            professor=turma.disciplina.professor,
                             disciplina=turma.disciplina,
                             status="pendente",
                         )
