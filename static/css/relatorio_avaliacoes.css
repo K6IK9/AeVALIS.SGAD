@@ -317,6 +317,10 @@ Botões - REMOVIDO, usando padrão global
     font-size: 0.85em;
     line-height: 1.4;
     color: #333;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 /* Tabela de dados - usando .data-table do global.css com customizações */
