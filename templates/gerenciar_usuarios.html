@@ -59,9 +59,6 @@
     {% if editing %}
     <div class="form-section">
       <h2>✏️ Editar Usuário</h2>
-
-      {% include "partials/messages.html" %}
-
       <form method="post">
         {% csrf_token %}
         <div class="form-row">
@@ -97,8 +94,11 @@
           </div>
           <div class="form-group">
             <label for="password">Nova senha:</label>
-            <input type="password" id="password" name="password" class="form-control"
-              placeholder="Deixe em branco para manter a atual">
+            <input type="password" id="password" name="password" class="form-control" 
+                   placeholder="Deixe em branco para manter a atual" 
+                   minlength="8"
+                   title="A senha deve ter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas e números">
+            <small class="form-text">Mínimo de 8 caracteres, incluindo maiúscula, minúscula e número</small>
           </div>
         </div>
 
@@ -462,6 +462,107 @@
 
       // Inicializa o contador na carga da página
       updateUserCounter();
+    });
+  </script>
+  {% else %}
+  <!-- Script de validação para formulário de edição -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const passwordInput = document.getElementById('password');
+      const form = document.querySelector('form');
+      
+      if (passwordInput && form) {
+        // Função para validar a senha
+        function validatePassword(password) {
+          const errors = [];
+          
+          if (password.length > 0) { // Só valida se algo foi digitado
+            if (password.length < 8) {
+              errors.push('A senha deve ter pelo menos 8 caracteres.');
+            }
+            if (!/[a-z]/.test(password)) {
+              errors.push('A senha deve conter pelo menos uma letra minúscula.');
+            }
+            if (!/[A-Z]/.test(password)) {
+              errors.push('A senha deve conter pelo menos uma letra maiúscula.');
+            }
+            if (!/\d/.test(password)) {
+              errors.push('A senha deve conter pelo menos um número.');
+            }
+            // Verifica se é muito comum
+            const commonPasswords = ['12345678', 'password', '123456789', 'qwerty', 'abc123', 'password1'];
+            if (commonPasswords.includes(password.toLowerCase())) {
+              errors.push('Esta senha é muito comum. Escolha uma senha mais segura.');
+            }
+          }
+          
+          return errors;
+        }
+        
+        // Função para mostrar erros
+        function showErrors(errors) {
+          // Remove erros anteriores
+          const existingError = passwordInput.parentElement.querySelector('.field-error');
+          if (existingError) {
+            existingError.remove();
+          }
+          passwordInput.classList.remove('error');
+          
+          if (errors.length > 0) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'field-error';
+            errorDiv.innerHTML = errors.join('<br>');
+            passwordInput.parentElement.appendChild(errorDiv);
+            passwordInput.classList.add('error');
+          }
+        }
+        
+        // Validação em tempo real (ao sair do campo)
+        passwordInput.addEventListener('blur', function() {
+          const password = this.value;
+          const errors = validatePassword(password);
+          showErrors(errors);
+        });
+        
+        // Limpa erros ao digitar
+        passwordInput.addEventListener('input', function() {
+          const existingError = this.parentElement.querySelector('.field-error');
+          if (existingError) {
+            existingError.remove();
+          }
+          this.classList.remove('error');
+        });
+        
+        // Validação no submit
+        form.addEventListener('submit', function(e) {
+          const password = passwordInput.value;
+          const errors = validatePassword(password);
+          
+          if (errors.length > 0) {
+            e.preventDefault();
+            showErrors(errors);
+            passwordInput.focus();
+            
+            // Mostra mensagem de erro no topo
+            const messagesContainer = document.querySelector('.messages');
+            if (messagesContainer) {
+              messagesContainer.remove();
+            }
+            
+            const newMessage = document.createElement('ul');
+            newMessage.className = 'messages';
+            const messageItem = document.createElement('li');
+            messageItem.className = 'error';
+            messageItem.textContent = 'Por favor, corrija os erros na senha antes de continuar.';
+            newMessage.appendChild(messageItem);
+            
+            const formSection = document.querySelector('.form-section');
+            if (formSection) {
+              formSection.insertBefore(newMessage, formSection.firstChild.nextSibling);
+            }
+          }
+        });
+      }
     });
   </script>
   {% endif %}

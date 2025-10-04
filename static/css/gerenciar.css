@@ -527,6 +527,19 @@
     font-size: 0.875em;
     margin-top: 5px;
     display: block;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 8px 12px;
+    line-height: 1.4;
+}
+
+/* Campo com erro de validação */
+input.error,
+select.error,
+textarea.error {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
 }
 
 /* Formulário inline para ações */
