@@ -20,7 +20,7 @@ from .models import (
     AvaliacaoDocente,
     RespostaAvaliacao,
     # Modelos deprecated (manter compatibilidade)
-    ConfiguracaoSite
+    ConfiguracaoSite,
 )
 
 
@@ -114,9 +114,9 @@ admin.site.register(User, CustomUserAdmin)
 
 @admin.register(CategoriaPergunta)
 class CategoriaPerguntaAdmin(admin.ModelAdmin):
-    list_display = ("nome", "ordem", "ativa")
-    list_filter = ("ativa",)
-    list_editable = ("ordem", "ativa")
+    list_display = ("nome", "ordem", "ativo")
+    list_filter = ("ativo",)
+    list_editable = ("ordem", "ativo")
     search_fields = ("nome",)
     ordering = ("ordem", "nome")
 
@@ -128,10 +128,10 @@ class PerguntaAvaliacaoAdmin(admin.ModelAdmin):
         "tipo",
         "categoria",
         "obrigatoria",
-        "ativa",
+        "ativo",
     )
-    list_filter = ("tipo", "categoria", "obrigatoria", "ativa")
-    list_editable = ("obrigatoria", "ativa")
+    list_filter = ("tipo", "categoria", "obrigatoria", "ativo")
+    list_editable = ("obrigatoria", "ativo")
     search_fields = ("enunciado",)
     ordering = ("categoria__ordem",)
 
@@ -223,7 +223,12 @@ class AvaliacaoDocenteAdmin(admin.ModelAdmin):
         "total_respostas",
         "percentual_participacao_display",
     )
-    list_filter = ("status", "ciclo", "disciplina__curso", "turma__periodo_letivo")
+    list_filter = (
+        "status",
+        "ciclo",
+        "disciplina__curso",
+        "turma__disciplina__periodo_letivo",
+    )
     search_fields = (
         "professor__user__first_name",
         "professor__user__last_name",
@@ -353,4 +358,3 @@ admin.site.register(HorarioTurma)
 #
 #     def has_add_permission(self, request):
 #         return False
-

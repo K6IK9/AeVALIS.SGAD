@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,8 +20,9 @@
             <h1>Gerenciar Alunos da Turma</h1>
             <div class="turma-info">
                 <h2>{{ turma.disciplina.disciplina_nome }}</h2>
-                <p><strong>Professor:</strong> {{ turma.professor.user.get_full_name }}</p>
-                <p><strong>Período:</strong> {{ turma.periodo_letivo }} | <strong>Turno:</strong> {{ turma.get_turno_display }}</p>
+                <p><strong>Professor:</strong> {{ turma.disciplina.professor.user.get_full_name }}</p>
+                <p><strong>Período:</strong> {{ turma.disciplina.periodo_letivo }} | <strong>Turno:</strong> {{
+                    turma.get_turno_display }}</p>
                 <p><strong>Código:</strong> {{ turma.codigo_turma }}</p>
             </div>
         </div>
@@ -62,8 +64,7 @@
                     <label for="busca_aluno">Buscar por Nome/Matrícula/Email:</label>
                     <div class="search-box">
                         <input type="text" name="busca_aluno" id="busca_aluno" class="form-control"
-                               value="{{ busca_aluno }}" 
-                               placeholder="Digite o nome, matrícula ou email do aluno..." />
+                            value="{{ busca_aluno }}" placeholder="Digite o nome, matrícula ou email do aluno..." />
                     </div>
                 </div>
                 <div class="filter-group">
@@ -76,20 +77,21 @@
         <div class="form-section">
             <form method="post" id="form-alunos">
                 {% csrf_token %}
-                
+
                 <div class="bulk-actions-header">
                     <h3>Ações em Massa</h3>
                     <div class="btn-group">
-                        <button type="submit" name="acao" value="matricular" class="btn btn-sm btn-success" 
-                                onclick="return confirm('Matricular alunos selecionados?')" title="Matricular Selecionados">
+                        <button type="submit" name="acao" value="matricular" class="btn btn-sm btn-success"
+                            onclick="return confirm('Matricular alunos selecionados?')" title="Matricular Selecionados">
                             ✅ Matricular
                         </button>
-                        <button type="submit" name="acao" value="desmatricular" class="btn btn-sm btn-danger" 
-                                onclick="return confirm('Desmatricular alunos selecionados?')" title="Desmatricular Selecionados">
+                        <button type="submit" name="acao" value="desmatricular" class="btn btn-sm btn-danger"
+                            onclick="return confirm('Desmatricular alunos selecionados?')"
+                            title="Desmatricular Selecionados">
                             ❌ Desmatricular
                         </button>
-                        <button type="button" onclick="toggleTodos()" class="btn btn-sm btn-secondary" 
-                                title="Selecionar/Desmarcar Todos">
+                        <button type="button" onclick="toggleTodos()" class="btn btn-sm btn-secondary"
+                            title="Selecionar/Desmarcar Todos">
                             🔄 Selecionar Todos
                         </button>
                     </div>
@@ -100,15 +102,14 @@
                     {% if alunos %}
                     {% for aluno in alunos %}
                     <div class="aluno-card {% if aluno.matriculado %}matriculado{% endif %}"
-                         data-nome="{{ aluno.nome|lower }}"
-                         data-username="{{ aluno.username|lower }}"
-                         data-email="{{ aluno.email|lower }}"
-                         data-matriculado="{% if aluno.matriculado %}true{% else %}false{% endif %}">
+                        data-nome="{{ aluno.nome|lower }}" data-username="{{ aluno.username|lower }}"
+                        data-email="{{ aluno.email|lower }}"
+                        data-matriculado="{% if aluno.matriculado %}true{% else %}false{% endif %}">
                         <div class="aluno-checkbox">
-                            <input type="checkbox" name="alunos_selecionados" value="{{ aluno.id }}" 
-                                   id="aluno_{{ aluno.id }}" />
+                            <input type="checkbox" name="alunos_selecionados" value="{{ aluno.id }}"
+                                id="aluno_{{ aluno.id }}" />
                         </div>
-                        
+
                         <div class="aluno-info">
                             <div class="aluno-nome">
                                 <label for="aluno_{{ aluno.id }}">{{ aluno.nome }}</label>
@@ -118,7 +119,7 @@
                                 <span class="aluno-email">{{ aluno.email }}</span>
                             </div>
                         </div>
-                        
+
                         <div class="aluno-status">
                             {% if aluno.matriculado %}
                             <span class="status-badge matriculado">✅ Matriculado</span>
@@ -133,7 +134,8 @@
                         <h3>Nenhum aluno encontrado</h3>
                         {% if busca_aluno %}
                         <p>Não há alunos que correspondam aos critérios de busca "{{ busca_aluno }}".</p>
-                        <a href="{% url 'gerenciar_alunos_turma' turma.id %}" class="btn-primary">Ver todos os alunos</a>
+                        <a href="{% url 'gerenciar_alunos_turma' turma.id %}" class="btn-primary">Ver todos os
+                            alunos</a>
                         {% else %}
                         <p>Não há alunos cadastrados no sistema.</p>
                         {% endif %}
@@ -148,7 +150,7 @@
         // Função para filtrar os cards de alunos
         function filterAlunos() {
             const searchFilter = document.getElementById('busca_aluno').value.toLowerCase().trim();
-            
+
             const alunoCards = document.querySelectorAll('.aluno-card');
             let visibleCount = 0;
             let matriculadosCount = 0;
@@ -161,9 +163,9 @@
                 const matriculado = card.dataset.matriculado === 'true';
 
                 // A busca procura em nome, username e email
-                const searchMatch = !searchFilter || 
-                    nome.includes(searchFilter) || 
-                    username.includes(searchFilter) || 
+                const searchMatch = !searchFilter ||
+                    nome.includes(searchFilter) ||
+                    username.includes(searchFilter) ||
                     email.includes(searchFilter);
 
                 if (searchMatch) {
@@ -199,16 +201,16 @@
         function toggleTodos() {
             const checkboxes = document.querySelectorAll('input[name="alunos_selecionados"]:not([style*="display: none"])');
             const todosMarcados = Array.from(checkboxes).every(cb => cb.checked);
-            
+
             checkboxes.forEach(cb => {
                 cb.checked = !todosMarcados;
             });
         }
 
         // Verificar se há alunos selecionados antes de submeter
-        document.getElementById('form-alunos').addEventListener('submit', function(e) {
+        document.getElementById('form-alunos').addEventListener('submit', function (e) {
             const selecionados = document.querySelectorAll('input[name="alunos_selecionados"]:checked');
-            
+
             if (selecionados.length === 0) {
                 e.preventDefault();
                 alert('Selecione pelo menos um aluno para realizar a ação.');
@@ -223,12 +225,12 @@
         }
 
         // Adicionar event listener para busca automática
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const buscaInput = document.getElementById('busca_aluno');
-            
+
             // Busca automática com debounce
             let timeoutId;
-            buscaInput.addEventListener('input', function() {
+            buscaInput.addEventListener('input', function () {
                 clearTimeout(timeoutId);
                 timeoutId = setTimeout(() => {
                     filterAlunos();
@@ -242,4 +244,5 @@
         });
     </script>
 </body>
+
 </html>

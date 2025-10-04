@@ -4,10 +4,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView, FormView
 from django.views.generic import TemplateView
 from django.urls import reverse_lazy, reverse
-from django.contrib.auth import login
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Q, Avg
 import csv
 from datetime import datetime
 from .models import (
@@ -30,7 +28,6 @@ from .models import (
     QuestionarioPergunta,
 )
 from django.contrib.auth.models import User
-from django.utils import timezone
 from rolepermissions.roles import assign_role, remove_role
 from rolepermissions.checkers import has_role
 from .utils import (
@@ -349,7 +346,8 @@ def editar_usuario(request, usuario_id):
 @login_required
 def excluir_usuario(request, usuario_id):
     """
-    View para excluir um usuário
+    View para desativar (soft delete) um usuário sem remover dados vinculados.
+    Preserva avaliações, matrículas e todos os relacionamentos.
     """
     if not check_user_permission(request.user, ["coordenador", "admin"]):
         messages.error(request, "Permissão negada")
@@ -359,27 +357,52 @@ def excluir_usuario(request, usuario_id):
         try:
             usuario = get_object_or_404(User, id=usuario_id)
 
-            # Não permite excluir o próprio usuário
+            # Não permite desativar o próprio usuário
             if usuario == request.user:
-                messages.error(request, "Não é possível excluir seu próprio usuário")
+                messages.error(request, "Não é possível desativar seu próprio usuário")
                 return redirect("gerenciar_usuarios")
 
-            # Não permite excluir usuários admin se não for admin
+            # Não permite desativar usuários admin se não for admin
             if has_role(usuario, "admin") and not has_role(request.user, "admin"):
                 messages.error(
                     request,
-                    "Apenas administradores podem excluir outros administradores",
+                    "Apenas administradores podem desativar outros administradores",
                 )
                 return redirect("gerenciar_usuarios")
 
-            nome_usuario = usuario.username
-            usuario.delete()
+            # Verificar se usuário já está inativo
+            if not usuario.is_active:
+                messages.warning(request, "Usuário já está inativo.")
+                return redirect("gerenciar_usuarios")
 
-            messages.success(request, f"Usuário '{nome_usuario}' excluído com sucesso!")
+            # Anonimização e desativação (soft delete)
+            original_username = usuario.username
+            original_email = usuario.email or "sememail"
+
+            usuario.is_active = False
+            usuario.first_name = "Usuário"
+            usuario.last_name = "Desativado"
+            usuario.email = f"desativado_{usuario.id}_{original_email}"
+            usuario.username = f"del_{usuario.id}_{original_username}"
+
+            # Remover roles (mantém perfis intactos)
+            for role_name in ["aluno", "professor", "coordenador", "admin"]:
+                try:
+                    if has_role(usuario, role_name):
+                        remove_role(usuario, role_name)
+                except Exception:
+                    pass
+
+            usuario.save()
+
+            messages.success(
+                request,
+                f"Usuário '{original_username}' desativado com sucesso. Todos os dados históricos foram preservados.",
+            )
             return redirect("gerenciar_usuarios")
 
         except Exception as e:
-            messages.error(request, f"Erro ao excluir usuário: {str(e)}")
+            messages.error(request, f"Erro ao desativar usuário: {str(e)}")
             return redirect("gerenciar_usuarios")
 
     return redirect("gerenciar_usuarios")
@@ -962,11 +985,15 @@ def gerenciar_turmas(request):
 
     # Base queryset
     turmas = (
-        Turma.objects.select_related("disciplina", "professor", "periodo_letivo")
+        Turma.objects.select_related(
+            "disciplina",
+            "disciplina__professor__user",
+            "disciplina__periodo_letivo",
+        )
         .prefetch_related("matriculas")
         .order_by(
-            "-periodo_letivo__ano",
-            "-periodo_letivo__semestre",
+            "-disciplina__periodo_letivo__ano",
+            "-disciplina__periodo_letivo__semestre",
             "disciplina__disciplina_nome",
         )
     )
@@ -975,7 +1002,7 @@ def gerenciar_turmas(request):
     if filtro_turno:
         turmas = turmas.filter(turno=filtro_turno)
     if filtro_periodo:
-        turmas = turmas.filter(periodo_letivo_id=filtro_periodo)
+        turmas = turmas.filter(disciplina__periodo_letivo_id=filtro_periodo)
     if filtro_status:
         turmas = turmas.filter(status=filtro_status)
 
@@ -1035,10 +1062,12 @@ def editar_turma(request, turma_id):
         "form": form,
         "turma": turma,
         "turmas": Turma.objects.select_related(
-            "disciplina", "professor", "periodo_letivo"
+            "disciplina",
+            "disciplina__professor__user",
+            "disciplina__periodo_letivo",
         ).order_by(
-            "-periodo_letivo__ano",
-            "-periodo_letivo__semestre",
+            "-disciplina__periodo_letivo__ano",
+            "-disciplina__periodo_letivo__semestre",
             "disciplina__disciplina_nome",
         ),
         "periodos_disponiveis": periodos_disponiveis,
@@ -1317,7 +1346,7 @@ def buscar_alunos_turma(request):
         turma_data = {
             "codigo": turma.codigo_turma,
             "disciplina": turma.disciplina.disciplina_nome,
-            "professor": turma.professor.user.get_full_name(),
+            "professor": turma.disciplina.professor.user.get_full_name(),
         }
 
         return JsonResponse(
@@ -2272,7 +2301,7 @@ def gerar_csv_avaliacoes(
         disciplina = avaliacao.turma.disciplina.disciplina_nome
         professor = avaliacao.professor.user.get_full_name()
         turma = avaliacao.turma.codigo_turma
-        periodo = avaliacao.turma.periodo_letivo.nome
+        periodo = avaliacao.turma.disciplina.periodo_letivo.nome
         ciclo = avaliacao.ciclo.nome
 
         # Contar respondentes únicos
@@ -3198,11 +3227,15 @@ def exportar_turmas_csv(request):
     # Buscar turmas com related data
     turmas = (
         Turma.objects.select_related(
-            "disciplina__curso", "professor__user", "periodo_letivo"
+            "disciplina__curso",
+            "disciplina__professor__user",
+            "disciplina__periodo_letivo",
         )
         .prefetch_related("matriculas")
         .order_by(
-            "periodo_letivo__nome", "disciplina__curso__curso_nome", "codigo_turma"
+            "disciplina__periodo_letivo__nome",
+            "disciplina__curso__curso_nome",
+            "codigo_turma",
         )
     )
 
@@ -3218,12 +3251,16 @@ def exportar_turmas_csv(request):
                 turma.disciplina.disciplina_nome,
                 turma.disciplina.curso.curso_nome,
                 (
-                    turma.professor.user.get_full_name()
-                    if turma.professor
+                    turma.disciplina.professor.user.get_full_name()
+                    if turma.disciplina.professor
                     else "Não definido"
                 ),
-                turma.professor.user.email if turma.professor else "",
-                turma.periodo_letivo.nome,
+                (
+                    turma.disciplina.professor.user.email
+                    if turma.disciplina.professor
+                    else ""
+                ),
+                turma.disciplina.periodo_letivo.nome,
                 total_alunos,
                 alunos_ativos,
                 (

@@ -390,23 +390,19 @@ class PeriodoLetivoForm(forms.ModelForm):
 
 class TurmaForm(forms.ModelForm):
     """
-    Form para criação e edição de turmas
+    Form para criação e edição de turmas.
+
+    Nota: Professor e Período Letivo são derivados da Disciplina selecionada,
+    não sendo necessários campos separados no formulário.
     """
 
     disciplina = forms.ModelChoiceField(
-        queryset=Disciplina.objects.all(),
+        queryset=Disciplina.objects.select_related(
+            "professor", "periodo_letivo", "curso"
+        ).all(),
         widget=forms.Select(attrs={"class": "form-control"}),
         label="Disciplina",
-    )
-    professor = forms.ModelChoiceField(
-        queryset=PerfilProfessor.non_admin.all(),
-        widget=forms.Select(attrs={"class": "form-control"}),
-        label="Professor",
-    )
-    periodo_letivo = forms.ModelChoiceField(
-        queryset=PeriodoLetivo.objects.all(),
-        widget=forms.Select(attrs={"class": "form-control"}),
-        label="Período Letivo",
+        help_text="O professor e período letivo serão automaticamente definidos pela disciplina.",
     )
     turno = forms.ChoiceField(
         choices=[("", "--- Selecione ---")] + Turma.TURNO_CHOICES,
@@ -418,27 +414,23 @@ class TurmaForm(forms.ModelForm):
         model = Turma
         fields = [
             "disciplina",
-            "professor",
-            "periodo_letivo",
             "turno",
         ]
 
     def clean(self):
         cleaned_data = super().clean()
         disciplina = cleaned_data.get("disciplina")
-        periodo_letivo = cleaned_data.get("periodo_letivo")
         turno = cleaned_data.get("turno")
 
-        if disciplina and periodo_letivo and turno:
-            # Verifica se já existe uma turma para essa disciplina no mesmo período e turno
+        if disciplina and turno:
+            # Verifica se já existe uma turma para essa disciplina no mesmo turno
             if Turma.objects.filter(
                 disciplina=disciplina,
-                periodo_letivo=periodo_letivo,
                 turno=turno,
             ).exists():
                 raise forms.ValidationError(
                     f"Já existe uma turma de {disciplina.disciplina_nome} "
-                    f"no período {periodo_letivo} no turno {turno}."
+                    f"no turno {turno}."
                 )
 
         return cleaned_data
@@ -598,7 +590,7 @@ class CategoriaPerguntaForm(forms.ModelForm):
 
     class Meta:
         model = CategoriaPergunta
-        fields = ["nome", "descricao", "ordem", "ativa"]
+        fields = ["nome", "descricao", "ordem", "ativo"]
         widgets = {
             "nome": forms.TextInput(
                 attrs={
@@ -614,7 +606,7 @@ class CategoriaPerguntaForm(forms.ModelForm):
                 }
             ),
             "ordem": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
-            "ativa": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
 
@@ -644,7 +636,7 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
             "tipo",
             "categoria",
             "obrigatoria",
-            "ativa",
+            "ativo",
             "opcoes_multipla_escolha",
         ]
         widgets = {
@@ -658,7 +650,7 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
             "tipo": forms.Select(attrs={"class": "form-control"}),
             "categoria": forms.Select(attrs={"class": "form-control"}),
             "obrigatoria": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-            "ativa": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -666,7 +658,7 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
         # Definir valores padrão para campos obrigatórios
         if not self.instance.pk:
             self.fields["obrigatoria"].initial = True
-            self.fields["ativa"].initial = True
+            self.fields["ativo"].initial = True
 
         # Exibir as opções de múltipla escolha (se existentes) como linhas no textarea
         if self.instance.pk and hasattr(self.instance, "opcoes_multipla_escolha"):
@@ -877,7 +869,7 @@ class CategoriaPerguntaForm(forms.ModelForm):
 
     class Meta:
         model = CategoriaPergunta
-        fields = ["nome", "descricao", "ordem", "ativa"]
+        fields = ["nome", "descricao", "ordem", "ativo"]
         widgets = {
             "nome": forms.TextInput(
                 attrs={
@@ -901,19 +893,19 @@ class CategoriaPerguntaForm(forms.ModelForm):
                     "placeholder": "1",
                 }
             ),
-            "ativa": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
         labels = {
             "nome": "Nome da Categoria",
             "descricao": "Descrição",
             "ordem": "Ordem de Exibição",
-            "ativa": "Categoria Ativa",
+            "ativo": "Categoria Ativa",
         }
         help_texts = {
             "nome": "Nome único para identificar a categoria",
             "descricao": "Descrição opcional para explicar o propósito da categoria",
             "ordem": "Ordem de exibição nas avaliações (número único, começando em 1)",
-            "ativa": "Marque para manter a categoria ativa no sistema",
+            "ativo": "Marque para manter a categoria ativa no sistema",
         }
 
     def __init__(self, *args, **kwargs):
