@@ -418,7 +418,8 @@ class PopuladorBancoDados:
             print(f"   ✅ {len(self.matriculas)} matrículas encontradas")
             return
 
-        status_opcoes = ["ativo", "trancado", "concluido"]
+        # Valores corretos do campo status em MatriculaTurma
+        status_opcoes = ["ativa", "trancada", "concluida"]
 
         for aluno in self.alunos:
             # Cada aluno se matricula em 3-7 turmas
@@ -429,7 +430,7 @@ class PopuladorBancoDados:
 
             for turma in turmas_aluno:
                 status = random.choices(
-                    status_opcoes, weights=[80, 10, 10]  # 80% ativo
+                    status_opcoes, weights=[80, 10, 10]  # 80% ativa
                 )[0]
 
                 matricula = MatriculaTurma.objects.create(

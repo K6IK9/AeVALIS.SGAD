@@ -1,6 +1,7 @@
 # Migração para adicionar data_criacao a RespostaAvaliacao
-from django.db import migrations, models
-import django.utils.timezone
+# NOTA: Este campo já foi adicionado na migração 0009_adicionar_soft_delete_timestamps
+# Esta migração foi mantida vazia para preservar a ordem das migrações
+from django.db import migrations
 
 
 class Migration(migrations.Migration):
@@ -10,12 +11,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="respostaavaliacao",
-            name="data_criacao",
-            field=models.DateTimeField(
-                auto_now_add=True, default=django.utils.timezone.now
-            ),
-            preserve_default=False,
-        ),
+        # Campo data_criacao já adicionado na migração 0009
     ]

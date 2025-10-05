@@ -255,7 +255,7 @@
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-danger"
                       title="Desativar usuário">
-                      � Desativar
+                      🚫 Desativar
                     </button>
                   </form>
                   {% endif %}
@@ -288,10 +288,6 @@
     <div id="role-modal" class="role-modal" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h3>Alterar Permissões do Usuário</h3>
-        <button type="button" class="btn-close-modal"
-          onclick="closeModal('modal-overlay'); usuarioAtual = null; document.getElementById('role-form').reset();">
-          ✕ Fechar
-        </button>
       </div>
 
       <div class="modal-content">

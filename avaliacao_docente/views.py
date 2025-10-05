@@ -112,8 +112,8 @@ def gerenciar_roles(request):
     else:
         form = GerenciarRoleForm()
 
-    # Obter todos os usuários e suas roles
-    usuarios_queryset = User.objects.all().order_by("username")
+    # Obter todos os usuários ativos e suas roles
+    usuarios_queryset = User.objects.filter(is_active=True).order_by("username")
 
     # Lista todos os usuários com suas roles
     usuarios_com_roles = []
@@ -907,8 +907,8 @@ def gerenciar_alunos_turma(request, turma_id):
 
         return redirect("gerenciar_alunos_turma", turma_id=turma_id)
 
-    # Buscar todos os alunos
-    alunos_query = PerfilAluno.objects.select_related("user").all()
+    # Buscar todos os alunos ativos
+    alunos_query = PerfilAluno.non_admin.select_related("user").all()
 
     # Aplicar filtro de busca
     if busca_aluno:
@@ -1011,7 +1011,7 @@ def gerenciar_turmas(request):
 
     # Disciplinas e professores para os filtros
     disciplinas = Disciplina.objects.all().order_by("disciplina_nome")
-    professores = PerfilProfessor.objects.select_related("user").order_by(
+    professores = PerfilProfessor.non_admin.select_related("user").order_by(
         "user__first_name", "user__last_name"
     )
 
@@ -1315,8 +1315,8 @@ def buscar_alunos_turma(request):
     try:
         turma = get_object_or_404(Turma, id=turma_id)
 
-        # Buscar todos os alunos
-        alunos_query = PerfilAluno.objects.select_related("user").all()
+        # Buscar todos os alunos ativos
+        alunos_query = PerfilAluno.non_admin.select_related("user").all()
 
         if busca:
             alunos_query = alunos_query.filter(
@@ -1761,7 +1761,8 @@ def detalhe_ciclo_avaliacao(request, ciclo_id):
     """
     View para visualizar detalhes de um ciclo de avaliação
     """
-    ciclo = get_object_or_404(CicloAvaliacao, id=ciclo_id)
+    # Usar all_objects para incluir ciclos inativos (soft deleted)
+    ciclo = get_object_or_404(CicloAvaliacao.all_objects, id=ciclo_id)
     avaliacoes_docentes = AvaliacaoDocente.objects.filter(ciclo=ciclo)
 
     # Estatísticas do ciclo
@@ -1964,7 +1965,7 @@ def relatorio_avaliacoes(request):
     formato = request.GET.get("formato")
 
     ciclos = CicloAvaliacao.objects.all().order_by("-data_inicio")
-    professores = PerfilProfessor.objects.all().order_by("user__first_name")
+    professores = PerfilProfessor.non_admin.all().order_by("user__first_name")
 
     # Filtros
     ciclo_selecionado = request.GET.get("ciclo")
@@ -2814,7 +2815,8 @@ def editar_ciclo_simples(request, ciclo_id):
         )
         return redirect("inicio")
 
-    ciclo = get_object_or_404(CicloAvaliacao, id=ciclo_id)
+    # Usar all_objects para incluir ciclos inativos (soft deleted)
+    ciclo = get_object_or_404(CicloAvaliacao.all_objects, id=ciclo_id)
 
     if request.method == "POST":
         form = CicloAvaliacaoForm(request.POST, instance=ciclo)
@@ -2849,7 +2851,8 @@ def excluir_ciclo(request, ciclo_id):
         )
         return redirect("inicio")
 
-    ciclo = get_object_or_404(CicloAvaliacao, id=ciclo_id)
+    # Usar all_objects para incluir ciclos inativos (soft deleted)
+    ciclo = get_object_or_404(CicloAvaliacao.all_objects, id=ciclo_id)
 
     if request.method == "POST":
         avaliacoes = ciclo.avaliacoes.all()
@@ -2910,7 +2913,8 @@ def encerrar_ciclo(request, ciclo_id):
     if not check_user_permission(request.user, ["coordenador", "admin"]):
         messages.error(request, "Você não tem permissão para encerrar ciclos.")
         return redirect("inicio")
-    ciclo = get_object_or_404(CicloAvaliacao, id=ciclo_id)
+    # Usar all_objects para incluir ciclos inativos (soft deleted)
+    ciclo = get_object_or_404(CicloAvaliacao.all_objects, id=ciclo_id)
     if request.method == "POST":
         if not ciclo.ativo:
             messages.info(request, f"Ciclo '{ciclo.nome}' já está encerrado.")
