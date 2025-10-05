@@ -190,6 +190,7 @@ class Migration(migrations.Migration):
         ),
         # CicloAvaliacao já tem campo 'ativo' (boolean), não precisa adicionar
         # AvaliacaoDocente
+        # NOTA: AvaliacaoDocente já tem data_criacao e data_atualizacao desde 0001_initial
         migrations.AddField(
             model_name="avaliacaodocente",
             name="ativo",
@@ -199,11 +200,6 @@ class Migration(migrations.Migration):
             model_name="avaliacaodocente",
             name="data_exclusao",
             field=models.DateTimeField(null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name="avaliacaodocente",
-            name="data_atualizacao",
-            field=models.DateTimeField(auto_now=True),
         ),
         # RespostaAvaliacao
         migrations.AddField(

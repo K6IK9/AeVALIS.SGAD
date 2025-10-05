@@ -116,7 +116,7 @@ class GerenciarRoleForm(forms.Form):
     """
 
     usuario = forms.ModelChoiceField(
-        queryset=User.objects.all(),
+        queryset=User.objects.filter(is_active=True),
         widget=forms.Select(attrs={"class": "form-control"}),
         label="Usuário",
     )
@@ -134,8 +134,10 @@ class GerenciarRoleForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Ordena usuários por username
-        self.fields["usuario"].queryset = User.objects.all().order_by("username")
+        # Ordena usuários por username e filtra apenas ativos
+        self.fields["usuario"].queryset = User.objects.filter(is_active=True).order_by(
+            "username"
+        )
 
 
 class GerenciarUsuarioForm(forms.ModelForm):
@@ -380,7 +382,12 @@ class PeriodoLetivoForm(forms.ModelForm):
 
         if ano and semestre:
             # Verifica se já existe um período para o mesmo ano e semestre
-            if PeriodoLetivo.objects.filter(ano=ano, semestre=semestre).exists():
+            # Exclui o próprio registro se estiver editando (self.instance.pk existe)
+            queryset = PeriodoLetivo.objects.filter(ano=ano, semestre=semestre)
+            if self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+
+            if queryset.exists():
                 raise forms.ValidationError(
                     f"Já existe um período cadastrado para {ano}.{semestre}"
                 )

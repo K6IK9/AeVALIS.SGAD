@@ -9,7 +9,7 @@ from .managers import SoftDeleteManager
 
 
 class PerfilProfessorManager(models.Manager):
-    """Manager customizado para excluir usuários admin"""
+    """Manager customizado para excluir usuários admin e inativos"""
 
     def get_queryset(self):
         from rolepermissions.checkers import has_role
@@ -23,7 +23,12 @@ class PerfilProfessorManager(models.Manager):
             # Se houver erro (tabelas não existem), retorna queryset vazio de exclusão
             admin_ids = []
 
-        return super().get_queryset().exclude(user__id__in=admin_ids)
+        return (
+            super()
+            .get_queryset()
+            .exclude(user__id__in=admin_ids)
+            .filter(user__is_active=True)
+        )
 
     def non_admin(self):
         """Retorna apenas professores que não são admin"""
@@ -31,7 +36,7 @@ class PerfilProfessorManager(models.Manager):
 
 
 class PerfilAlunoManager(models.Manager):
-    """Manager customizado para excluir usuários admin"""
+    """Manager customizado para excluir usuários admin e inativos"""
 
     def get_queryset(self):
         from rolepermissions.checkers import has_role
@@ -45,7 +50,12 @@ class PerfilAlunoManager(models.Manager):
             # Se houver erro (tabelas não existem), retorna queryset vazio de exclusão
             admin_ids = []
 
-        return super().get_queryset().exclude(user__id__in=admin_ids)
+        return (
+            super()
+            .get_queryset()
+            .exclude(user__id__in=admin_ids)
+            .filter(user__is_active=True)
+        )
 
     def non_admin(self):
         """Retorna apenas alunos que não são admin"""
