@@ -2010,40 +2010,62 @@ def relatorio_avaliacoes(request):
 
         for pergunta_questionario in perguntas_questionario:
             pergunta = pergunta_questionario.pergunta
-            respostas_pergunta = RespostaAvaliacao.objects.filter(
-                avaliacao__ciclo=avaliacao.ciclo,
-                avaliacao__professor=avaliacao.professor,
-                avaliacao__turma=avaliacao.turma,
-                pergunta=pergunta,
-                valor_numerico__isnull=False,
-            )
 
-            if respostas_pergunta.exists():
-                # Calcular média
-                media = (
-                    respostas_pergunta.aggregate(media=Avg("valor_numerico"))["media"]
-                    or 0
+            # Tratamento para perguntas de múltipla escolha (questionário padrão)
+            if pergunta.tipo == "multipla_escolha":
+                resultado = avaliacao.calcular_media_pergunta(pergunta)
+                if resultado:
+                    pergunta_stats.append(
+                        {
+                            "pergunta": pergunta,
+                            "tipo": "multipla_escolha",
+                            "media": resultado["media"],
+                            "contagens": resultado["contagens"],
+                            "respostas_count": resultado["total_respondentes"],
+                            "classificacao": avaliacao.get_classificacao_media(
+                                resultado["media"]
+                            ),
+                        }
+                    )
+            else:
+                # Tratamento para perguntas numéricas (likert, nps)
+                respostas_pergunta = RespostaAvaliacao.objects.filter(
+                    avaliacao__ciclo=avaliacao.ciclo,
+                    avaliacao__professor=avaliacao.professor,
+                    avaliacao__turma=avaliacao.turma,
+                    pergunta=pergunta,
+                    valor_numerico__isnull=False,
                 )
 
-                # Calcular moda (valor mais frequente)
-                valores = (
-                    respostas_pergunta.values("valor_numerico")
-                    .annotate(count=Count("valor_numerico"))
-                    .order_by("-count")
-                )
-                moda = valores[0]["valor_numerico"] if valores else 0
+                if respostas_pergunta.exists():
+                    # Calcular média
+                    media = (
+                        respostas_pergunta.aggregate(media=Avg("valor_numerico"))[
+                            "media"
+                        ]
+                        or 0
+                    )
 
-                # Contar respostas
-                respostas_count = respostas_pergunta.count()
+                    # Calcular moda (valor mais frequente)
+                    valores = (
+                        respostas_pergunta.values("valor_numerico")
+                        .annotate(count=Count("valor_numerico"))
+                        .order_by("-count")
+                    )
+                    moda = valores[0]["valor_numerico"] if valores else 0
 
-                pergunta_stats.append(
-                    {
-                        "pergunta": pergunta,
-                        "media": round(media, 1),
-                        "moda": moda,
-                        "respostas_count": respostas_count,
-                    }
-                )
+                    # Contar respostas
+                    respostas_count = respostas_pergunta.count()
+
+                    pergunta_stats.append(
+                        {
+                            "pergunta": pergunta,
+                            "tipo": "numerico",
+                            "media": round(media, 1),
+                            "moda": moda,
+                            "respostas_count": respostas_count,
+                        }
+                    )
 
         # Buscar comentários da avaliação (anônimos)
         comentarios = (
@@ -2054,12 +2076,22 @@ def relatorio_avaliacoes(request):
             .only("valor_texto", "data_resposta")
         )
 
+        # Calcular média geral do questionário padrão (se aplicável)
+        media_geral_padrao = avaliacao.calcular_media_geral_questionario_padrao()
+
         # Adicionar dados calculados à avaliação
         avaliacao.respondentes = respondentes
         avaliacao.total_alunos = total_alunos
         avaliacao.taxa_resposta = round(taxa_resposta, 1)
         avaliacao.pergunta_stats = pergunta_stats
         avaliacao.comentarios = comentarios
+        avaliacao.media_geral_padrao = media_geral_padrao
+        if media_geral_padrao:
+            avaliacao.classificacao_geral = avaliacao.get_classificacao_media(
+                media_geral_padrao["media_geral"]
+            )
+        else:
+            avaliacao.classificacao_geral = None
 
         avaliacoes_com_stats.append(avaliacao)
 
@@ -2287,10 +2319,17 @@ def gerar_csv_avaliacoes(
             "Total Alunos",
             "Respondentes",
             "Taxa de Resposta (%)",
+            "Média Geral",
+            "Classificação Geral",
+            "Pergunta",
             "Tipo Pergunta",
-            "Categoria",
-            "Média",
-            "Moda",
+            "Média Pergunta",
+            "Classificação",
+            "Não atende",
+            "Insuficiente",
+            "Regular",
+            "Bom",
+            "Excelente",
             "Total Respostas",
             "Comentários",
         ]
@@ -2330,6 +2369,15 @@ def gerar_csv_avaliacoes(
         if comentarios.count() > 5:
             comentarios_texto += f" | ... (+{comentarios.count() - 5} comentários)"
 
+        # Calcular média geral do questionário padrão
+        media_geral_padrao = avaliacao.calcular_media_geral_questionario_padrao()
+        if media_geral_padrao:
+            media_geral = media_geral_padrao["media_geral"]
+            classificacao_geral = avaliacao.get_classificacao_media(media_geral)
+        else:
+            media_geral = "N/A"
+            classificacao_geral = "N/A"
+
         # Processar estatísticas por pergunta
         perguntas_questionario = avaliacao.ciclo.questionario.perguntas.all()
 
@@ -2345,6 +2393,12 @@ def gerar_csv_avaliacoes(
                     total_alunos,
                     respondentes,
                     taxa_resposta,
+                    media_geral,
+                    classificacao_geral,
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "N/A",
                     "N/A",
                     "N/A",
                     "N/A",
@@ -2358,83 +2412,245 @@ def gerar_csv_avaliacoes(
             # Para cada pergunta do questionário
             for pergunta_questionario in perguntas_questionario:
                 pergunta = pergunta_questionario.pergunta
-                respostas_pergunta = RespostaAvaliacao.objects.filter(
-                    avaliacao=avaliacao,
-                    pergunta=pergunta,
-                    valor_numerico__isnull=False,
-                )
 
-                if respostas_pergunta.exists():
-                    # Calcular estatísticas
-                    media = (
-                        respostas_pergunta.aggregate(media=Avg("valor_numerico"))[
-                            "media"
-                        ]
-                        or 0
-                    )
-
-                    # Calcular moda (valor mais frequente)
-                    valores = (
-                        respostas_pergunta.values("valor_numerico")
-                        .annotate(count=Count("valor_numerico"))
-                        .order_by("-count")
-                    )
-                    moda = valores[0]["valor_numerico"] if valores else 0
-
-                    respostas_count = respostas_pergunta.count()
-
-                    writer.writerow(
-                        [
-                            disciplina,
-                            professor,
-                            turma,
-                            periodo,
-                            ciclo,
-                            total_alunos,
-                            respondentes,
-                            taxa_resposta,
-                            pergunta.enunciado,
-                            pergunta.get_tipo_display(),
-                            pergunta.categoria.nome if pergunta.categoria else "N/A",
-                            round(media, 2),
-                            moda,
-                            respostas_count,
-                            (
-                                comentarios_texto
-                                if pergunta_questionario
-                                == perguntas_questionario.first()
-                                else ""
-                            ),
-                        ]
-                    )
+                # Tratamento para perguntas de múltipla escolha (questionário padrão)
+                if pergunta.tipo == "multipla_escolha":
+                    resultado = avaliacao.calcular_media_pergunta(pergunta)
+                    if resultado:
+                        contagens = resultado["contagens"]
+                        writer.writerow(
+                            [
+                                disciplina,
+                                professor,
+                                turma,
+                                periodo,
+                                ciclo,
+                                total_alunos,
+                                respondentes,
+                                taxa_resposta,
+                                media_geral,
+                                classificacao_geral,
+                                pergunta.enunciado,
+                                "Múltipla Escolha",
+                                resultado["media"],
+                                avaliacao.get_classificacao_media(resultado["media"]),
+                                contagens.get("Não atende", 0),
+                                contagens.get("Insuficiente", 0),
+                                contagens.get("Regular", 0),
+                                contagens.get("Bom", 0),
+                                contagens.get("Excelente", 0),
+                                resultado["total_respondentes"],
+                                (
+                                    comentarios_texto
+                                    if pergunta_questionario.ordem_no_questionario == 1
+                                    else ""
+                                ),
+                            ]
+                        )
                 else:
-                    # Pergunta sem respostas
-                    writer.writerow(
-                        [
-                            disciplina,
-                            professor,
-                            turma,
-                            periodo,
-                            ciclo,
-                            total_alunos,
-                            respondentes,
-                            taxa_resposta,
-                            pergunta.enunciado,
-                            pergunta.get_tipo_display(),
-                            pergunta.categoria.nome if pergunta.categoria else "N/A",
-                            0,
-                            "N/A",
-                            0,
-                            (
-                                comentarios_texto
-                                if pergunta_questionario
-                                == perguntas_questionario.first()
-                                else ""
-                            ),
-                        ]
+                    # Tratamento para perguntas numéricas
+                    respostas_pergunta = RespostaAvaliacao.objects.filter(
+                        avaliacao=avaliacao,
+                        pergunta=pergunta,
+                        valor_numerico__isnull=False,
                     )
+
+                    if respostas_pergunta.exists():
+                        # Calcular estatísticas
+                        media = (
+                            respostas_pergunta.aggregate(media=Avg("valor_numerico"))[
+                                "media"
+                            ]
+                            or 0
+                        )
+
+                        # Calcular moda (valor mais frequente)
+                        valores = (
+                            respostas_pergunta.values("valor_numerico")
+                            .annotate(count=Count("valor_numerico"))
+                            .order_by("-count")
+                        )
+                        moda = valores[0]["valor_numerico"] if valores else 0
+
+                        respostas_count = respostas_pergunta.count()
+
+                        writer.writerow(
+                            [
+                                disciplina,
+                                professor,
+                                turma,
+                                periodo,
+                                ciclo,
+                                total_alunos,
+                                respondentes,
+                                taxa_resposta,
+                                media_geral,
+                                classificacao_geral,
+                                pergunta.enunciado,
+                                pergunta.get_tipo_display(),
+                                round(media, 1),
+                                "N/A",
+                                "N/A",
+                                "N/A",
+                                "N/A",
+                                "N/A",
+                                "N/A",
+                                respostas_count,
+                                (
+                                    comentarios_texto
+                                    if pergunta_questionario.ordem_no_questionario == 1
+                                    else ""
+                                ),
+                            ]
+                        )
 
     return response
+
+
+@login_required
+def relatorio_professores(request):
+    """
+    View para relatório consolidado de professores com métricas de avaliação.
+    Apenas coordenadores e admins podem acessar.
+    """
+    from .services import listar_professores_com_metricas
+
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(request, "Você não tem permissão para acessar relatórios.")
+        return redirect("listar_avaliacoes")
+
+    # Verificar se é solicitação de exportação CSV
+    formato = request.GET.get("formato")
+
+    # Buscar dados para filtros
+    ciclos = CicloAvaliacao.objects.all().order_by("-data_inicio")
+    cursos = Curso.objects.all().order_by("curso_nome")
+
+    # Capturar filtros
+    ciclo_id = request.GET.get("ciclo")
+    curso_id = request.GET.get("curso")
+    busca = request.GET.get("busca", "").strip()
+
+    ciclo_selecionado = None
+    curso_selecionado = None
+
+    if ciclo_id:
+        try:
+            ciclo_selecionado = CicloAvaliacao.objects.get(id=ciclo_id)
+        except CicloAvaliacao.DoesNotExist:
+            pass
+
+    if curso_id:
+        try:
+            curso_selecionado = Curso.objects.get(id=curso_id)
+        except Curso.DoesNotExist:
+            pass
+
+    # Buscar professores com métricas aplicando filtros
+    professores_metricas = listar_professores_com_metricas(
+        ciclo=ciclo_selecionado, curso=curso_selecionado, busca=busca
+    )
+
+    # Se for exportação CSV, gerar e retornar
+    if formato == "csv":
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        nome_arquivo = "relatorio_professores"
+        if ciclo_selecionado:
+            nome_arquivo += f"_ciclo_{ciclo_selecionado.nome.replace(' ', '_')}"
+        if curso_selecionado:
+            nome_arquivo += f"_curso_{curso_selecionado.nome_curso.replace(' ', '_')}"
+        nome_arquivo += f"_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
+
+        writer = csv.writer(response)
+        response.write("\ufeff")  # BOM para UTF-8
+
+        # Cabeçalhos
+        writer.writerow(
+            [
+                "Professor",
+                "Matrícula",
+                "Curso(s)",
+                "Avaliações Respondidas",
+                "Total Respondentes",
+                "Total Alunos Aptos",
+                "Taxa de Resposta (%)",
+                "Média no Ciclo",
+                "Classificação no Ciclo",
+                "Média Histórica",
+                "Classificação Histórica",
+                "Total Ciclos Históricos",
+                "Total Avaliações Históricas",
+            ]
+        )
+
+        # Dados
+        for item in professores_metricas:
+            professor = item["professor"]
+            writer.writerow(
+                [
+                    professor.user.get_full_name(),
+                    professor.matricula,
+                    item["cursos"],
+                    item["avaliacoes_respondidas"],
+                    item["total_respondentes"],
+                    item["total_alunos_aptos"],
+                    item["taxa_resposta"],
+                    item["media_ciclo"] if item["media_ciclo"] else "N/A",
+                    item["classificacao_ciclo"],
+                    item["media_historica"] if item["media_historica"] else "N/A",
+                    item["classificacao_historica"],
+                    item["total_ciclos"],
+                    item["total_avaliacoes_historicas"],
+                ]
+            )
+
+        return response
+
+    # Paginação
+    paginator = Paginator(professores_metricas, 20)  # 20 por página
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "page_obj": page_obj,
+        "ciclos": ciclos,
+        "cursos": cursos,
+        "ciclo_selecionado": ciclo_selecionado,
+        "curso_selecionado": curso_selecionado,
+        "busca": busca,
+        "total_professores": len(professores_metricas),
+    }
+
+    return render(request, "avaliacoes/relatorio_professores.html", context)
+
+
+@login_required
+def detalhe_professor_relatorio(request, professor_id):
+    """
+    View para detalhes de um professor específico com histórico por ciclo.
+    Apenas coordenadores e admins podem acessar.
+    """
+    from .services import obter_historico_professor_por_ciclo
+
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(request, "Você não tem permissão para acessar este relatório.")
+        return redirect("listar_avaliacoes")
+
+    # Buscar professor
+    professor = get_object_or_404(PerfilProfessor, id=professor_id)
+
+    # Obter histórico completo
+    historico = obter_historico_professor_por_ciclo(professor)
+
+    context = {
+        "professor": professor,
+        "ciclos": historico["ciclos"],
+        "avaliacoes_detalhadas": historico["avaliacoes_detalhadas"],
+        "estatisticas_gerais": historico["estatisticas_gerais"],
+    }
+
+    return render(request, "avaliacoes/detalhe_professor_relatorio.html", context)
 
 
 # ============ CRUD CATEGORIAS DE PERGUNTA ============

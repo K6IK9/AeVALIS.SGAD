@@ -652,6 +652,123 @@ class AvaliacaoDocente(BaseModel, TimestampMixin, SoftDeleteMixin):
 
         return categorias
 
+    # =========================================================================
+    # CÁLCULOS PARA QUESTIONÁRIO PADRÃO (múltipla escolha)
+    # =========================================================================
+
+    # Mapeamento das opções do questionário padrão para pesos
+    OPCOES_PESOS = {
+        "Não atende": 0.00,
+        "Insuficiente": 0.25,
+        "Regular": 0.50,
+        "Bom": 0.75,
+        "Excelente": 1.00,
+    }
+
+    def get_contagem_opcoes_por_pergunta(self, pergunta):
+        """
+        Retorna dicionário com contagem de cada opção para uma pergunta.
+
+        Exemplo: {"Não atende": 2, "Insuficiente": 5, "Regular": 10, "Bom": 15, "Excelente": 7}
+        """
+        respostas = self.respostas.filter(pergunta=pergunta)
+        contagens = {opcao: 0 for opcao in self.OPCOES_PESOS.keys()}
+
+        for resposta in respostas:
+            opcao = resposta.valor_texto.strip()
+            if opcao in contagens:
+                contagens[opcao] += 1
+
+        return contagens
+
+    def calcular_media_pergunta(self, pergunta):
+        """
+        Calcula a média de uma pergunta usando a fórmula da planilha:
+        =(N0*0 + N1*0.25 + N2*0.5 + N3*0.75 + N4*1) / Total_Respondentes
+
+        Retorna:
+            dict com 'media', 'total_respondentes' e 'contagens'
+            None se não houver respostas
+        """
+        contagens = self.get_contagem_opcoes_por_pergunta(pergunta)
+        total_respondentes = sum(contagens.values())
+
+        if total_respondentes == 0:
+            return None
+
+        # Aplicar fórmula: soma ponderada / total
+        soma_ponderada = sum(
+            contagens[opcao] * peso for opcao, peso in self.OPCOES_PESOS.items()
+        )
+
+        media = soma_ponderada / total_respondentes
+
+        return {
+            "media": round(media, 4),
+            "total_respondentes": total_respondentes,
+            "contagens": contagens,
+        }
+
+    def calcular_media_geral_questionario_padrao(self):
+        """
+        Calcula a média geral de todas as perguntas do tipo múltipla escolha.
+
+        Retorna:
+            dict com 'media_geral', 'total_perguntas', 'detalhes_por_pergunta'
+            None se não houver perguntas ou respostas
+        """
+        perguntas = self.respostas.values_list("pergunta", flat=True).distinct()
+        perguntas_obj = PerguntaAvaliacao.objects.filter(
+            id__in=perguntas, tipo="multipla_escolha"
+        )
+
+        if not perguntas_obj.exists():
+            return None
+
+        medias_perguntas = []
+        detalhes = {}
+
+        for pergunta in perguntas_obj:
+            resultado = self.calcular_media_pergunta(pergunta)
+            if resultado:
+                medias_perguntas.append(resultado["media"])
+                detalhes[pergunta.id] = {"enunciado": pergunta.enunciado, **resultado}
+
+        if not medias_perguntas:
+            return None
+
+        media_geral = sum(medias_perguntas) / len(medias_perguntas)
+
+        return {
+            "media_geral": round(media_geral, 4),
+            "total_perguntas": len(medias_perguntas),
+            "detalhes_por_pergunta": detalhes,
+        }
+
+    def get_classificacao_media(self, media):
+        """
+        Retorna classificação textual baseada na média.
+
+        Escala:
+        - 0.00 - 0.24: Não atende
+        - 0.25 - 0.49: Insuficiente
+        - 0.50 - 0.74: Regular
+        - 0.75 - 0.99: Bom
+        - 1.00: Excelente
+        """
+        if media is None:
+            return "Sem dados"
+        if media < 0.25:
+            return "Não atende"
+        elif media < 0.50:
+            return "Insuficiente"
+        elif media < 0.75:
+            return "Regular"
+        elif media < 1.00:
+            return "Bom"
+        else:
+            return "Excelente"
+
 
 class RespostaAvaliacao(BaseModel, TimestampMixin, SoftDeleteMixin):
     """

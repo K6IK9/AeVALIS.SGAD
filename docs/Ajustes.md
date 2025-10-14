@@ -21,6 +21,18 @@
 # Novidades a implementar
 1. O sistema deve permitir que o administrator faça o relatorio de cada gerenciamento
 2. o sistema deve permitir que o faça importações de bases, até então temos duas bases para completar os dados necessarios
+----
+
+As perguntas e respostas, calculos da media deve ser padrão com a norma citada Resolução 87/2023 - RTR-CONSUP/RTR/IFMT, de 8 de agosto de 2023
+
+lembrete para todos alunos de forma obrigatória até 10% da turma responder
+
+o foco do sistema será apresentar os resultados de como estão sendo avaliados os professores, então ter um relatório de apresentação com gráficos e dados estatísticos será essencial para uma análise mais profunda do professor com até medias das avaliações anteriores
+
+
+TER UMA TELA DE PARAMETRIZAÇÃO DE TODOS OS CRUDS DO SISTEMA,
+
+então ex; libia faz login, tenho o TOKEN, com ele faço a consulta na API do SUAP com todos os endpoints necessários para trazer os dados do aluno, professor, cursos, turmas, etc.
 
 ----
 

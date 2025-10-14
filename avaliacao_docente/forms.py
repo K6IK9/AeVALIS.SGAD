@@ -246,7 +246,7 @@ class CursoForm(forms.ModelForm):
         ),
     )
     coordenador_curso = forms.ModelChoiceField(
-        queryset=PerfilProfessor.non_admin.all(),
+        queryset=PerfilProfessor.objects.none(),  # Será definido no __init__
         widget=forms.Select(attrs={"class": "form-control"}),
         label="Coordenador do Curso",
     )
@@ -254,6 +254,11 @@ class CursoForm(forms.ModelForm):
     class Meta:
         model = Curso
         fields = ["curso_nome", "curso_sigla", "coordenador_curso"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Definir querysets apenas quando o form é instanciado
+        self.fields["coordenador_curso"].queryset = PerfilProfessor.non_admin.all()
 
     def clean_curso_nome(self):
         curso_nome = self.cleaned_data.get("curso_nome")
@@ -303,17 +308,17 @@ class DisciplinaForm(forms.ModelForm):
         ),
     )
     curso = forms.ModelChoiceField(
-        queryset=Curso.objects.all(),
+        queryset=Curso.objects.none(),  # Será definido no __init__
         widget=forms.Select(attrs={"class": "form-control"}),
         label="Curso",
     )
     professor = forms.ModelChoiceField(
-        queryset=PerfilProfessor.non_admin.all(),
+        queryset=PerfilProfessor.objects.none(),  # Será definido no __init__
         widget=forms.Select(attrs={"class": "form-control"}),
         label="Professor Responsável",
     )
     periodo_letivo = forms.ModelChoiceField(
-        queryset=PeriodoLetivo.objects.all(),
+        queryset=PeriodoLetivo.objects.none(),  # Será definido no __init__
         widget=forms.Select(attrs={"class": "form-control"}),
         label="Período Letivo",
         required=True,
@@ -329,6 +334,13 @@ class DisciplinaForm(forms.ModelForm):
             "professor",
             "periodo_letivo",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Definir querysets apenas quando o form é instanciado
+        self.fields["curso"].queryset = Curso.objects.all()
+        self.fields["professor"].queryset = PerfilProfessor.non_admin.all()
+        self.fields["periodo_letivo"].queryset = PeriodoLetivo.objects.all()
 
     def clean_disciplina_nome(self):
         disciplina_nome = self.cleaned_data.get("disciplina_nome")
@@ -499,6 +511,15 @@ class CicloAvaliacaoForm(forms.ModelForm):
                 .distinct()
                 .order_by("-data_criacao")
             )
+            # Pré-selecionar questionário padrão se existir e não for edição
+            if not self.instance.pk:
+                try:
+                    questionario_padrao = QuestionarioAvaliacao.objects.get(
+                        titulo="Avaliação Docente — Padrão", ativo=True
+                    )
+                    self.fields["questionario"].initial = questionario_padrao.id
+                except QuestionarioAvaliacao.DoesNotExist:
+                    pass
         except Exception:
             # Em migrações iniciais ou cenários sem tabelas, ignore
             pass
