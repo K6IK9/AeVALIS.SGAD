@@ -16,12 +16,7 @@
 13. Relatório de avaliação tem comentario com nome do respondente, não deveria ter, pois é para ser anonimo. okkkk
 
 15. Tela de gerenciamento de disciplina nos filtro não aparece as opções
-----
-
-# Novidades a implementar
-1. O sistema deve permitir que o administrator faça o relatorio de cada gerenciamento
-2. o sistema deve permitir que o faça importações de bases, até então temos duas bases para completar os dados necessarios
-----
+---
 
 As perguntas e respostas, calculos da media deve ser padrão com a norma citada Resolução 87/2023 - RTR-CONSUP/RTR/IFMT, de 8 de agosto de 2023
 

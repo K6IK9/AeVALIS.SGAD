@@ -21,6 +21,9 @@ from .models import (
     RespostaAvaliacao,
     # Modelos deprecated (manter compatibilidade)
     ConfiguracaoSite,
+    # Sistema de lembretes
+    JobLembreteCicloTurma,
+    NotificacaoLembrete,
 )
 
 
@@ -358,3 +361,262 @@ admin.site.register(HorarioTurma)
 #
 #     def has_add_permission(self, request):
 #         return False
+
+
+# ============ SISTEMA DE LEMBRETES AUTOMÁTICOS ============
+
+
+class NotificacaoLembreteInline(admin.TabularInline):
+    """Inline para mostrar notificações dentro do Job"""
+
+    model = NotificacaoLembrete
+    extra = 0
+    can_delete = False
+    readonly_fields = (
+        "aluno",
+        "status",
+        "rodada",
+        "tentativas",
+        "enviado_em",
+        "motivo_falha",
+    )
+    fields = ("aluno", "status", "rodada", "tentativas", "enviado_em")
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(JobLembreteCicloTurma)
+class JobLembreteCicloTurmaAdmin(admin.ModelAdmin):
+    """
+    Admin para monitorar e gerenciar jobs de envio de lembretes por turma/ciclo.
+    """
+
+    list_display = (
+        "id",
+        "ciclo_nome",
+        "turma_codigo",
+        "status_colored",
+        "taxa_resposta_atual",
+        "progresso",
+        "proximo_envio_em",
+        "rodadas_executadas",
+        "ultima_execucao",
+    )
+
+    list_filter = (
+        "status",
+        ("ciclo", admin.RelatedOnlyFieldListFilter),
+        ("turma__curso", admin.RelatedOnlyFieldListFilter),
+        "data_criacao",
+    )
+
+    search_fields = (
+        "ciclo__nome",
+        "turma__codigo_turma",
+        "turma__disciplina__nome",
+    )
+
+    readonly_fields = (
+        "ciclo",
+        "turma",
+        "data_criacao",
+        "data_atualizacao",
+        "total_alunos_aptos",
+        "total_respondentes",
+        "taxa_resposta_atual",
+        "total_emails_enviados",
+        "total_falhas",
+        "rodadas_executadas",
+        "ultima_execucao",
+        "mensagem_erro",
+    )
+
+    fields = (
+        ("ciclo", "turma"),
+        ("status", "proximo_envio_em"),
+        ("total_alunos_aptos", "total_respondentes", "taxa_resposta_atual"),
+        ("total_emails_enviados", "total_falhas", "rodadas_executadas"),
+        "ultima_execucao",
+        "mensagem_erro",
+        ("data_criacao", "data_atualizacao"),
+    )
+
+    inlines = [NotificacaoLembreteInline]
+
+    actions = ["pausar_jobs", "retomar_jobs", "forcar_execucao"]
+
+    def ciclo_nome(self, obj):
+        return obj.ciclo.nome
+
+    ciclo_nome.short_description = "Ciclo"
+    ciclo_nome.admin_order_field = "ciclo__nome"
+
+    def turma_codigo(self, obj):
+        return f"{obj.turma.codigo_turma} - {obj.turma.disciplina.nome}"
+
+    turma_codigo.short_description = "Turma"
+    turma_codigo.admin_order_field = "turma__codigo_turma"
+
+    def status_colored(self, obj):
+        """Exibe status com cores"""
+        colors = {
+            "pendente": "#ffc107",  # amarelo
+            "em_execucao": "#17a2b8",  # azul
+            "completo": "#28a745",  # verde
+            "pausado": "#6c757d",  # cinza
+            "erro": "#dc3545",  # vermelho
+        }
+        color = colors.get(obj.status, "#000")
+        return f'<span style="color: {color}; font-weight: bold;">●</span> {obj.get_status_display()}'
+
+    status_colored.short_description = "Status"
+    status_colored.allow_tags = True
+
+    def progresso(self, obj):
+        """Exibe barra de progresso visual"""
+        if obj.total_alunos_aptos == 0:
+            return "N/A"
+
+        percentual = float(obj.taxa_resposta_atual)
+        cor = "#28a745" if percentual >= 10 else "#ffc107"
+
+        return f"""
+        <div style="width: 150px; background: #e9ecef; border-radius: 4px; overflow: hidden;">
+            <div style="width: {min(percentual, 100)}%; background: {cor}; height: 20px; 
+                        display: flex; align-items: center; justify-content: center; color: white; 
+                        font-size: 11px; font-weight: bold;">
+                {obj.total_respondentes}/{obj.total_alunos_aptos}
+            </div>
+        </div>
+        """
+
+    progresso.short_description = "Progresso"
+    progresso.allow_tags = True
+
+    def pausar_jobs(self, request, queryset):
+        """Action para pausar jobs selecionados"""
+        count = queryset.update(status="pausado")
+        self.message_user(request, f"{count} job(s) pausado(s) com sucesso.")
+
+    pausar_jobs.short_description = "⏸️ Pausar jobs selecionados"
+
+    def retomar_jobs(self, request, queryset):
+        """Action para retomar jobs pausados"""
+        count = queryset.filter(status="pausado").update(status="pendente")
+        self.message_user(request, f"{count} job(s) retomado(s) com sucesso.")
+
+    retomar_jobs.short_description = "▶️ Retomar jobs pausados"
+
+    def forcar_execucao(self, request, queryset):
+        """Action para forçar execução imediata"""
+        from django.utils import timezone
+
+        count = queryset.update(proximo_envio_em=timezone.now(), status="pendente")
+        self.message_user(
+            request,
+            f"{count} job(s) agendado(s) para execução imediata. "
+            f"Execute o comando: python manage.py enviar_lembretes_ciclos",
+        )
+
+    forcar_execucao.short_description = "⚡ Forçar execução imediata"
+
+    def has_add_permission(self, request):
+        """Jobs são criados automaticamente via signals"""
+        return False
+
+
+@admin.register(NotificacaoLembrete)
+class NotificacaoLembreteAdmin(admin.ModelAdmin):
+    """
+    Admin para visualizar o histórico de notificações enviadas.
+    """
+
+    list_display = (
+        "id",
+        "job_info",
+        "aluno_nome",
+        "status_colored",
+        "rodada",
+        "tentativas",
+        "enviado_em",
+        "data_criacao",
+    )
+
+    list_filter = (
+        "status",
+        "rodada",
+        ("job__ciclo", admin.RelatedOnlyFieldListFilter),
+        "enviado_em",
+        "data_criacao",
+    )
+
+    search_fields = (
+        "aluno__user__username",
+        "aluno__user__email",
+        "aluno__user__first_name",
+        "aluno__user__last_name",
+        "job__turma__codigo_turma",
+    )
+
+    readonly_fields = (
+        "job",
+        "aluno",
+        "status",
+        "rodada",
+        "tentativas",
+        "enviado_em",
+        "mensagem_id",
+        "motivo_falha",
+        "data_criacao",
+        "data_atualizacao",
+    )
+
+    fields = (
+        ("job", "aluno"),
+        ("status", "rodada", "tentativas"),
+        "enviado_em",
+        "mensagem_id",
+        "motivo_falha",
+        ("data_criacao", "data_atualizacao"),
+    )
+
+    def job_info(self, obj):
+        return f"{obj.job.ciclo.nome} - {obj.job.turma.codigo_turma}"
+
+    job_info.short_description = "Job (Ciclo - Turma)"
+
+    def aluno_nome(self, obj):
+        return obj.aluno.user.get_full_name() or obj.aluno.user.username
+
+    aluno_nome.short_description = "Aluno"
+    aluno_nome.admin_order_field = "aluno__user__first_name"
+
+    def status_colored(self, obj):
+        """Exibe status com cores e ícones"""
+        icons = {
+            "pendente": "⏳",
+            "enviado": "✅",
+            "falhou": "❌",
+            "ignorado": "⊘",
+        }
+        colors = {
+            "pendente": "#ffc107",
+            "enviado": "#28a745",
+            "falhou": "#dc3545",
+            "ignorado": "#6c757d",
+        }
+        icon = icons.get(obj.status, "●")
+        color = colors.get(obj.status, "#000")
+        return f'<span style="color: {color}; font-weight: bold;">{icon}</span> {obj.get_status_display()}'
+
+    status_colored.short_description = "Status"
+    status_colored.allow_tags = True
+
+    def has_add_permission(self, request):
+        """Notificações são criadas automaticamente pelo comando"""
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Não permite deletar notificações (auditoria)"""
+        return False

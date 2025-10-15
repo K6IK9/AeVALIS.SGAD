@@ -26,26 +26,28 @@ from .managers import (
 
 # Models concretos (existentes)
 from .models_originais import (
-    PerfilAluno,
-    PerfilProfessor,
-    Curso,
-    PeriodoLetivo,
-    Disciplina,
-    Turma,
-    MatriculaTurma,
-    HorarioTurma,
+    ConfiguracaoSite,
+    CicloAvaliacao,
     QuestionarioAvaliacao,
     CategoriaPergunta,
     PerguntaAvaliacao,
     QuestionarioPergunta,
-    CicloAvaliacao,
+    Curso,
+    Disciplina,
+    Turma,
+    HorarioTurma,
     AvaliacaoDocente,
+    PerfilProfessor,
+    PerfilAluno,
+    MatriculaTurma,
     RespostaAvaliacao,
-    ConfiguracaoSite,
+    PeriodoLetivo,
 )
 
+from .lembretes import JobLembreteCicloTurma, NotificacaoLembrete
+
 __all__ = [
-    # Abstrações
+    # Base classes
     "BaseModel",
     "TimestampMixin",
     "SoftDeleteMixin",
@@ -53,21 +55,24 @@ __all__ = [
     "OrderingMixin",
     "SoftDeleteManager",
     "ActiveManager",
-    # Models concretos
-    "PerfilAluno",
-    "PerfilProfessor",
-    "Curso",
-    "PeriodoLetivo",
-    "Disciplina",
-    "Turma",
-    "MatriculaTurma",
-    "HorarioTurma",
+    # Models originais
+    "ConfiguracaoSite",
+    "CicloAvaliacao",
     "QuestionarioAvaliacao",
     "CategoriaPergunta",
     "PerguntaAvaliacao",
     "QuestionarioPergunta",
-    "CicloAvaliacao",
+    "Curso",
+    "Disciplina",
+    "Turma",
+    "HorarioTurma",
     "AvaliacaoDocente",
+    "PerfilProfessor",
+    "PerfilAluno",
+    "MatriculaTurma",
     "RespostaAvaliacao",
-    "ConfiguracaoSite",
+    "PeriodoLetivo",
+    # Lembretes
+    "JobLembreteCicloTurma",
+    "NotificacaoLembrete",
 ]

@@ -862,6 +862,24 @@ class ConfiguracaoSite(models.Model):
         help_text="E-mail para receber notificações de erros do sistema (quando DEBUG=False).",
     )
 
+    # Configurações para sistema de lembretes automáticos
+    limiar_minimo_percentual = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=10.00,
+        help_text="Percentual mínimo de respostas por turma para parar envio de lembretes (padrão: 10%)",
+    )
+
+    frequencia_lembrete_horas = models.PositiveIntegerField(
+        default=48,
+        help_text="Intervalo em horas entre cada rodada de lembretes (padrão: 48h)",
+    )
+
+    max_lembretes_por_aluno = models.PositiveIntegerField(
+        default=3,
+        help_text="Número máximo de lembretes que um aluno pode receber por ciclo (padrão: 3)",
+    )
+
     def save(self, *args, **kwargs):
         """Garante que apenas uma instância deste modelo exista."""
         if not self.pk and ConfiguracaoSite.objects.exists():

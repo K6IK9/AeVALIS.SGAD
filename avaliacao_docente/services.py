@@ -5,7 +5,7 @@ Este módulo centraliza lógicas de negócio reutilizáveis para relatórios
 e dashboards, mantendo as views limpas e focadas em apresentação.
 """
 
-from django.db.models import Q, Prefetch
+from django.db.models import Q, Prefetch, Count
 from .models import (
     PerfilProfessor,
     AvaliacaoDocente,
@@ -390,3 +390,107 @@ def obter_historico_professor_por_ciclo(professor):
             "classificacao_geral": classificacao_geral,
         },
     }
+
+
+# ============================================================================
+# FUNÇÕES PARA SISTEMA DE LEMBRETES AUTOMÁTICOS
+# ============================================================================
+
+
+def calcular_taxa_resposta_turma(ciclo, turma):
+    """
+    Calcula a taxa de resposta de uma turma em um ciclo específico.
+
+    Args:
+        ciclo: Instância de CicloAvaliacao
+        turma: Instância de Turma
+
+    Returns:
+        dict: {
+            'respondentes': int,  # Alunos distintos que responderam
+            'alunos_aptos': int,  # Total de alunos matriculados ativos
+            'taxa_percentual': Decimal,  # Percentual de resposta (0-100)
+        }
+    """
+    from decimal import Decimal
+
+    # Contar alunos matriculados ativos na turma (aptos a responder)
+    alunos_aptos = turma.matriculas.filter(status="ativa").count()
+
+    if alunos_aptos == 0:
+        return {
+            "respondentes": 0,
+            "alunos_aptos": 0,
+            "taxa_percentual": Decimal("0.00"),
+        }
+
+    # Contar alunos distintos que responderam alguma avaliação da turma neste ciclo
+    respondentes = (
+        RespostaAvaliacao.objects.filter(avaliacao__turma=turma, avaliacao__ciclo=ciclo)
+        .values("aluno_id")
+        .distinct()
+        .count()
+    )
+
+    # Calcular taxa percentual
+    taxa_percentual = Decimal(str((respondentes / alunos_aptos) * 100.0))
+    taxa_percentual = taxa_percentual.quantize(Decimal("0.01"))
+
+    return {
+        "respondentes": respondentes,
+        "alunos_aptos": alunos_aptos,
+        "taxa_percentual": taxa_percentual,
+    }
+
+
+def obter_alunos_pendentes_lembrete(job):
+    """
+    Retorna queryset de alunos que devem receber lembrete para um job específico.
+
+    Critérios de elegibilidade:
+    - Aluno tem matrícula ativa na turma
+    - Aluno NÃO respondeu nenhuma avaliação da turma neste ciclo
+    - Aluno NÃO atingiu o limite máximo de lembretes configurado
+
+    Args:
+        job: Instância de JobLembreteCicloTurma
+
+    Returns:
+        QuerySet de PerfilAluno elegíveis para receber lembrete
+    """
+    from .models import ConfiguracaoSite, PerfilAluno, NotificacaoLembrete
+
+    config = ConfiguracaoSite.obter_config()
+
+    # Alunos com matrícula ativa na turma
+    matriculas_ativas = job.turma.matriculas.filter(status="ativa").values_list(
+        "aluno_id", flat=True
+    )
+
+    # Alunos que já responderam (devem ser excluídos)
+    alunos_que_responderam = (
+        RespostaAvaliacao.objects.filter(
+            avaliacao__turma=job.turma, avaliacao__ciclo=job.ciclo
+        )
+        .values_list("aluno_id", flat=True)
+        .distinct()
+    )
+
+    # Alunos que já atingiram o limite de lembretes (devem ser excluídos)
+    alunos_limite_atingido = (
+        NotificacaoLembrete.objects.filter(job=job, status="enviado")
+        .values("aluno_id")
+        .annotate(total_lembretes=Count("id"))
+        .filter(total_lembretes__gte=config.max_lembretes_por_aluno)
+        .values_list("aluno_id", flat=True)
+    )
+
+    # Filtrar alunos elegíveis
+    alunos_elegiveis = (
+        PerfilAluno.objects.filter(id__in=matriculas_ativas)
+        .exclude(id__in=alunos_que_responderam)
+        .exclude(id__in=alunos_limite_atingido)
+        .select_related("user")
+    )
+
+    return alunos_elegiveis
