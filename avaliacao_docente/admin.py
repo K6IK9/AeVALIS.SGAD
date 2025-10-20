@@ -407,7 +407,7 @@ class JobLembreteCicloTurmaAdmin(admin.ModelAdmin):
     list_filter = (
         "status",
         ("ciclo", admin.RelatedOnlyFieldListFilter),
-        ("turma__curso", admin.RelatedOnlyFieldListFilter),
+        ("turma__disciplina__curso", admin.RelatedOnlyFieldListFilter),
         "data_criacao",
     )
 

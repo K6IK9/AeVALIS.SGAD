@@ -139,20 +139,53 @@
             <label for="{{ form.turmas.id_for_label }}">
               <strong>{{ form.turmas.label }}</strong>
             </label>
-            <div class="turma-container">
+            
+            <!-- Controles de seleção de turmas -->
+            <div class="turmas-controls">
+              <div class="turmas-search-bar">
+                <input type="text" id="searchTurmas" class="form-control" 
+                       placeholder="🔍 Buscar por código, disciplina, professor ou curso..." 
+                       autocomplete="off">
+              </div>
+              
+              <div class="turmas-actions">
+                <button type="button" class="btn-small btn-secondary" onclick="selecionarTodasTurmas()">
+                  ✅ Selecionar Todas
+                </button>
+                <button type="button" class="btn-small btn-secondary" onclick="limparSelecaoTurmas()">
+                  ❌ Limpar Seleção
+                </button>
+                <span class="turmas-counter" id="turmasCounter">
+                  <strong>0</strong> turma(s) selecionada(s)
+                </span>
+              </div>
+            </div>
+
+            <!-- Container de turmas com cards -->
+            <div class="turmas-grid-container" id="turmasContainer">
               {% for choice in form.turmas %}
-              <div class="turma-item">
-                <div class="turma-item-content">
-                  <span class="turma-checkbox-wrapper">
+              <div class="turma-card" data-turma-info="{{ choice.choice_label|lower }}">
+                <div class="turma-card-header">
+                  <div class="turma-checkbox">
                     {{ choice.tag }}
-                  </span>
-                  <label for="{{ choice.id_for_label }}" class="turma-label">
-                    {{ choice.choice_label|truncatechars:60 }}
+                  </div>
+                  <label for="{{ choice.id_for_label }}" class="turma-card-label">
+                    <div class="turma-codigo">
+                      <span class="badge-codigo">{{ choice.choice_label|truncatechars:20 }}</span>
+                    </div>
+                    <div class="turma-details">
+                      <span class="turma-full-info">{{ choice.choice_label }}</span>
+                    </div>
                   </label>
                 </div>
               </div>
               {% endfor %}
             </div>
+            
+            <div id="noTurmasMessage" class="empty-turmas-message" style="display: none;">
+              <p>🔍 Nenhuma turma encontrada com os critérios de busca.</p>
+            </div>
+            
             {% if form.turmas.errors %}
             <div class="form-error">
               {% for error in form.turmas.errors %}
@@ -183,12 +216,8 @@
         </form>
       </div>
       {% if not editing %}
-      <div class="form-section">
-        <div class="section-header">
-          <h2>📋 Ciclos de Avaliação Cadastrados ({{ ciclos.count }})</h2>
-        </div>
 
-        <!-- Filtros e Busca -->
+      <!-- Filtros e Busca -->
         <div class="filters-section" id="filtersSection">
           <h3 class="filters-title">Filtros e Busca</h3>
           <div class="filter-row">
@@ -229,6 +258,11 @@
               <button type="button" class="btn-filter" onclick="clearFilters()">Limpar Filtros</button>
             </div>
           </div>
+        </div>
+
+      <div class="form-section">
+        <div class="section-header">
+          <h2>📋 Ciclos de Avaliação Cadastrados ({{ ciclos.count }})</h2>
         </div>
 
         {% if ciclos %}
@@ -358,7 +392,71 @@
 
       <script src="{% static 'js/gerenciar-global.js' %}"></script>
       <script>
-        // Função para filtrar a tabela
+        // ============================================
+        // FUNÇÕES PARA SELEÇÃO DE TURMAS
+        // ============================================
+        
+        function atualizarContadorTurmas() {
+          const checkboxes = document.querySelectorAll('.turma-card input[type="checkbox"]');
+          const selecionados = Array.from(checkboxes).filter(cb => cb.checked).length;
+          const counter = document.getElementById('turmasCounter');
+          if (counter) {
+            counter.innerHTML = `<strong>${selecionados}</strong> turma(s) selecionada(s)`;
+          }
+        }
+
+        function selecionarTodasTurmas() {
+          const cards = document.querySelectorAll('.turma-card');
+          const checkboxes = document.querySelectorAll('.turma-card input[type="checkbox"]');
+          
+          // Seleciona apenas as turmas visíveis
+          cards.forEach((card, index) => {
+            if (card.style.display !== 'none') {
+              checkboxes[index].checked = true;
+              card.classList.add('selected');
+            }
+          });
+          
+          atualizarContadorTurmas();
+        }
+
+        function limparSelecaoTurmas() {
+          const checkboxes = document.querySelectorAll('.turma-card input[type="checkbox"]');
+          const cards = document.querySelectorAll('.turma-card');
+          
+          checkboxes.forEach(cb => cb.checked = false);
+          cards.forEach(card => card.classList.remove('selected'));
+          
+          atualizarContadorTurmas();
+        }
+
+        function filtrarTurmas() {
+          const searchTerm = document.getElementById('searchTurmas').value.toLowerCase();
+          const cards = document.querySelectorAll('.turma-card');
+          const noMessage = document.getElementById('noTurmasMessage');
+          let visibleCount = 0;
+
+          cards.forEach(card => {
+            const turmaInfo = card.getAttribute('data-turma-info');
+            
+            if (!searchTerm || turmaInfo.includes(searchTerm)) {
+              card.style.display = '';
+              visibleCount++;
+            } else {
+              card.style.display = 'none';
+            }
+          });
+
+          // Mostra/esconde mensagem de "nenhuma turma encontrada"
+          if (noMessage) {
+            noMessage.style.display = visibleCount === 0 ? 'block' : 'none';
+          }
+        }
+
+        // ============================================
+        // FUNÇÕES PARA FILTRAR A TABELA DE CICLOS
+        // ============================================
+        
         function filterTable() {
           const nomeFilter = document.getElementById('searchCicloNome').value.toLowerCase();
           const periodoFilter = document.getElementById('filterPeriodo').value.toLowerCase();
@@ -411,7 +509,71 @@
 
         // Script específico para ciclos - confirmação de exclusão
         document.addEventListener("DOMContentLoaded", function () {
-          // Event listeners para filtros
+          // ============================================
+          // EVENT LISTENERS PARA SELEÇÃO DE TURMAS
+          // ============================================
+          
+          // Busca de turmas
+          const searchTurmas = document.getElementById('searchTurmas');
+          if (searchTurmas) {
+            searchTurmas.addEventListener('input', filtrarTurmas);
+          }
+
+          // Adicionar classe 'selected' aos cards quando checkbox é marcado
+          const turmaCheckboxes = document.querySelectorAll('.turma-card input[type="checkbox"]');
+          turmaCheckboxes.forEach(checkbox => {
+            // Marcar cards já selecionados no carregamento da página
+            if (checkbox.checked) {
+              checkbox.closest('.turma-card').classList.add('selected');
+            }
+
+            // Adicionar listener para mudanças futuras
+            checkbox.addEventListener('change', function() {
+              const card = this.closest('.turma-card');
+              if (this.checked) {
+                card.classList.add('selected');
+              } else {
+                card.classList.remove('selected');
+              }
+              atualizarContadorTurmas();
+            });
+          });
+
+          // Fazer o card inteiro ser clicável
+          const turmaCards = document.querySelectorAll('.turma-card');
+          turmaCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+              // Prevenir propagação se já foi tratado
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // Encontrar o checkbox dentro deste card
+              const checkbox = this.querySelector('input[type="checkbox"]');
+              if (checkbox) {
+                // Inverter o estado do checkbox
+                checkbox.checked = !checkbox.checked;
+                
+                // Disparar evento de mudança para atualizar o visual
+                const event = new Event('change', { bubbles: true });
+                checkbox.dispatchEvent(event);
+              }
+            });
+            
+            // Adicionar cursor pointer para todos os elementos dentro do card
+            card.style.cursor = 'pointer';
+            const allElements = card.querySelectorAll('*');
+            allElements.forEach(element => {
+              element.style.cursor = 'pointer';
+            });
+          });
+
+          // Atualizar contador inicial
+          atualizarContadorTurmas();
+
+          // ============================================
+          // EVENT LISTENERS PARA FILTROS DE CICLOS
+          // ============================================
+          
           const searchCicloNome = document.getElementById('searchCicloNome');
           const filterPeriodo = document.getElementById('filterPeriodo');
           const filterStatus = document.getElementById('filterStatus');

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxLengthValidator
 
 # Imports das abstrações
 from .base import BaseModel
@@ -324,7 +325,15 @@ class QuestionarioAvaliacao(BaseModel, TimestampMixin, SoftDeleteMixin):
     """
 
     titulo = models.CharField(max_length=100)
-    descricao = models.TextField(blank=True)
+    descricao = models.TextField(
+        blank=True,
+        validators=[
+            MaxLengthValidator(
+                300, message="A descrição deve ter no máximo 300 caracteres."
+            )
+        ],
+        help_text="Descrição opcional (limite: 300 caracteres)",
+    )
     criado_por = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="questionarios_criados"
     )
@@ -348,7 +357,15 @@ class CategoriaPergunta(BaseModel, TimestampMixin, SoftDeleteMixin):
     """
 
     nome = models.CharField(max_length=50, unique=True)
-    descricao = models.TextField(blank=True)
+    descricao = models.TextField(
+        blank=True,
+        validators=[
+            MaxLengthValidator(
+                300, message="A descrição deve ter no máximo 300 caracteres."
+            )
+        ],
+        help_text="Descrição opcional (limite: 300 caracteres)",
+    )
     ordem = models.PositiveIntegerField(default=0)
 
     # Managers
@@ -790,7 +807,15 @@ class RespostaAvaliacao(BaseModel, TimestampMixin, SoftDeleteMixin):
     )
 
     # Diferentes tipos de resposta
-    valor_texto = models.TextField(blank=True)
+    valor_texto = models.TextField(
+        blank=True,
+        validators=[
+            MaxLengthValidator(
+                300, message="O comentário deve ter no máximo 300 caracteres."
+            )
+        ],
+        help_text="Limite: 300 caracteres",
+    )
     valor_numerico = models.IntegerField(null=True, blank=True)  # Para escalas
     valor_boolean = models.BooleanField(null=True, blank=True)  # Para sim/não
 

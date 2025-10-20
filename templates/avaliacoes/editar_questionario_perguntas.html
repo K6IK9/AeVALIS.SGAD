@@ -52,13 +52,6 @@
                     <input type="hidden" name="pergunta_id" value="{{ pergunta_editando.id }}">
                 {% endif %}
 
-                {% if form.errors %}
-                <div class="error-message">
-                    <strong>Erros no formulário:</strong>
-                    {{ form.errors }}
-                </div>
-                {% endif %}
-
                 <div class="form-group">
                     <label for="{{ form.enunciado.id_for_label }}">
                         Enunciado da Pergunta

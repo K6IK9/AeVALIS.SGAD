@@ -5,12 +5,13 @@ Este módulo centraliza lógicas de negócio reutilizáveis para relatórios
 e dashboards, mantendo as views limpas e focadas em apresentação.
 """
 
-from django.db.models import Q, Prefetch, Count
+from django.db.models import Q, Prefetch, Count, Min, Max
 from .models import (
     PerfilProfessor,
     AvaliacaoDocente,
     RespostaAvaliacao,
     Curso,
+    JobLembreteCicloTurma,
 )
 
 
@@ -494,3 +495,164 @@ def obter_alunos_pendentes_lembrete(job):
     )
 
     return alunos_elegiveis
+
+
+# ============================================================================
+# SERVIÇOS DE KPIs PARA GESTÃO DE MÚLTIPLOS CICLOS
+# ============================================================================
+
+
+def calcular_kpis_ciclo(ciclo):
+    """
+    Calcula KPIs consolidados de um ciclo para dashboard de gestão.
+
+    Args:
+        ciclo: Instância de CicloAvaliacao
+
+    Returns:
+        dict com:
+            - total_turmas: int (turmas vinculadas ao ciclo)
+            - total_alunos_aptos: int (soma de alunos aptos de todas turmas)
+            - total_respondentes: int (alunos únicos que responderam)
+            - taxa_media_resposta: Decimal (% média de resposta das turmas)
+            - jobs_total: int (jobs de lembrete criados)
+            - jobs_pendentes: int (jobs aguardando execução)
+            - jobs_em_execucao: int (jobs rodando)
+            - jobs_completos: int (jobs finalizados - limiar atingido)
+            - jobs_pausados: int (jobs pausados manualmente)
+            - jobs_com_erro: int (jobs que falharam)
+            - ultimo_envio_em: datetime (última execução bem-sucedida)
+            - proximo_envio_em: datetime (próximo job agendado)
+            - limiar_configurado: Decimal (% do ConfiguracaoSite)
+            - status_saude: str ('ok', 'alerta', 'erro')
+    """
+    from .models import ConfiguracaoSite
+    from decimal import Decimal
+
+    # Turmas do ciclo
+    turmas = ciclo.turmas.all()
+    total_turmas = turmas.count()
+
+    # KPIs de resposta por turma
+    total_alunos_aptos = 0
+    total_respondentes = 0
+    taxas_turmas = []
+
+    for turma in turmas:
+        kpis_turma = calcular_taxa_resposta_turma(ciclo, turma)
+        total_alunos_aptos += kpis_turma["alunos_aptos"]
+        total_respondentes += kpis_turma["respondentes"]
+        if kpis_turma["alunos_aptos"] > 0:
+            taxas_turmas.append(kpis_turma["taxa_percentual"])
+
+    # Taxa média ponderada
+    taxa_media = Decimal("0.00")
+    if taxas_turmas:
+        taxa_media = sum(taxas_turmas) / len(taxas_turmas)
+
+    # KPIs de jobs de lembrete
+    jobs = JobLembreteCicloTurma.objects.filter(ciclo=ciclo)
+    jobs_stats = jobs.aggregate(
+        total=Count("id"),
+        pendentes=Count("id", filter=Q(status="pendente")),
+        em_execucao=Count("id", filter=Q(status="em_execucao")),
+        completos=Count("id", filter=Q(status="completo")),
+        pausados=Count("id", filter=Q(status="pausado")),
+        com_erro=Count("id", filter=Q(status="erro")),
+        ultimo_envio=Max("ultima_execucao"),
+        proximo_envio=Min("proximo_envio_em", filter=Q(status="pendente")),
+    )
+
+    # Limiar configurado
+    config = ConfiguracaoSite.obter_config()
+    limiar = config.limiar_minimo_percentual
+
+    # Status de saúde
+    status_saude = "ok"
+    if jobs_stats["com_erro"] > 0:
+        status_saude = "erro"
+    elif taxa_media < limiar and ciclo.ativo:
+        from django.utils import timezone
+
+        dias_restantes = (ciclo.data_fim - timezone.now()).days
+        if dias_restantes <= 7:  # Alerta se faltam 7 dias ou menos
+            status_saude = "alerta"
+
+    return {
+        "total_turmas": total_turmas,
+        "total_alunos_aptos": total_alunos_aptos,
+        "total_respondentes": total_respondentes,
+        "taxa_media_resposta": taxa_media,
+        "jobs_total": jobs_stats["total"] or 0,
+        "jobs_pendentes": jobs_stats["pendentes"] or 0,
+        "jobs_em_execucao": jobs_stats["em_execucao"] or 0,
+        "jobs_completos": jobs_stats["completos"] or 0,
+        "jobs_pausados": jobs_stats["pausados"] or 0,
+        "jobs_com_erro": jobs_stats["com_erro"] or 0,
+        "ultimo_envio_em": jobs_stats["ultimo_envio"],
+        "proximo_envio_em": jobs_stats["proximo_envio"],
+        "limiar_configurado": limiar,
+        "status_saude": status_saude,
+    }
+
+
+def calcular_kpis_multiplos_ciclos(ciclos_queryset):
+    """
+    Calcula KPIs para múltiplos ciclos de forma otimizada.
+
+    Args:
+        ciclos_queryset: QuerySet de CicloAvaliacao
+
+    Returns:
+        dict mapeando ciclo.id -> dict de KPIs
+    """
+    resultado = {}
+
+    # Prefetch relacionamentos para otimização
+    ciclos = ciclos_queryset.prefetch_related(
+        "turmas",
+        Prefetch(
+            "jobs_lembrete",
+            queryset=JobLembreteCicloTurma.objects.select_related("turma"),
+        ),
+    )
+
+    for ciclo in ciclos:
+        resultado[ciclo.id] = calcular_kpis_ciclo(ciclo)
+
+    return resultado
+
+
+def obter_ciclos_em_alerta():
+    """
+    Retorna ciclos que exigem atenção imediata.
+
+    Critérios de alerta:
+    - Ciclo ativo com taxa < limiar e <= 7 dias para data_fim
+    - Ciclo com jobs_com_erro > 0
+
+    Returns:
+        QuerySet de CicloAvaliacao ordenado por urgência
+    """
+    from django.utils import timezone
+    from .models import CicloAvaliacao, ConfiguracaoSite
+    from datetime import timedelta
+
+    config = ConfiguracaoSite.obter_config()
+    limiar = config.limiar_minimo_percentual
+    hoje = timezone.now()
+    limite_alerta = hoje + timedelta(days=7)
+
+    # Ciclos ativos próximos do fim
+    ciclos_ativos = CicloAvaliacao.objects.filter(
+        ativo=True, data_fim__lte=limite_alerta, data_fim__gte=hoje
+    )
+
+    # Filtrar por taxa e erros
+    ciclos_alerta = []
+    for ciclo in ciclos_ativos:
+        kpis = calcular_kpis_ciclo(ciclo)
+        if kpis["taxa_media_resposta"] < limiar or kpis["jobs_com_erro"] > 0:
+            ciclos_alerta.append(ciclo.id)
+
+    return CicloAvaliacao.objects.filter(id__in=ciclos_alerta).order_by("data_fim")

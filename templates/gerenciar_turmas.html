@@ -33,8 +33,9 @@
 
     <!-- Formulário de Criação de Turma -->
     <div class="form-section">
+      <h2>Criar Nova Turma</h2>
+      
       <form method="post">
-        <h2>Criar Nova Turma</h2>
         {% csrf_token %}
 
         <div class="form-row">
@@ -46,7 +47,7 @@
             {% endif %}
             {% if form.disciplina.errors %}
             <div class="error-text">
-              {% for error in form.disciplina.errors %} {{ error }} {% endfor %}
+              {% for error in form.disciplina.errors %}{{ error }}{% endfor %}
             </div>
             {% endif %}
           </div>
@@ -56,24 +57,18 @@
             {{ form.turno }}
             {% if form.turno.errors %}
             <div class="error-text">
-              {% for error in form.turno.errors %} {{ error }} {% endfor %}
+              {% for error in form.turno.errors %}{{ error }}{% endfor %}
             </div>
             {% endif %}
           </div>
         </div>
 
-        <!-- Nota: Professor e Período são automaticamente definidos pela Disciplina -->
+        <!-- Nota informativa -->
         <div class="info-box"
           style="background-color: #e3f2fd; padding: 10px; margin: 10px 0; border-left: 4px solid #2196F3;">
           <small>ℹ️ <strong>Informação:</strong> O professor e período letivo são automaticamente associados com base na
             disciplina selecionada.</small>
         </div>
-
-        {% if form.non_field_errors %}
-        <div class="error-text-bottom">
-          {% for error in form.non_field_errors %} {{ error }} {% endfor %}
-        </div>
-        {% endif %}
 
         <div class="form-actions">
           <button type="submit" class="btn btn-success">Criar Turma</button>

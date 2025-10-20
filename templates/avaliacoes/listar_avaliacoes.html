@@ -21,303 +21,257 @@
 
             <!-- Header da página -->
             <div class="header">
-                <h1>Lista de Avaliações</h1>
-                <p>Gerencie questionários e ciclos de avaliação</p>
+                <h1>📋 Sistema de Avaliações</h1>
+                <p>{% if user|has_role:"aluno" %}Suas avaliações docentes disponíveis{% else %}Gerencie questionários, ciclos e acompanhe o progresso{% endif %}</p>
             </div>
 
             <!-- Mensagens -->
             {% include "partials/messages.html" %}
 
-            <!-- Ações da página -->
+            <!-- Ações rápidas - Admin/Coordenador -->
             {% if user|has_role:"coordenador" or user|has_role:"admin" %}
-            <div class="section-header">
-                <div class="d-flex gap-2">
-        <a href="{% url 'gerenciar_questionarios' %}" class="btn btn-primary-custom">
-            <i class="bi bi-clipboard-check"></i> Gerenciar Questionários
-        </a>
-        <a href="{% url 'gerenciar_categorias' %}" class="btn btn-secondary-custom">
-            <i class="bi bi-tags"></i> Gerenciar Categorias
-        </a>
-        <a href="{% url 'gerenciar_ciclos' %}" class="btn btn-secondary-custom">
-            <i class="bi bi-arrow-repeat"></i> Gerenciar Ciclos
-        </a>
-    </div>
-</div>
-{% endif %}
-
-
-
-<div class="row g-4">
-    <!-- Card de Ciclos - Apenas para admins/coordenadores -->
-    {% if user|has_role:"coordenador" or user|has_role:"admin" %}
-    <div class="col-12">
-        <div class="card card-custom mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0">
-                    <i class="bi bi-calendar-check"></i> Ciclos em Andamento
-                </h6>
-                <small class="text-muted">{{ ciclos_em_andamento|length }} ativo(s)</small>
+            <div class="form-section">
+                <h2>⚡ Ações Rápidas</h2>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% url 'gerenciar_questionarios' %}" class="btn btn-primary">
+                        <i class="bi bi-clipboard-check"></i> Gerenciar Questionários
+                    </a>
+                    <a href="{% url 'gerenciar_categorias' %}" class="btn btn-secondary">
+                        <i class="bi bi-tags"></i> Gerenciar Categorias
+                    </a>
+                    <a href="{% url 'gerenciar_ciclos' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-repeat"></i> Gerenciar Ciclos
+                    </a>
+                </div>
             </div>
-            <div class="card-body">
-                {% if ciclos_em_andamento %}
-                <div class="row g-3">
-                    {% for ciclo in ciclos_em_andamento %}
-                    <div class="col-md-6 col-lg-4">
-                        <div class="ciclo-item">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="flex-grow-1">
-                                    <h6 class="ciclo-nome mb-1">{{ ciclo.nome }} {% if not ciclo.ativo %}<span class="badge bg-secondary">Encerrado</span>{% endif %}</h6>
-                                    <small class="text-muted d-block mb-1">
-                                        <i class="bi bi-calendar-range"></i>
+            {% endif %}
+
+
+            <!-- Seção de Ciclos - Admin/Coordenador -->
+            {% if user|has_role:"coordenador" or user|has_role:"admin" %}
+            
+            <!-- Tabela de Ciclos -->
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2>🔄 Ciclos de Avaliação</h2>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-success badge-ciclo-header">
+                            <i class="bi bi-check-circle"></i> {{ ciclos_em_andamento|length }} Ativo(s)
+                        </span>
+                        <span class="badge bg-secondary badge-ciclo-header">
+                            <i class="bi bi-archive"></i> {{ ciclos_finalizados|length }} Finalizado(s)
+                        </span>
+                    </div>
+                </div>
+                
+                {% if ciclos_em_andamento or ciclos_finalizados %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-tag"></i> Nome do Ciclo</th>
+                                <th><i class="bi bi-calendar-range"></i> Período</th>
+                                <th class="text-center"><i class="bi bi-collection"></i> Turmas</th>
+                                <th class="text-center"><i class="bi bi-circle-fill"></i> Status</th>
+                                <th class="text-center"><i class="bi bi-gear"></i> Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Ciclos em Andamento -->
+                            {% for ciclo in ciclos_em_andamento %}
+                            <tr class="ciclo-ativo-row">
+                                <td>
+                                    <strong>{{ ciclo.nome }}</strong>
+                                </td>
+                                <td>
+                                    <small>
+                                        <i class="bi bi-calendar-event"></i> 
                                         {{ ciclo.data_inicio|date:"d/m/Y" }} - {{ ciclo.data_fim|date:"d/m/Y" }}
                                     </small>
-                                </div>
-                                <div class="d-flex flex-wrap gap-1 justify-content-end">
-                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-sm btn-outline-primary d-flex align-items-center" title="Visualizar ciclo">
-                                        <i class="bi bi-eye me-1"></i><span>Ver</span>
-                                    </a>
-                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-sm btn-warning text-dark d-flex align-items-center" title="Editar ciclo">
-                                        <i class="bi bi-pencil-square me-1"></i><span>Editar</span>
-                                    </a>
-                                    {% if ciclo.ativo %}
-                                    <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"? Alunos não poderão mais responder.');" class="form-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center" title="Encerrar ciclo">
-                                            <i class="bi bi-stop-circle me-1"></i><span>Encerrar</span>
-                                        </button>
-                                    </form>
-                                    {% endif %}
-                                    <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" onsubmit="return confirm('Tem certeza que deseja excluir o ciclo {{ ciclo.nome }}? Esta ação não pode ser desfeita.');" class="form-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-danger d-flex align-items-center" title="Excluir ciclo">
-                                            <i class="bi bi-trash me-1"></i><span>Excluir</span>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light badge-turmas-ativo">
+                                        {{ ciclo.turmas.count }} turma(s)
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle"></i> Ativo
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                        <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Ver detalhes">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'editar_ciclo_simples' ciclo.id %}" 
+                                           class="btn btn-sm btn-warning" 
+                                           title="Editar ciclo">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <form method="post" 
+                                              action="{% url 'encerrar_ciclo' ciclo.id %}" 
+                                              onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"? Alunos não poderão mais responder.');" 
+                                              class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" 
+                                                    class="btn btn-sm btn-outline-secondary" 
+                                                    title="Encerrar ciclo">
+                                                <i class="bi bi-stop-circle"></i>
+                                            </button>
+                                        </form>
+                                        <form method="post" 
+                                              action="{% url 'excluir_ciclo' ciclo.id %}" 
+                                              onsubmit="return confirm('Tem certeza que deseja excluir o ciclo {{ ciclo.nome }}? Esta ação não pode ser desfeita.');" 
+                                              class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" 
+                                                    class="btn btn-sm btn-danger" 
+                                                    title="Excluir ciclo">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            
+                            <!-- Ciclos Finalizados -->
+                            {% for ciclo in ciclos_finalizados %}
+                            <tr class="ciclo-finalizado-row">
+                                <td>
+                                    <strong>{{ ciclo.nome }}</strong>
+                                </td>
+                                <td>
+                                    <small>
+                                        <i class="bi bi-calendar-event"></i> 
+                                        {{ ciclo.data_inicio|date:"d/m/Y" }} - {{ ciclo.data_fim|date:"d/m/Y" }}
+                                    </small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light badge-turmas-finalizado">
+                                        {{ ciclo.turmas.count }} turma(s)
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-stop-circle"></i> Encerrado
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                        <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Ver detalhes">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'editar_ciclo_simples' ciclo.id %}" 
+                                           class="btn btn-sm btn-secondary" 
+                                           title="Editar ciclo">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <form method="post" 
+                                              action="{% url 'excluir_ciclo' ciclo.id %}" 
+                                              onsubmit="return confirm('Tem certeza que deseja excluir o ciclo {{ ciclo.nome }}? Esta ação não pode ser desfeita.');" 
+                                              class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" 
+                                                    class="btn btn-sm btn-danger" 
+                                                    title="Excluir ciclo">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
                 {% else %}
-                <div class="text-center py-4">
+                <div class="text-center py-5 empty-state-ciclos">
                     <i class="bi bi-calendar-x empty-icon"></i>
-                    <p class="mt-3 text-muted"><strong>Nenhum ciclo em andamento</strong></p>
+                    <h4 class="mt-3">Nenhum ciclo cadastrado</h4>
+                    <p class="text-muted">Crie um novo ciclo para iniciar avaliações</p>
+                    <a href="{% url 'gerenciar_ciclos' %}" class="btn btn-primary mt-2">
+                        <i class="bi bi-plus-circle"></i> Criar Novo Ciclo
+                    </a>
                 </div>
                 {% endif %}
             </div>
-        </div>
-        <div class="card card-custom">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0">
-                    <i class="bi bi-archive"></i> Ciclos Finalizados
-                </h6>
-                <small class="text-muted">{{ ciclos_finalizados|length }} finalizado(s)</small>
-            </div>
-            <div class="card-body">
-                {% if ciclos_finalizados %}
-                <div class="row g-3">
-                    {% for ciclo in ciclos_finalizados %}
-                    <div class="col-md-6 col-lg-4">
-                        <div class="ciclo-item finalizado">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="flex-grow-1">
-                                    <h6 class="ciclo-nome mb-1">{{ ciclo.nome }} {% if not ciclo.ativo %}<span class="badge bg-secondary">Encerrado</span>{% endif %}</h6>
-                                    <small class="text-muted d-block mb-1">
-                                        <i class="bi bi-calendar-range"></i>
-                                        {{ ciclo.data_inicio|date:"d/m/Y" }} - {{ ciclo.data_fim|date:"d/m/Y" }}
-                                    </small>
-                                </div>
-                                <div class="d-flex flex-wrap gap-1 justify-content-end">
-                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-sm btn-outline-primary d-flex align-items-center" title="Visualizar ciclo">
-                                        <i class="bi bi-eye me-1"></i><span>Ver</span>
-                                    </a>
-                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-sm btn-secondary d-flex align-items-center" title="Editar ciclo">
-                                        <i class="bi bi-pencil-square me-1"></i><span>Editar</span>
-                                    </a>
-                                    {% if ciclo.ativo %}
-                                    <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"?');" class="form-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center" title="Encerrar ciclo">
-                                            <i class="bi bi-stop-circle me-1"></i><span>Encerrar</span>
-                                        </button>
-                                    </form>
-                                    {% endif %}
-                                    <form method="post" action="{% url 'excluir_ciclo' ciclo.id %}" onsubmit="return confirm('Tem certeza que deseja excluir o ciclo {{ ciclo.nome }}? Esta ação não pode ser desfeita.');" class="form-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-danger d-flex align-items-center" title="Excluir ciclo">
-                                            <i class="bi bi-trash me-1"></i><span>Excluir</span>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="text-center py-4">
-                    <i class="bi bi-inboxes empty-icon"></i>
-                    <p class="mt-3 text-muted"><strong>Nenhum ciclo finalizado</strong></p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    {% endif %}
+            {% endif %}
 
-    <!-- Card de Questionários ou Avaliações -->
-    <div class="col-12">
-        <div class="card card-custom">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0">
-                    <i class="bi bi-list-check"></i> {{ titulo }}
-                </h6>
+            <!-- Seção de Avaliações - Apenas para Alunos -->
+            {% if user|has_role:"aluno" %}
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2>📝 Minhas Avaliações</h2>
+                    {% if avaliacoes %}
+                        <span class="badge bg-primary-custom badge-count-avaliacoes">
+                            {{ avaliacoes|length }} avaliação(ões)
+                        </span>
+                    {% endif %}
+                </div>
+                
                 {% if avaliacoes %}
-                    <small class="text-muted">{{ avaliacoes|length }} avaliação(ões)</small>
-                {% endif %}
-            </div>
-            <div class="card-body">
-                {% if avaliacoes %}
-                    {% if user|has_role:"aluno" %}
-                    <!-- Exibição para alunos - mostra avaliações docentes -->
-                    <div class="row g-3">
-                        {% for avaliacao in avaliacoes %}
-                        <div class="col-md-6 col-lg-4">
-                            <div class="avaliacao-item">
-                                <div class="avaliacao-header">
-                                    <h5 class="avaliacao-titulo">{{ avaliacao.disciplina.disciplina_nome }}</h5>
-                                </div>
-                                <div class="avaliacao-body">
-                                    <div class="info-item">
-                                        <span class="info-label">
-                                            <i class="bi bi-person"></i> Professor:
-                                        </span>
-                                        <span class="info-value">{{ avaliacao.professor.user.get_full_name }}</span>
+                <!-- Cards de avaliações para Alunos -->
+                <div class="row g-3">
+                    {% for avaliacao in avaliacoes %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card card-custom card-avaliacao-aluno">
+                            <div class="card-body">
+                                <h5 class="mb-3">
+                                    {{ avaliacao.disciplina.disciplina_nome }}
+                                </h5>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-person me-2 info-icon"></i>
+                                        <span><strong>Professor:</strong> {{ avaliacao.professor.user.get_full_name }}</span>
                                     </div>
-                                    <div class="info-item">
-                                        <span class="info-label">
-                                            <i class="bi bi-collection"></i> Turma:
-                                        </span>
-                                        <span class="info-value">{{ avaliacao.turma.codigo_turma }}</span>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-collection me-2 info-icon"></i>
+                                        <span><strong>Turma:</strong> {{ avaliacao.turma.codigo_turma }}</span>
                                     </div>
-                                    <div class="info-item">
-                                        <span class="info-label">
-                                            <i class="bi bi-clock"></i> Ciclo:
-                                        </span>
-                                        <span class="info-value">{{ avaliacao.ciclo.nome }}</span>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-clock me-2 info-icon"></i>
+                                        <span><strong>Ciclo:</strong> {{ avaliacao.ciclo.nome }}</span>
                                     </div>
-                                    <div class="info-item">
-                                        <span class="info-label">
-                                            <i class="bi bi-calendar-range"></i> Período:
-                                        </span>
-                                        <span class="info-value">
+                                    <div class="d-flex align-items-start mb-2">
+                                        <i class="bi bi-calendar-range me-2 info-icon"></i>
+                                        <span class="info-text-small">
                                             {{ avaliacao.ciclo.data_inicio|date:"d/m/Y" }} - {{ avaliacao.ciclo.data_fim|date:"d/m/Y" }}
                                         </span>
                                     </div>
                                 </div>
+                                
                                 {% if avaliacao.ciclo.ativo and avaliacao.status != 'finalizada' %}
-                                <div class="avaliacao-footer">
-                                    <a href="{% url 'responder_avaliacao' avaliacao.id %}" class="btn btn-primary-custom w-100">
+                                    <a href="{% url 'responder_avaliacao' avaliacao.id %}" class="btn btn-primary w-100">
                                         <i class="bi bi-pencil-square"></i> Responder Avaliação
                                     </a>
-                                </div>
                                 {% else %}
-                                <div class="avaliacao-footer">
                                     <button class="btn btn-secondary w-100" disabled>
-                                        <i class="bi bi-stop-circle"></i> Encerrada
+                                        <i class="bi bi-stop-circle"></i> Avaliação Encerrada
                                     </button>
-                                </div>
                                 {% endif %}
                             </div>
                         </div>
-                        {% endfor %}
                     </div>
-                    {% else %}
-                    <!-- Exibição para administradores/coordenadores - mostra avaliações docentes como tabela -->
-                                        <div class="table-scroll-hint">
-                        <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Professor</th>
-                                    <th>Disciplina</th>
-                                    <th>Turma</th>
-                                    <th>Ciclo</th>
-                                    <th>Status</th>
-                                    <th class="text-center">Respostas</th>
-                                    <th class="text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for avaliacao in avaliacoes %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ avaliacao.professor.user.get_full_name }}</strong>
-                                    </td>
-                                    <td>
-                                        {{ avaliacao.disciplina.disciplina_nome }}
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-light text-dark">{{ avaliacao.turma.codigo_turma }}</span>
-                                    </td>
-                                    <td>
-                                        {{ avaliacao.ciclo.nome }}
-                                    </td>
-                                    <td>
-                                        {% if avaliacao.status == 'pendente' %}
-                                            <span class="badge bg-warning">
-                                                <i class="bi bi-clock"></i> Pendente
-                                            </span>
-                                        {% elif avaliacao.status == 'em_andamento' %}
-                                            <span class="badge bg-info">
-                                                <i class="bi bi-hourglass-split"></i> Em Andamento
-                                            </span>
-                                        {% elif avaliacao.status == 'finalizada' %}
-                                            <span class="badge bg-success">
-                                                <i class="bi bi-check-circle"></i> Finalizada
-                                            </span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">
-                                                <i class="bi bi-question-circle"></i> {{ avaliacao.get_status_display }}
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-primary-custom">{{ avaliacao.total_respostas }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <a href="{% url 'visualizar_avaliacao' avaliacao.id %}" 
-                                           class="btn btn-outline-primary-custom btn-sm" 
-                                           title="Visualizar Avaliação"
-                                          >
-                                            <i class="bi bi-eye"></i> Ver
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% endif %}
+                    {% endfor %}
+                </div>
                 {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-clipboard-x empty-icon"></i>
-                        {% if user|has_role:"aluno" %}
-                            <p class="mt-3 text-muted"><strong>Nenhuma avaliação disponível</strong></p>
-                            <p class="text-muted">Não há avaliações para responder no momento.</p>
-                        {% else %}
-                            <p class="mt-3 text-muted"><strong>Nenhuma avaliação encontrada</strong></p>
-                            <p class="text-muted">Crie ciclos de avaliação para gerar avaliações docentes.</p>
-                        {% endif %}
-                    </div>
+                <!-- Estado vazio - Apenas para Alunos -->
+                <div class="text-center py-5 empty-state-avaliacoes">
+                    <i class="bi bi-clipboard-x empty-icon"></i>
+                    <h4 class="mt-3">Nenhuma avaliação disponível</h4>
+                    <p class="text-muted">Não há avaliações abertas para responder no momento.</p>
+                    <p class="text-muted"><small>Aguarde novos ciclos de avaliação serem criados.</small></p>
+                </div>
                 {% endif %}
             </div>
-        </div>
-    </div>
-</div>
+            {% endif %}
 
         </div>
     </main>

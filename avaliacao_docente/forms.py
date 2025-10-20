@@ -438,20 +438,7 @@ class TurmaForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        disciplina = cleaned_data.get("disciplina")
-        turno = cleaned_data.get("turno")
-
-        if disciplina and turno:
-            # Verifica se já existe uma turma para essa disciplina no mesmo turno
-            if Turma.objects.filter(
-                disciplina=disciplina,
-                turno=turno,
-            ).exists():
-                raise forms.ValidationError(
-                    f"Já existe uma turma de {disciplina.disciplina_nome} "
-                    f"no turno {turno}."
-                )
-
+        # Remove a validação customizada - deixa o Django validar via unique_together
         return cleaned_data
 
 
@@ -664,7 +651,6 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
             "tipo",
             "categoria",
             "obrigatoria",
-            "ativo",
             "opcoes_multipla_escolha",
         ]
         widgets = {
@@ -678,7 +664,6 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
             "tipo": forms.Select(attrs={"class": "form-control"}),
             "categoria": forms.Select(attrs={"class": "form-control"}),
             "obrigatoria": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -686,7 +671,6 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
         # Definir valores padrão para campos obrigatórios
         if not self.instance.pk:
             self.fields["obrigatoria"].initial = True
-            self.fields["ativo"].initial = True
 
         # Exibir as opções de múltipla escolha (se existentes) como linhas no textarea
         if self.instance.pk and hasattr(self.instance, "opcoes_multipla_escolha"):
@@ -780,6 +764,21 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
 
         return normalized
 
+    def save(self, commit=True):
+        """
+        Sobrescreve save para garantir que novas perguntas sempre sejam criadas como ativas
+        """
+        instance = super().save(commit=False)
+
+        # Garantir que perguntas novas sempre sejam criadas como ativas
+        if not instance.pk:
+            instance.ativo = True
+
+        if commit:
+            instance.save()
+
+        return instance
+
 
 class RespostaAvaliacaoForm(forms.Form):
     """
@@ -844,9 +843,34 @@ class RespostaAvaliacaoForm(forms.Form):
             else:  # texto_livre
                 self.fields[field_name] = forms.CharField(
                     label=pergunta.enunciado,
-                    widget=forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+                    widget=forms.Textarea(
+                        attrs={
+                            "class": "form-control",
+                            "rows": 3,
+                            "maxlength": "300",
+                            "placeholder": "Máximo 300 caracteres",
+                        }
+                    ),
                     required=pergunta.obrigatoria,
+                    max_length=300,
+                    help_text="Limite: 300 caracteres",
                 )
+
+    def clean(self):
+        """
+        Validação customizada para garantir limite de 300 caracteres em campos de texto
+        """
+        cleaned_data = super().clean()
+
+        for field_name, valor in cleaned_data.items():
+            if field_name.startswith("pergunta_") and isinstance(valor, str):
+                if len(valor) > 300:
+                    self.add_error(
+                        field_name,
+                        f"O texto deve ter no máximo 300 caracteres. Você digitou {len(valor)} caracteres.",
+                    )
+
+        return cleaned_data
 
     def save(self, aluno=None, session_key=None, anonima=False):
         """
@@ -954,14 +978,14 @@ class CategoriaPerguntaForm(forms.ModelForm):
         if nome:
             nome = nome.strip().title()
 
-            # Verificar se já existe uma categoria com este nome
+            # Verificar se já existe uma categoria ATIVA com este nome
             qs = CategoriaPergunta.objects.filter(nome__iexact=nome)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
 
             if qs.exists():
                 raise forms.ValidationError(
-                    "Já existe uma categoria com este nome. Escolha um nome diferente."
+                    "Já existe uma categoria ativa com este nome. Escolha um nome diferente."
                 )
 
         return nome
@@ -1027,14 +1051,47 @@ RespostaFormSet = modelformset_factory(
 class ConfiguracaoSiteForm(forms.ModelForm):
     class Meta:
         model = ConfiguracaoSite
-        fields = ["metodo_envio_email", "email_notificacao_erros"]
+        fields = [
+            "metodo_envio_email",
+            "email_notificacao_erros",
+            "limiar_minimo_percentual",
+            "frequencia_lembrete_horas",
+            "max_lembretes_por_aluno",
+        ]
         widgets = {
             "metodo_envio_email": forms.RadioSelect,
             "email_notificacao_erros": forms.EmailInput(
                 attrs={"class": "form-control", "placeholder": "seuerro@email.com"}
             ),
+            "limiar_minimo_percentual": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "10.00",
+                    "step": "0.01",
+                    "min": "0",
+                    "max": "100",
+                }
+            ),
+            "frequencia_lembrete_horas": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "48",
+                    "min": "1",
+                }
+            ),
+            "max_lembretes_por_aluno": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "3",
+                    "min": "1",
+                    "max": "10",
+                }
+            ),
         }
         labels = {
             "metodo_envio_email": "Método de Envio de E-mail",
             "email_notificacao_erros": "E-mail para Notificação de Erros",
+            "limiar_minimo_percentual": "Limiar Mínimo de Respostas (%)",
+            "frequencia_lembrete_horas": "Frequência de Lembretes (horas)",
+            "max_lembretes_por_aluno": "Máximo de Lembretes por Aluno",
         }

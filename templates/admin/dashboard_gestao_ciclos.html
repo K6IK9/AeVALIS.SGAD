@@ -1,0 +1,357 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard de Gestão de Ciclos - IF SADD</title>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'admin_hub' %}" class="back-button">← Voltar ao Hub de Administração</a>
+
+        <div class="header">
+            <h1>📊 Dashboard de Gestão de Ciclos</h1>
+            <p>Visão consolidada de todos os ciclos, KPIs em tempo real e ações centralizadas</p>
+        </div>
+
+        <!-- Mensagens -->
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <!-- Cards de Estatísticas -->
+        <div class="stats-section">
+            <h2>📈 Visão Geral</h2>
+            <div class="stats-grid">
+                <div class="stat-item" style="border-left-color: var(--cor02);">
+                    <span class="stat-number">{{ total_ativos }}</span>
+                    <span class="stat-label">Ciclos Ativos</span>
+                </div>
+                <div class="stat-item" style="border-left-color: #6c757d;">
+                    <span class="stat-number">{{ total_finalizados }}</span>
+                    <span class="stat-label">Ciclos Finalizados</span>
+                </div>
+                <div class="stat-item" style="border-left-color: #ffc107;">
+                    <span class="stat-number">{{ total_em_alerta }}</span>
+                    <span class="stat-label">Ciclos em Alerta</span>
+                </div>
+                <div class="stat-item" style="border-left-color: #dc3545;">
+                    <span class="stat-number">{{ jobs_erro }}</span>
+                    <span class="stat-label">Jobs com Erro</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        {% if ciclos_alerta %}
+        <div class="form-section">
+            <h2>⚠️ Ciclos que Exigem Atenção</h2>
+            <div class="alert alert-warning">
+                <strong>Ação necessária:</strong> Os seguintes ciclos estão próximos do fim ou com taxa abaixo do limiar:
+                <ul class="mt-2">
+                    {% for ciclo in ciclos_alerta %}
+                    <li>
+                        <strong>{{ ciclo.nome }}</strong> - Encerra em {{ ciclo.data_fim|date:"d/m/Y" }}
+                        <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-sm btn-outline-primary" style="margin-left: 10px;">
+                            <i class="bi bi-eye"></i> Ver Detalhes
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Filtros -->
+        <div class="form-section">
+            <h2>🔍 Filtros</h2>
+            <form method="get" action="{% url 'dashboard_gestao_ciclos' %}">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="status">Status</label>
+                        <select name="status" id="status" class="form-control">
+                            <option value="todos" {% if filtros.status == 'todos' %}selected{% endif %}>Todos</option>
+                            <option value="ativos" {% if filtros.status == 'ativos' %}selected{% endif %}>Ativos</option>
+                            <option value="finalizados" {% if filtros.status == 'finalizados' %}selected{% endif %}>Finalizados</option>
+                        </select>
+                    </div>
+
+                    <div class="form-col">
+                        <label for="periodo_inicio">Período Início</label>
+                        <input type="date" name="periodo_inicio" id="periodo_inicio" 
+                               value="{{ filtros.periodo_inicio }}" class="form-control">
+                    </div>
+
+                    <div class="form-col">
+                        <label for="periodo_fim">Período Fim</label>
+                        <input type="date" name="periodo_fim" id="periodo_fim" 
+                               value="{{ filtros.periodo_fim }}" class="form-control">
+                    </div>
+
+                    <div class="form-col">
+                        <label for="curso">Curso</label>
+                        <select name="curso" id="curso" class="form-control">
+                            <option value="">Todos os cursos</option>
+                            {% for curso in cursos %}
+                            <option value="{{ curso.id }}" {% if filtros.curso == curso.id|stringformat:"s" %}selected{% endif %}>
+                                {{ curso.nome_curso }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-col">
+                        <label for="limiar">Taxa de Resposta</label>
+                        <select name="limiar" id="limiar" class="form-control">
+                            <option value="" {% if filtros.limiar == '' %}selected{% endif %}>Todos</option>
+                            <option value="abaixo" {% if filtros.limiar == 'abaixo' %}selected{% endif %}>Abaixo do Limiar</option>
+                            <option value="atingido" {% if filtros.limiar == 'atingido' %}selected{% endif %}>Limiar Atingido</option>
+                        </select>
+                    </div>
+
+                    <div class="form-col">
+                        <label for="ordenar">Ordenar por</label>
+                        <select name="ordenar" id="ordenar" class="form-control">
+                            <option value="-data_inicio" {% if filtros.ordenar == '-data_inicio' %}selected{% endif %}>Mais Recente</option>
+                            <option value="data_inicio" {% if filtros.ordenar == 'data_inicio' %}selected{% endif %}>Mais Antigo</option>
+                            <option value="nome" {% if filtros.ordenar == 'nome' %}selected{% endif %}>Nome (A-Z)</option>
+                            <option value="-data_fim" {% if filtros.ordenar == '-data_fim' %}selected{% endif %}>Fim Mais Próximo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-col" style="display: flex; align-items: flex-end; gap: 10px;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Filtrar
+                        </button>
+                        <a href="{% url 'dashboard_gestao_ciclos' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Limpar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabela de Ciclos com KPIs -->
+        <div class="form-section">
+            <h2>📋 Ciclos e Indicadores</h2>
+            
+            {% if page_obj %}
+            <div class="alert alert-info mb-3">
+                <i class="bi bi-info-circle"></i> <strong>Dica:</strong> Arraste a tabela lateralmente para ver todas as colunas
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-tag"></i> Nome</th>
+                            <th><i class="bi bi-calendar-range"></i> Período</th>
+                            <th class="text-center"><i class="bi bi-collection"></i> Turmas</th>
+                            <th class="text-center"><i class="bi bi-people"></i> Aptos</th>
+                            <th class="text-center"><i class="bi bi-check-circle"></i> Respondentes</th>
+                            <th class="text-center"><i class="bi bi-graph-up"></i> Taxa Média</th>
+                            <th class="text-center"><i class="bi bi-heart-pulse"></i> Saúde</th>
+                            <th class="text-center"><i class="bi bi-envelope"></i> Jobs</th>
+                            <th class="text-center"><i class="bi bi-clock"></i> Último Envio</th>
+                            <th class="text-center"><i class="bi bi-gear"></i> Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in page_obj %}
+                        {% with ciclo=item.ciclo kpis=item.kpis %}
+                        <tr style="{% if kpis.status_saude == 'erro' %}background: #fee;{% elif kpis.status_saude == 'alerta' %}background: #fff3cd;{% elif ciclo.ativo %}background: #f0fff4;{% else %}background: #f8f9fa;{% endif %}">
+                            <td>
+                                <strong style="color: var(--cor03);">{{ ciclo.nome }}</strong>
+                                {% if not ciclo.ativo %}
+                                <span class="badge bg-secondary" style="margin-left: 5px;">Encerrado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small>
+                                    <i class="bi bi-calendar-event"></i>
+                                    {{ ciclo.data_inicio|date:"d/m/Y" }} - {{ ciclo.data_fim|date:"d/m/Y" }}
+                                </small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light" style="color: var(--cor03);">
+                                    {{ kpis.total_turmas }}
+                                </span>
+                            </td>
+                            <td class="text-center">{{ kpis.total_alunos_aptos }}</td>
+                            <td class="text-center">
+                                <strong style="color: var(--cor02);">{{ kpis.total_respondentes }}</strong>
+                            </td>
+                            <td class="text-center">
+                                {% if kpis.taxa_media_resposta >= kpis.limiar_configurado %}
+                                <span class="badge bg-success" style="font-size: 1em; padding: 6px 12px;">
+                                    {{ kpis.taxa_media_resposta|floatformat:1 }}%
+                                </span>
+                                {% else %}
+                                <span class="badge" style="background: #ffc107; color: #212529; font-size: 1em; padding: 6px 12px;">
+                                    {{ kpis.taxa_media_resposta|floatformat:1 }}%
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if kpis.status_saude == 'ok' %}
+                                <span class="badge bg-success"><i class="bi bi-check-circle"></i> OK</span>
+                                {% elif kpis.status_saude == 'alerta' %}
+                                <span class="badge" style="background: #ffc107; color: #212529;">
+                                    <i class="bi bi-exclamation-triangle"></i> Alerta
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Erro</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <small>
+                                    ✓ {{ kpis.jobs_completos }} / 
+                                    ⏳ {{ kpis.jobs_pendentes }} /
+                                    {% if kpis.jobs_com_erro > 0 %}
+                                    <strong style="color: #dc3545;">❌ {{ kpis.jobs_com_erro }}</strong>
+                                    {% else %}
+                                    ❌ 0
+                                    {% endif %}
+                                </small>
+                            </td>
+                            <td class="text-center">
+                                {% if kpis.ultimo_envio_em %}
+                                <small>{{ kpis.ultimo_envio_em|date:"d/m H:i" }}</small>
+                                {% else %}
+                                <small class="text-muted">-</small>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" 
+                                       class="btn btn-sm btn-outline-primary" 
+                                       title="Ver detalhes">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" 
+                                       class="btn btn-sm btn-warning" 
+                                       title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    {% if ciclo.ativo %}
+                                    <form method="post" 
+                                          action="{% url 'encerrar_ciclo' ciclo.id %}" 
+                                          onsubmit="return confirm('Encerrar o ciclo {{ ciclo.nome }}?');" 
+                                          class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" 
+                                                class="btn btn-sm btn-outline-secondary" 
+                                                title="Encerrar">
+                                            <i class="bi bi-stop-circle"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if page_obj.has_other_pages %}
+            <div class="d-flex justify-content-center mt-4">
+                <nav>
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Primeira</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Anterior</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Próxima</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Última</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5" style="background: #f8f9fa; border-radius: 8px;">
+                <i class="bi bi-calendar-x" style="font-size: 4rem; color: #ccc;"></i>
+                <h4 class="mt-3" style="color: var(--cor03);">Nenhum ciclo encontrado</h4>
+                <p class="text-muted">Ajuste os filtros ou crie um novo ciclo</p>
+                <a href="{% url 'gerenciar_ciclos' %}" class="btn btn-primary mt-2">
+                    <i class="bi bi-plus-circle"></i> Criar Novo Ciclo
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Links Rápidos -->
+        <div class="form-section">
+            <h2>🔗 Links Rápidos</h2>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'gerenciar_ciclos' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Criar Novo Ciclo
+                </a>
+                <a href="{% url 'admin:avaliacao_docente_joblembretecicloturma_changelist' %}" class="btn btn-secondary" target="_blank">
+                    <i class="bi bi-envelope-check"></i> Monitorar Jobs de Lembrete
+                </a>
+                <a href="{% url 'gerenciar_configuracao_site' %}" class="btn btn-secondary">
+                    <i class="bi bi-gear"></i> Configurações do Sistema
+                </a>
+                <a href="#" onclick="alert('Consulte docs/GESTAO_CICLOS.md'); return false;" class="btn btn-outline-secondary">
+                    <i class="bi bi-book"></i> Documentação
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            gap: 5px;
+        }
+        .page-item .page-link {
+            padding: 8px 12px;
+            background: var(--cor07);
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            color: var(--cor03);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .page-item .page-link:hover {
+            background: var(--cor02);
+            color: var(--cor05);
+            border-color: var(--cor02);
+        }
+        .page-item.active .page-link {
+            background: var(--cor03);
+            color: white;
+            border-color: var(--cor03);
+        }
+    </style>
+</body>
+</html>

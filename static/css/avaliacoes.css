@@ -505,6 +505,103 @@
     border-color: #dc3545;
 }
 
+/* ===== ESTILOS ESPECÍFICOS DA PÁGINA LISTAR AVALIAÇÕES ===== */
+
+/* Badges do header de ciclos */
+.badge-ciclo-header {
+    font-size: 0.9em;
+    padding: 6px 12px;
+}
+
+/* Linha de ciclo ativo */
+.ciclo-ativo-row {
+    background: #f0fff4;
+}
+
+.ciclo-ativo-row strong {
+    color: var(--cor03);
+}
+
+/* Badge de turmas em ciclo ativo */
+.badge-turmas-ativo {
+    color: var(--cor03);
+    font-size: 0.9em;
+}
+
+/* Linha de ciclo finalizado */
+.ciclo-finalizado-row {
+    background: #f8f9fa;
+}
+
+.ciclo-finalizado-row strong {
+    color: #6c757d;
+}
+
+.ciclo-finalizado-row small {
+    color: #6c757d;
+}
+
+/* Badge de turmas em ciclo finalizado */
+.badge-turmas-finalizado {
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+/* Estado vazio de ciclos */
+.empty-state-ciclos {
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.empty-state-ciclos .empty-icon {
+    font-size: 4rem;
+    color: #ccc;
+}
+
+.empty-state-ciclos h4 {
+    color: var(--cor03);
+}
+
+/* Badge de contador de avaliações */
+.badge-count-avaliacoes {
+    font-size: 1em;
+    padding: 8px 15px;
+}
+
+/* Card de avaliação do aluno */
+.card-avaliacao-aluno {
+    border-left: 4px solid var(--cor02);
+}
+
+.card-avaliacao-aluno h5 {
+    color: var(--cor03);
+    font-weight: 600;
+}
+
+/* Ícones nos cards de avaliação */
+.card-avaliacao-aluno .info-icon {
+    color: var(--cor02);
+}
+
+.card-avaliacao-aluno .info-text-small {
+    font-size: 0.9em;
+}
+
+/* Estado vazio de avaliações */
+.empty-state-avaliacoes {
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.empty-state-avaliacoes .empty-icon {
+    font-size: 4rem;
+    color: #ccc;
+}
+
+.empty-state-avaliacoes h4 {
+    color: var(--cor03);
+}
+
 /* ===== ÍCONES DE ESTADO VAZIO ===== */
 .empty-icon {
     font-size: 3rem;
@@ -514,6 +611,119 @@
 /* ===== FORMS INLINE ===== */
 .form-inline {
     display: inline;
+}
+
+/* ===== PADRONIZAÇÃO DE BOTÕES COM CORES DO SISTEMA ===== */
+/* Garantir que todos os botões herdem o padrão do global.css */
+
+/* Botões base - com borda de 1px para outline */
+.btn {
+    border: 1px solid transparent;
+    transition: all var(--transition-fast);
+}
+
+/* Botão primário - verde claro (#00fd94) */
+.btn-primary {
+    background-color: var(--cor02);
+    border-color: var(--cor02);
+    color: var(--cor05);
+}
+
+.btn-primary:hover {
+    background-color: var(--cor06);
+    border-color: var(--cor06);
+    color: var(--cor05);
+    transform: translateY(-2px);
+}
+
+/* Botão secundário - verde escuro (#376f6c) */
+.btn-secondary {
+    background-color: var(--cor03);
+    border-color: var(--cor03);
+    color: var(--cor07);
+}
+
+.btn-secondary:hover {
+    background-color: var(--cor04);
+    border-color: var(--cor04);
+    color: var(--cor07);
+    transform: translateY(-2px);
+}
+
+/* Botão warning - amarelo */
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #212529;
+    transform: translateY(-2px);
+}
+
+/* Botão danger - vermelho (#ff3c3c) */
+.btn-danger {
+    background-color: var(--cor08);
+    border-color: var(--cor08);
+    color: var(--cor07);
+}
+
+.btn-danger:hover {
+    background-color: #e63535;
+    border-color: #d32f2f;
+    color: var(--cor07);
+    transform: translateY(-2px);
+}
+
+/* Botão outline-primary - borda verde claro */
+.btn-outline-primary {
+    background-color: transparent;
+    border-color: var(--cor02);
+    color: var(--cor02);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--cor02);
+    border-color: var(--cor02);
+    color: var(--cor05);
+    transform: translateY(-2px);
+}
+
+/* Botão outline-secondary - borda verde escuro */
+.btn-outline-secondary {
+    background-color: transparent;
+    border-color: var(--cor03);
+    color: var(--cor03);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--cor03);
+    border-color: var(--cor03);
+    color: var(--cor07);
+    transform: translateY(-2px);
+}
+
+/* Tamanho pequeno - mantém proporções */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+}
+
+/* Botões desabilitados */
+.btn:disabled,
+.btn.disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn:disabled:hover,
+.btn.disabled:hover {
+    transform: none;
 }
 
 /* ===== BOOTSTRAP ALTERNATIVE CLASSES ===== */
@@ -555,17 +765,18 @@
 }
 
 @media (max-width: 767px) {
+
     .col-md-6,
     .col-lg-4 {
         flex: 0 0 100%;
         max-width: 100%;
     }
-    
+
     .row {
         margin-left: 0;
         margin-right: 0;
     }
-    
+
     .col-12,
     .col-md-6,
     .col-lg-4 {
@@ -617,13 +828,13 @@
     gap: 1rem;
 }
 
-.g-3 > * {
+.g-3>* {
     margin-bottom: 1rem;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
 }
 
-.g-4 > * {
+.g-4>* {
     margin-bottom: 1.5rem;
     margin-top: 1.5rem;
     margin-left: 0.75rem;
@@ -673,7 +884,7 @@
     color: #212529;
 }
 
-/* Badge utilities */
+/* Badge utilities - Padronizado com cores do sistema */
 .badge {
     display: inline-block;
     padding: 0.35rem 0.65rem;
@@ -685,37 +896,52 @@
     white-space: nowrap;
     vertical-align: baseline;
     border-radius: 0.25rem;
+    transition: all var(--transition-fast);
 }
 
-.bg-secondary {
-    background-color: var(--cor03);
-}
-
-.bg-warning {
-    background-color: #ffc107;
-    color: #212529;
-}
-
-.bg-info {
-    background-color: var(--cor06);
-    color: var(--cor05);
-}
-
+/* Badge success - verde claro */
 .bg-success {
     background-color: var(--cor02);
     color: var(--cor05);
 }
 
+/* Badge primary - verde claro */
 .bg-primary {
     background-color: var(--cor02);
     color: var(--cor05);
 }
 
+/* Badge secondary - verde escuro */
+.bg-secondary {
+    background-color: var(--cor03);
+    color: var(--cor07);
+}
+
+/* Badge warning - amarelo */
+.bg-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+/* Badge danger - vermelho */
+.bg-danger {
+    background-color: var(--cor08);
+    color: var(--cor07);
+}
+
+/* Badge info - azul claro */
+.bg-info {
+    background-color: var(--cor06);
+    color: var(--cor05);
+}
+
+/* Badge light - fundo claro */
 .bg-light {
     background-color: #f8f9fa;
     color: #212529;
 }
 
+/* Badge primary-custom - mesmo que primary */
 .bg-primary-custom {
     background-color: var(--cor02);
     color: var(--cor05);
@@ -792,6 +1018,7 @@
         opacity: 0;
         transform: translateX(20px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -806,6 +1033,7 @@
     from {
         width: 0%;
     }
+
     to {
         width: var(--progress-width);
     }

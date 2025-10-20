@@ -6,6 +6,7 @@ from django.views.generic import TemplateView
 from django.urls import reverse_lazy, reverse
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
+from django.utils import timezone
 import csv
 from datetime import datetime
 from .models import (
@@ -821,25 +822,31 @@ def excluir_periodo(request, periodo_id):
         try:
             periodo = get_object_or_404(PeriodoLetivo, id=periodo_id)
 
-            # Verificar se há turmas ou disciplinas relacionadas
-            if periodo.turmas.exists():
-                error_msg = f"Não é possível excluir o período '{periodo.nome}' pois existem turmas vinculadas a ele."
-                if request.headers.get("Content-Type") == "application/json":
-                    return JsonResponse({"error": error_msg}, status=400)
-                messages.error(request, error_msg)
-                return redirect("gerenciar_periodos")
-
+            # Verificar se há disciplinas relacionadas
             if periodo.disciplinas.exists():
-                error_msg = f"Não é possível excluir o período '{periodo.nome}' pois existem disciplinas vinculadas a ele."
-                if request.headers.get("Content-Type") == "application/json":
-                    return JsonResponse({"error": error_msg}, status=400)
-                messages.error(request, error_msg)
-                return redirect("gerenciar_periodos")
+                # Conta quantas disciplinas estão ativas
+                disciplinas_ativas = periodo.disciplinas.filter(ativo=True).count()
+
+                if disciplinas_ativas > 0:
+                    error_msg = (
+                        f"⚠️ Não é possível excluir o período '{periodo.nome}'.\n\n"
+                        f"Existem {disciplinas_ativas} disciplina(s) vinculada(s) a este período.\n"
+                        f"Remova ou desative as disciplinas antes de excluir o período."
+                    )
+                else:
+                    # Todas as disciplinas estão inativas, pode excluir
+                    error_msg = None
+
+                if error_msg:
+                    if request.headers.get("Content-Type") == "application/json":
+                        return JsonResponse({"error": error_msg}, status=400)
+                    messages.error(request, error_msg)
+                    return redirect("gerenciar_periodos")
 
             nome_periodo = periodo.nome
             periodo.delete()
 
-            success_msg = f"Período '{nome_periodo}' excluído com sucesso!"
+            success_msg = f"✅ Período '{nome_periodo}' excluído com sucesso!"
             if request.headers.get("Content-Type") == "application/json":
                 return JsonResponse({"success": True, "message": success_msg})
 
@@ -848,9 +855,21 @@ def excluir_periodo(request, periodo_id):
 
         except Exception as e:
             error_msg = str(e)
+
+            # Mensagens de erro mais amigáveis
+            if "object has no attribute" in error_msg:
+                error_msg = "⚠️ Erro técnico ao excluir o período. Verifique se não há dependências relacionadas."
+            elif "ProtectedError" in error_msg or "FOREIGN KEY" in error_msg:
+                error_msg = (
+                    f"⚠️ Não é possível excluir o período '{periodo.nome if 'periodo' in locals() else 'selecionado'}'.\n\n"
+                    "Existem registros vinculados a este período que impedem sua exclusão."
+                )
+            else:
+                error_msg = f"❌ Erro ao excluir período: {error_msg}"
+
             if request.headers.get("Content-Type") == "application/json":
                 return JsonResponse({"error": error_msg}, status=500)
-            messages.error(request, f"Erro ao excluir período: {error_msg}")
+            messages.error(request, error_msg)
             return redirect("gerenciar_periodos")
 
     if request.headers.get("Content-Type") == "application/json":
@@ -975,11 +994,17 @@ def gerenciar_turmas(request):
             )
             return redirect("gerenciar_turmas")
         else:
-            # Debug: Mostra os erros do formulário
+            # Mostra os erros do formulário de forma limpa
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, f"Erro no campo {field}: {error}")
-            messages.error(request, "Verifique os dados do formulário.")
+                    # Traduz o nome do campo __all__ para algo mais amigável
+                    if field == "__all__":
+                        messages.error(request, str(error))
+                    else:
+                        field_name = (
+                            form.fields[field].label if field in form.fields else field
+                        )
+                        messages.error(request, f"{field_name}: {error}")
     else:
         form = TurmaForm()
 
@@ -1051,7 +1076,14 @@ def editar_turma(request, turma_id):
         else:
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, f"Erro no campo {field}: {error}")
+                    # Traduz o nome do campo __all__ para algo mais amigável
+                    if field == "__all__":
+                        messages.error(request, str(error))
+                    else:
+                        field_name = (
+                            form.fields[field].label if field in form.fields else field
+                        )
+                        messages.error(request, f"{field_name}: {error}")
     else:
         form = TurmaForm(instance=turma)
 
@@ -1458,9 +1490,6 @@ def listar_avaliacoes(request):
         return redirect("inicio")
     if hasattr(request.user, "perfil_aluno"):
         # Para alunos: mostrar apenas avaliações das turmas em que estão matriculados
-        from django.db.models import Q
-        from django.utils import timezone
-
         turmas_aluno = request.user.perfil_aluno.matriculas.filter(
             status="ativa"
         ).values_list("turma_id", flat=True)
@@ -1526,6 +1555,113 @@ def listar_avaliacoes(request):
         ),
     }
     return render(request, "avaliacoes/listar_avaliacoes.html", context)
+
+
+@login_required
+def dashboard_gestao_ciclos(request):
+    """
+    Dashboard de gestão centralizada de múltiplos ciclos.
+    Exibe KPIs, filtros, status de lembretes e permite ações em massa.
+    Apenas para admin/coordenador.
+    """
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(
+            request, "Você não tem permissão para acessar o dashboard de gestão."
+        )
+        return redirect("listar_avaliacoes")
+
+    from .services import calcular_kpis_multiplos_ciclos, obter_ciclos_em_alerta
+
+    # Filtros da requisição
+    filtro_status = request.GET.get(
+        "status", "todos"
+    )  # 'todos', 'ativos', 'finalizados'
+    filtro_periodo_inicio = request.GET.get("periodo_inicio", "")
+    filtro_periodo_fim = request.GET.get("periodo_fim", "")
+    filtro_curso = request.GET.get("curso", "")
+    filtro_limiar = request.GET.get("limiar", "")  # 'abaixo', 'atingido', 'todos'
+    ordenar_por = request.GET.get("ordenar", "-data_inicio")  # campo de ordenação
+
+    # Base query
+    ciclos_qs = CicloAvaliacao.objects.all()
+
+    # Aplicar filtros
+    if filtro_status == "ativos":
+        ciclos_qs = ciclos_qs.filter(ativo=True)
+    elif filtro_status == "finalizados":
+        ciclos_qs = ciclos_qs.filter(ativo=False)
+
+    if filtro_periodo_inicio:
+        ciclos_qs = ciclos_qs.filter(data_inicio__gte=filtro_periodo_inicio)
+
+    if filtro_periodo_fim:
+        ciclos_qs = ciclos_qs.filter(data_fim__lte=filtro_periodo_fim)
+
+    if filtro_curso:
+        ciclos_qs = ciclos_qs.filter(
+            turmas__disciplina__curso_id=filtro_curso
+        ).distinct()
+
+    # Ordenação
+    ciclos_qs = ciclos_qs.order_by(ordenar_por)
+
+    # Calcular KPIs para todos os ciclos filtrados
+    ciclos_com_kpis = []
+    kpis_dict = calcular_kpis_multiplos_ciclos(ciclos_qs)
+
+    for ciclo in ciclos_qs:
+        kpis = kpis_dict.get(ciclo.id, {})
+
+        # Aplicar filtro de limiar (pós-processamento)
+        if filtro_limiar == "abaixo":
+            if kpis.get("taxa_media_resposta", 0) >= kpis.get("limiar_configurado", 10):
+                continue
+        elif filtro_limiar == "atingido":
+            if kpis.get("taxa_media_resposta", 0) < kpis.get("limiar_configurado", 10):
+                continue
+
+        ciclos_com_kpis.append({"ciclo": ciclo, "kpis": kpis})
+
+    # Paginação
+    paginator = Paginator(ciclos_com_kpis, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    # Estatísticas gerais (cards do topo)
+    total_ativos = CicloAvaliacao.objects.filter(ativo=True).count()
+    total_finalizados = CicloAvaliacao.objects.filter(ativo=False).count()
+    ciclos_alerta = obter_ciclos_em_alerta()
+    total_em_alerta = ciclos_alerta.count()
+
+    # Jobs com erro em ciclos ativos
+    from .models import JobLembreteCicloTurma
+
+    jobs_erro = JobLembreteCicloTurma.objects.filter(
+        ciclo__ativo=True, status="erro"
+    ).count()
+
+    # Lista de cursos para filtro
+    cursos = Curso.objects.all().order_by("curso_nome")
+
+    context = {
+        "page_obj": page_obj,
+        "total_ativos": total_ativos,
+        "total_finalizados": total_finalizados,
+        "total_em_alerta": total_em_alerta,
+        "jobs_erro": jobs_erro,
+        "ciclos_alerta": ciclos_alerta[:5],  # Top 5 mais urgentes
+        "cursos": cursos,
+        "filtros": {
+            "status": filtro_status,
+            "periodo_inicio": filtro_periodo_inicio,
+            "periodo_fim": filtro_periodo_fim,
+            "curso": filtro_curso,
+            "limiar": filtro_limiar,
+            "ordenar": ordenar_por,
+        },
+    }
+
+    return render(request, "admin/dashboard_gestao_ciclos.html", context)
 
 
 @login_required
@@ -1646,33 +1782,9 @@ def editar_questionario_perguntas(request, questionario_id):
         return redirect("listar_avaliacoes")
 
     questionario = get_object_or_404(QuestionarioAvaliacao, id=questionario_id)
-    perguntas_existentes = QuestionarioPergunta.objects.filter(
-        questionario=questionario
-    ).order_by("ordem_no_questionario")
-
     categorias = CategoriaPergunta.objects.all()
 
-    # Verificar se está editando uma pergunta existente
-    editando_pergunta_id = request.GET.get("editar_pergunta")
-    pergunta_editando = None
-
-    if editando_pergunta_id:
-        try:
-            pergunta_editando = PerguntaAvaliacao.objects.get(id=editando_pergunta_id)
-            # Verificar se a pergunta pertence a este questionário
-            if not QuestionarioPergunta.objects.filter(
-                questionario=questionario, pergunta=pergunta_editando
-            ).exists():
-                messages.error(request, "Pergunta não encontrada neste questionário.")
-                return redirect(
-                    "editar_questionario_perguntas", questionario_id=questionario.id
-                )
-        except PerguntaAvaliacao.DoesNotExist:
-            messages.error(request, "Pergunta não encontrada.")
-            return redirect(
-                "editar_questionario_perguntas", questionario_id=questionario.id
-            )
-
+    # ========== PROCESSAR POST PRIMEIRO (ANTES DA LIMPEZA) ==========
     if request.method == "POST":
         print(f"DEBUG: POST data: {request.POST}")
         if "adicionar_pergunta" in request.POST:
@@ -1683,8 +1795,13 @@ def editar_questionario_perguntas(request, questionario_id):
                 print("DEBUG: Form é válido, salvando pergunta")
                 pergunta = form.save()
                 print(f"DEBUG: Pergunta salva: {pergunta}")
-                # Adicionar ao questionário
-                ordem = perguntas_existentes.count() + 1
+                # Adicionar ao questionário - contar apenas perguntas ativas
+                ordem = (
+                    QuestionarioPergunta.objects.filter(
+                        questionario=questionario, pergunta__ativo=True
+                    ).count()
+                    + 1
+                )
                 qp = QuestionarioPergunta.objects.create(
                     questionario=questionario,
                     pergunta=pergunta,
@@ -1697,26 +1814,80 @@ def editar_questionario_perguntas(request, questionario_id):
                 )
             else:
                 print(f"DEBUG: Form inválido - erros: {form.errors}")
-                messages.error(request, f"Erro ao adicionar pergunta: {form.errors}")
+                # Extrair mensagens de erro de forma limpa
+                erros_list = []
+                for field, errors in form.errors.items():
+                    field_label = (
+                        form.fields.get(field).label if field in form.fields else field
+                    )
+                    for error in errors:
+                        erros_list.append(f"{field_label}: {error}")
+
+                erro_msg = (
+                    " | ".join(erros_list)
+                    if erros_list
+                    else "Verifique os campos do formulário."
+                )
+                messages.error(request, f"Erro ao adicionar pergunta: {erro_msg}")
+
         elif "salvar_edicao" in request.POST:
-            print("DEBUG: Tentando editar pergunta")
+            print("DEBUG: Tentando editar pergunta via POST")
             pergunta_id = request.POST.get("pergunta_id")
+            print(f"DEBUG: pergunta_id recebido do POST: {pergunta_id}")
+            print(f"DEBUG: Todos os dados POST: {request.POST}")
+
+            if not pergunta_id:
+                messages.error(request, "❌ ID da pergunta não foi fornecido.")
+                return redirect(
+                    "editar_questionario_perguntas", questionario_id=questionario.id
+                )
+
             try:
+                # Buscar a pergunta e verificar se pertence a este questionário
                 pergunta_para_editar = PerguntaAvaliacao.objects.get(id=pergunta_id)
+                print(f"DEBUG: Pergunta encontrada para editar: {pergunta_para_editar}")
+
+                # Verificar se a pergunta está associada a este questionário
+                if not QuestionarioPergunta.objects.filter(
+                    questionario=questionario, pergunta=pergunta_para_editar
+                ).exists():
+                    messages.error(
+                        request, "❌ Pergunta não pertence a este questionário."
+                    )
+                    return redirect(
+                        "editar_questionario_perguntas", questionario_id=questionario.id
+                    )
+
                 form = PerguntaAvaliacaoForm(
                     request.POST, instance=pergunta_para_editar
                 )
                 if form.is_valid():
                     pergunta = form.save()
-                    messages.success(request, "Pergunta atualizada com sucesso!")
+                    messages.success(request, "✅ Pergunta atualizada com sucesso!")
                     return redirect(
                         "editar_questionario_perguntas", questionario_id=questionario.id
                     )
                 else:
-                    messages.error(request, f"Erro ao editar pergunta: {form.errors}")
+                    # Extrair mensagens de erro de forma limpa
+                    erros_list = []
+                    for field, errors in form.errors.items():
+                        field_label = (
+                            form.fields.get(field).label
+                            if field in form.fields
+                            else field
+                        )
+                        for error in errors:
+                            erros_list.append(f"{field_label}: {error}")
+
+                    erro_msg = (
+                        " | ".join(erros_list)
+                        if erros_list
+                        else "Verifique os campos do formulário."
+                    )
+                    messages.error(request, f"❌ Erro ao editar pergunta: {erro_msg}")
                     pergunta_editando = pergunta_para_editar  # Manter no modo de edição
             except PerguntaAvaliacao.DoesNotExist:
-                messages.error(request, "Pergunta não encontrada.")
+                messages.error(request, "❌ Pergunta não encontrada.")
                 return redirect(
                     "editar_questionario_perguntas", questionario_id=questionario.id
                 )
@@ -1726,23 +1897,87 @@ def editar_questionario_perguntas(request, questionario_id):
             QuestionarioPergunta.objects.filter(
                 questionario=questionario, pergunta_id=pergunta_id
             ).delete()
-            # Reordenar perguntas
+            # Reordenar perguntas - apenas ativas
             perguntas_restantes = QuestionarioPergunta.objects.filter(
-                questionario=questionario
+                questionario=questionario, pergunta__ativo=True
             ).order_by("ordem_no_questionario")
             for i, qp in enumerate(perguntas_restantes, 1):
                 qp.ordem_no_questionario = i
                 qp.save()
-            messages.success(request, "Pergunta removida com sucesso!")
+            messages.success(request, "✅ Pergunta removida com sucesso!")
             return redirect(
                 "editar_questionario_perguntas", questionario_id=questionario.id
             )
+
+    # ========== LIMPEZA SÓ RODA APÓS O POST OU EM GET ==========
+    # Limpar QuestionarioPergunta que apontam para perguntas inativas (soft-deleted)
+    qps_com_perguntas_inativas = QuestionarioPergunta.objects.filter(
+        questionario=questionario, pergunta__ativo=False
+    )
+
+    if qps_com_perguntas_inativas.exists():
+        count_orfas = qps_com_perguntas_inativas.count()
+        print(f"DEBUG: Encontradas {count_orfas} referência(s) a perguntas inativas")
+        for qp in qps_com_perguntas_inativas:
+            print(
+                f"DEBUG: Removendo QuestionarioPergunta {qp.id} (pergunta #{qp.pergunta_id} está inativa)"
+            )
+        qps_com_perguntas_inativas.delete()
+        messages.info(
+            request,
+            f"✓ {count_orfas} referência(s) a perguntas removidas foram limpas.",
+        )
+
+    # Buscar apenas perguntas ativas
+    perguntas_existentes = QuestionarioPergunta.objects.filter(
+        questionario=questionario, pergunta__ativo=True
+    ).order_by("ordem_no_questionario")
+
+    # Verificar se está editando uma pergunta existente
+    editando_pergunta_id = request.GET.get("editar_pergunta")
+    pergunta_editando = None
+
+    if editando_pergunta_id:
+        print(f"DEBUG: Tentando editar pergunta com ID: {editando_pergunta_id}")
+        try:
+            pergunta_editando = PerguntaAvaliacao.objects.get(id=editando_pergunta_id)
+            print(f"DEBUG: Pergunta encontrada: {pergunta_editando}")
+
+            # Verificar se a pergunta pertence a este questionário
+            qp_exists = QuestionarioPergunta.objects.filter(
+                questionario=questionario, pergunta=pergunta_editando
+            ).exists()
+            print(f"DEBUG: Pergunta pertence ao questionário? {qp_exists}")
+
+            if not qp_exists:
+                messages.error(
+                    request, "❌ Pergunta não encontrada neste questionário."
+                )
+                return redirect(
+                    "editar_questionario_perguntas", questionario_id=questionario.id
+                )
+        except PerguntaAvaliacao.DoesNotExist:
+            print(f"DEBUG: Pergunta com ID {editando_pergunta_id} não existe no banco")
+            messages.error(
+                request,
+                f"❌ Pergunta #{editando_pergunta_id} não encontrada. "
+                "Esta pergunta pode ter sido removida. Por favor, atualize a página.",
+            )
+            return redirect(
+                "editar_questionario_perguntas", questionario_id=questionario.id
+            )
+        except Exception as e:
+            print(f"DEBUG: Erro inesperado ao buscar pergunta: {e}")
+            messages.error(request, f"❌ Erro ao buscar pergunta: {str(e)}")
+            return redirect(
+                "editar_questionario_perguntas", questionario_id=questionario.id
+            )
+
+    # Inicializar formulário para adicionar ou editar
+    if pergunta_editando:
+        form = PerguntaAvaliacaoForm(instance=pergunta_editando)
     else:
-        # Inicializar formulário para adicionar ou editar
-        if pergunta_editando:
-            form = PerguntaAvaliacaoForm(instance=pergunta_editando)
-        else:
-            form = PerguntaAvaliacaoForm()
+        form = PerguntaAvaliacaoForm()
 
     context = {
         "questionario": questionario,
@@ -2558,7 +2793,7 @@ def relatorio_professores(request):
         if ciclo_selecionado:
             nome_arquivo += f"_ciclo_{ciclo_selecionado.nome.replace(' ', '_')}"
         if curso_selecionado:
-            nome_arquivo += f"_curso_{curso_selecionado.nome_curso.replace(' ', '_')}"
+            nome_arquivo += f"_curso_{curso_selecionado.curso_nome.replace(' ', '_')}"
         nome_arquivo += f"_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
 
@@ -2679,7 +2914,7 @@ def gerenciar_categorias(request):
                         "nome": categoria.nome,
                         "descricao": categoria.descricao,
                         "ordem": categoria.ordem,
-                        "ativa": categoria.ativa,
+                        "ativo": categoria.ativo,
                         "total_perguntas": categoria.perguntas.count(),
                     }
                 )
@@ -2703,23 +2938,61 @@ def gerenciar_categorias(request):
             # Criar nova categoria via AJAX
             form = CategoriaPerguntaForm(request.POST)
             if form.is_valid():
-                categoria = form.save()
-                messages.success(
-                    request, f"Categoria '{categoria.nome}' criada com sucesso!"
-                )
-                return JsonResponse(
-                    {
-                        "success": True,
-                        "categoria": {
-                            "id": categoria.id,
-                            "nome": categoria.nome,
-                            "descricao": categoria.descricao,
-                            "ordem": categoria.ordem,
-                            "ativa": categoria.ativa,
-                            "total_perguntas": 0,
-                        },
-                    }
-                )
+                nome = form.cleaned_data.get("nome")
+
+                # Verificar se existe categoria inativa com este nome
+                categoria_inativa = CategoriaPergunta.all_objects.filter(
+                    nome__iexact=nome, ativo=False
+                ).first()
+
+                if categoria_inativa:
+                    # Reativar categoria existente ao invés de criar nova
+                    categoria_inativa.restore()
+                    # Atualizar outros campos
+                    categoria_inativa.descricao = form.cleaned_data.get("descricao", "")
+                    categoria_inativa.ordem = form.cleaned_data.get(
+                        "ordem", categoria_inativa.ordem
+                    )
+                    categoria_inativa.save()
+
+                    messages.success(
+                        request,
+                        f"Categoria '{categoria_inativa.nome}' foi reativada com sucesso!",
+                    )
+                    return JsonResponse(
+                        {
+                            "success": True,
+                            "reactivated": True,
+                            "categoria": {
+                                "id": categoria_inativa.id,
+                                "nome": categoria_inativa.nome,
+                                "descricao": categoria_inativa.descricao,
+                                "ordem": categoria_inativa.ordem,
+                                "ativo": categoria_inativa.ativo,
+                                "total_perguntas": categoria_inativa.perguntas.count(),
+                            },
+                        }
+                    )
+                else:
+                    # Criar nova categoria
+                    categoria = form.save()
+                    messages.success(
+                        request, f"Categoria '{categoria.nome}' criada com sucesso!"
+                    )
+                    return JsonResponse(
+                        {
+                            "success": True,
+                            "reactivated": False,
+                            "categoria": {
+                                "id": categoria.id,
+                                "nome": categoria.nome,
+                                "descricao": categoria.descricao,
+                                "ordem": categoria.ordem,
+                                "ativo": categoria.ativo,
+                                "total_perguntas": 0,
+                            },
+                        }
+                    )
             else:
                 return JsonResponse(
                     {"error": "Dados inválidos", "errors": form.errors}, status=400
@@ -2728,11 +3001,49 @@ def gerenciar_categorias(request):
             # Criar nova categoria via formulário normal
             form = CategoriaPerguntaForm(request.POST)
             if form.is_valid():
-                categoria = form.save()
-                messages.success(
-                    request, f"Categoria '{categoria.nome}' criada com sucesso!"
-                )
-                return redirect("gerenciar_categorias")
+                try:
+                    nome = form.cleaned_data.get("nome")
+
+                    # Verificar se existe categoria inativa com este nome
+                    categoria_inativa = CategoriaPergunta.all_objects.filter(
+                        nome__iexact=nome, ativo=False
+                    ).first()
+
+                    if categoria_inativa:
+                        # Reativar categoria existente ao invés de criar nova
+                        categoria_inativa.restore()
+                        # Atualizar outros campos
+                        categoria_inativa.descricao = form.cleaned_data.get(
+                            "descricao", ""
+                        )
+                        categoria_inativa.ordem = form.cleaned_data.get(
+                            "ordem", categoria_inativa.ordem
+                        )
+                        categoria_inativa.save()
+
+                        messages.success(
+                            request,
+                            f"Categoria '{categoria_inativa.nome}' foi reativada com sucesso!",
+                        )
+                        return redirect("gerenciar_categorias")
+                    else:
+                        # Criar nova categoria
+                        categoria = form.save()
+                        messages.success(
+                            request, f"Categoria '{categoria.nome}' criada com sucesso!"
+                        )
+                        return redirect("gerenciar_categorias")
+                except Exception as e:
+                    messages.error(request, f"Erro ao criar categoria: {str(e)}")
+                    # Se houve erro, renderizar novamente o template com os erros
+                    categorias = CategoriaPergunta.objects.all().order_by(
+                        "ordem", "nome"
+                    )
+                    context = {
+                        "categorias": categorias,
+                        "form": form,
+                    }
+                    return render(request, "gerenciar_categorias.html", context)
             else:
                 # Se houve erro, renderizar novamente o template com os erros
                 categorias = CategoriaPergunta.objects.all().order_by("ordem", "nome")
@@ -2761,7 +3072,7 @@ def categoria_detail(request, categoria_id):
                 "nome": categoria.nome,
                 "descricao": categoria.descricao,
                 "ordem": categoria.ordem,
-                "ativa": categoria.ativa,
+                "ativo": categoria.ativo,
                 "total_perguntas": categoria.perguntas.count(),
             }
         )
@@ -2786,7 +3097,7 @@ def categoria_detail(request, categoria_id):
                         "nome": categoria.nome,
                         "descricao": categoria.descricao,
                         "ordem": categoria.ordem,
-                        "ativa": categoria.ativa,
+                        "ativo": categoria.ativo,
                         "total_perguntas": categoria.perguntas.count(),
                     },
                 }

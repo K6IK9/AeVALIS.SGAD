@@ -141,17 +141,25 @@
 
         <!-- Lista de Avaliações -->
         <div class="form-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="section-header-with-filters">
                     <h2>📝 Avaliações do Ciclo</h2>
-                    <div class="btn-group">
-                        <button class="btn btn-secondary" onclick="filtrarAvaliacoes('todas')">
-                            Todas
+                    
+                    <!-- Filtros modernos com design de pills -->
+                    <div class="filter-pills-container">
+                        <button class="filter-pill filter-pill-todas active" onclick="filtrarAvaliacoes('todas')" data-filter="todas">
+                            <span class="filter-icon">📊</span>
+                            <span class="filter-text">Todas</span>
+                            <span class="filter-count" id="count-todas">{{ total_avaliacoes }}</span>
                         </button>
-                        <button class="btn" onclick="filtrarAvaliacoes('respondidas')">
-                            Respondidas
+                        <button class="filter-pill filter-pill-respondidas" onclick="filtrarAvaliacoes('respondidas')" data-filter="respondidas">
+                            <span class="filter-icon">✅</span>
+                            <span class="filter-text">Respondidas</span>
+                            <span class="filter-count" id="count-respondidas">{{ avaliacoes_respondidas }}</span>
                         </button>
-                        <button class="btn btn-secondary" onclick="filtrarAvaliacoes('pendentes')">
-                            Pendentes
+                        <button class="filter-pill filter-pill-pendentes" onclick="filtrarAvaliacoes('pendentes')" data-filter="pendentes">
+                            <span class="filter-icon">⏰</span>
+                            <span class="filter-text">Pendentes</span>
+                            <span class="filter-count" id="count-pendentes">{{ total_avaliacoes|add:"-"|add:avaliacoes_respondidas }}</span>
                         </button>
                     </div>
                 </div>
@@ -248,34 +256,71 @@
     <script>
     function filtrarAvaliacoes(status) {
         const rows = document.querySelectorAll('.avaliacao-row');
-        const buttons = document.querySelectorAll('.btn-group .btn');
+        const pills = document.querySelectorAll('.filter-pill');
         
-        // Remover classe ativa de todos os botões
-        buttons.forEach(btn => btn.classList.remove('active'));
+        // Remover classe ativa de todos os pills
+        pills.forEach(pill => pill.classList.remove('active'));
+        
+        // Contar itens visíveis
+        let visibleCount = 0;
         
         rows.forEach(row => {
+            let shouldShow = false;
+            
             if (status === 'todas') {
-                row.style.display = '';
+                shouldShow = true;
             } else if (status === 'respondidas' && row.dataset.status === 'respondida') {
-                row.style.display = '';
+                shouldShow = true;
             } else if (status === 'pendentes' && row.dataset.status === 'pendente') {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
+                shouldShow = true;
             }
+            
+            row.style.display = shouldShow ? '' : 'none';
+            if (shouldShow) visibleCount++;
         });
         
-        // Adicionar classe ativa ao botão clicado
-        event.target.classList.add('active');
+        // Adicionar classe ativa ao pill clicado
+        const activePill = document.querySelector(`.filter-pill[data-filter="${status}"]`);
+        if (activePill) {
+            activePill.classList.add('active');
+        }
+        
+        // Animar transição
+        rows.forEach(row => {
+            if (row.style.display !== 'none') {
+                row.style.animation = 'fadeIn 0.3s ease-in-out';
+            }
+        });
     }
 
-    // Definir filtro padrão
+    // Definir filtro padrão e adicionar animações
     document.addEventListener('DOMContentLoaded', function() {
-        const primeiroBtn = document.querySelector('.btn-group .btn');
-        if (primeiroBtn) {
-            primeiroBtn.classList.add('active');
+        const primeiroPill = document.querySelector('.filter-pill-todas');
+        if (primeiroPill) {
+            primeiroPill.classList.add('active');
         }
+        
+        // Adicionar animação de entrada
+        const pills = document.querySelectorAll('.filter-pill');
+        pills.forEach((pill, index) => {
+            pill.style.animation = `slideInFromTop 0.4s ease-out ${index * 0.1}s both`;
+        });
     });
+    
+    // Adicionar keyframes para animações
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideInFromTop {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
     </script>
 
     <!-- Script global para funcionalidades de gerenciamento -->

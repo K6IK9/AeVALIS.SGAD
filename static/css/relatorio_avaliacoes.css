@@ -184,6 +184,10 @@ Botões - REMOVIDO, usando padrão global
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     border-top: 4px solid var(--report-primary);
+
+    /* Prevenir overflow de conteúdo longo */
+    overflow: hidden;
+    max-width: 100%;
 }
 
 .avaliacao-card:hover {
@@ -195,6 +199,8 @@ Botões - REMOVIDO, usando padrão global
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--report-border);
+    overflow: hidden;
+    max-width: 100%;
 }
 
 .card-title {
@@ -203,6 +209,11 @@ Botões - REMOVIDO, usando padrão global
     color: var(--report-primary);
     margin-bottom: 8px;
     line-height: 1.3;
+
+    /* Quebra de texto longo */
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .card-subtitle {
@@ -211,10 +222,19 @@ Botões - REMOVIDO, usando padrão global
     display: flex;
     align-items: center;
     gap: 5px;
+
+    /* Quebra de texto longo */
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 .card-info {
     margin-bottom: 15px;
+    overflow: hidden;
+    /* Prevenir overflow do container */
+    max-width: 100%;
 }
 
 .info-item {
@@ -223,10 +243,29 @@ Botões - REMOVIDO, usando padrão global
     align-items: center;
     margin-bottom: 5px;
     font-size: 0.9em;
+    gap: 8px;
+    /* Espaço entre label e valor */
+}
+
+.info-item span {
+    flex-shrink: 0;
+    /* Label não encolhe */
+    min-width: fit-content;
 }
 
 .info-item strong {
     color: var(--report-primary);
+    text-align: right;
+
+    /* Prevenir overflow de texto longo */
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+
+    /* Para textos muito longos sem espaços */
+    overflow-wrap: anywhere;
+    hyphens: auto;
 }
 
 /* Estatísticas por pergunta */
@@ -317,10 +356,20 @@ Botões - REMOVIDO, usando padrão global
     font-size: 0.85em;
     line-height: 1.4;
     color: #333;
+
+    /* Garantir quebra de texto longo */
     word-wrap: break-word;
     word-break: break-word;
     overflow-wrap: break-word;
     white-space: pre-wrap;
+
+    /* Prevenir overflow do container */
+    max-width: 100%;
+    overflow: hidden;
+    hyphens: auto;
+
+    /* Para URLs e palavras muito longas */
+    overflow-wrap: anywhere;
 }
 
 /* Tabela de dados - usando .data-table do global.css com customizações */

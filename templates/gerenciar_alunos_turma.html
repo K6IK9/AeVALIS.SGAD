@@ -14,15 +14,16 @@
 
 <body>
     <div class="container">
+        <!-- Botão Voltar -->
         <a href="{% url 'gerenciar_turmas' %}" class="back-button">← Voltar às Turmas</a>
 
+        <!-- Header da página -->
         <div class="header">
             <h1>Gerenciar Alunos da Turma</h1>
             <div class="turma-info">
                 <h2>{{ turma.disciplina.disciplina_nome }}</h2>
                 <p><strong>Professor:</strong> {{ turma.disciplina.professor.user.get_full_name }}</p>
-                <p><strong>Período:</strong> {{ turma.disciplina.periodo_letivo }} | <strong>Turno:</strong> {{
-                    turma.get_turno_display }}</p>
+                <p><strong>Período:</strong> {{ turma.disciplina.periodo_letivo.ano }}.{{ turma.disciplina.periodo_letivo.semestre }} | <strong>Turno:</strong> {{ turma.get_turno_display }}</p>
                 <p><strong>Código:</strong> {{ turma.codigo_turma }}</p>
             </div>
         </div>
@@ -38,6 +39,7 @@
             <span>👥 Gerenciar Alunos</span>
         </div>
 
+        <!-- Mensagens -->
         {% include "partials/messages.html" %}
 
         <!-- Estatísticas -->
@@ -56,71 +58,63 @@
             </div>
         </div>
 
-        <!-- Filtros e Busca -->
-        <div class="filters-section">
-            <h3 class="filters-title">Filtros e Busca</h3>
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label for="busca_aluno">Buscar por Nome/Matrícula/Email:</label>
-                    <div class="search-box">
-                        <input type="text" name="busca_aluno" id="busca_aluno" class="form-control"
-                            value="{{ busca_aluno }}" placeholder="Digite o nome, matrícula ou email do aluno..." />
-                    </div>
-                </div>
-                <div class="filter-group">
-                    <button type="button" class="btn-filter" onclick="limparFiltros()">Limpar Filtros</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Formulário de Ações em Massa -->
+        <!-- Seção de Gerenciamento de Alunos -->
         <div class="form-section">
+            <h2>👥 Selecionar Alunos para Matrícula/Desmatrícula</h2>
+            
             <form method="post" id="form-alunos">
                 {% csrf_token %}
-
-                <div class="bulk-actions-header">
-                    <h3>Ações em Massa</h3>
-                    <div class="btn-group">
-                        <button type="submit" name="acao" value="matricular" class="btn btn-sm btn-success"
-                            onclick="return confirm('Matricular alunos selecionados?')" title="Matricular Selecionados">
-                            ✅ Matricular
+                <div class="alunos-controls">
+                    <div class="alunos-search-bar">
+                        <input type="text" id="searchAlunos" class="form-control" 
+                               placeholder="🔍 Buscar por nome, matrícula ou email..." 
+                               autocomplete="off">
+                    </div>
+                    
+                    <div class="alunos-actions">
+                        <button type="button" class="btn-small btn-secondary" onclick="selecionarTodosAlunos()">
+                            ✅ Selecionar Todos
                         </button>
-                        <button type="submit" name="acao" value="desmatricular" class="btn btn-sm btn-danger"
-                            onclick="return confirm('Desmatricular alunos selecionados?')"
-                            title="Desmatricular Selecionados">
-                            ❌ Desmatricular
+                        <button type="button" class="btn-small btn-secondary" onclick="limparSelecaoAlunos()">
+                            ❌ Limpar Seleção
                         </button>
-                        <button type="button" onclick="toggleTodos()" class="btn btn-sm btn-secondary"
-                            title="Selecionar/Desmarcar Todos">
-                            🔄 Selecionar Todos
+                        <button type="submit" name="acao" value="matricular" class="btn-small btn-success"
+                                onclick="return confirmarAcao('matricular')" title="Matricular Selecionados">
+                            ➕ Matricular
                         </button>
+                        <button type="submit" name="acao" value="desmatricular" class="btn-small btn-danger"
+                                onclick="return confirmarAcao('desmatricular')" title="Desmatricular Selecionados">
+                            ➖ Desmatricular
+                        </button>
+                        <span class="alunos-counter" id="alunosCounter">
+                            <strong>0</strong> aluno(s) selecionado(s)
+                        </span>
                     </div>
                 </div>
 
-                <!-- Lista de Alunos -->
-                <div class="alunos-container">
+                <!-- Container de alunos com cards -->
+                <div class="alunos-grid-container" id="alunosContainer">
                     {% if alunos %}
                     {% for aluno in alunos %}
-                    <div class="aluno-card {% if aluno.matriculado %}matriculado{% endif %}"
-                        data-nome="{{ aluno.nome|lower }}" data-username="{{ aluno.username|lower }}"
-                        data-email="{{ aluno.email|lower }}"
-                        data-matriculado="{% if aluno.matriculado %}true{% else %}false{% endif %}">
-                        <div class="aluno-checkbox">
+                    <div class="aluno-card {% if aluno.matriculado %}matriculado{% endif %}" 
+                         data-aluno-info="{{ aluno.nome|lower }} {{ aluno.username|lower }} {{ aluno.email|lower }}"
+                         onclick="toggleCardAluno(this)">
+                        <div class="aluno-card-checkbox">
                             <input type="checkbox" name="alunos_selecionados" value="{{ aluno.id }}"
-                                id="aluno_{{ aluno.id }}" />
+                                   id="aluno_{{ aluno.id }}" />
                         </div>
 
-                        <div class="aluno-info">
-                            <div class="aluno-nome">
-                                <label for="aluno_{{ aluno.id }}">{{ aluno.nome }}</label>
-                            </div>
-                            <div class="aluno-detalhes">
-                                <span class="aluno-username">@{{ aluno.username }}</span>
-                                <span class="aluno-email">{{ aluno.email }}</span>
+                        <div class="aluno-card-info">
+                            <label for="aluno_{{ aluno.id }}" class="aluno-card-nome">
+                                {{ aluno.nome }}
+                            </label>
+                            <div class="aluno-card-detalhes">
+                                <span class="aluno-card-username">@{{ aluno.username }}</span>
+                                <span class="aluno-card-email">📧 {{ aluno.email }}</span>
                             </div>
                         </div>
 
-                        <div class="aluno-status">
+                        <div class="aluno-card-status">
                             {% if aluno.matriculado %}
                             <span class="status-badge matriculado">✅ Matriculado</span>
                             {% else %}
@@ -130,117 +124,173 @@
                     </div>
                     {% endfor %}
                     {% else %}
-                    <div class="empty-state">
-                        <h3>Nenhum aluno encontrado</h3>
-                        {% if busca_aluno %}
-                        <p>Não há alunos que correspondam aos critérios de busca "{{ busca_aluno }}".</p>
-                        <a href="{% url 'gerenciar_alunos_turma' turma.id %}" class="btn-primary">Ver todos os
-                            alunos</a>
-                        {% else %}
-                        <p>Não há alunos cadastrados no sistema.</p>
-                        {% endif %}
+                    <div class="empty-alunos-message">
+                        <p>📭 Nenhum aluno cadastrado no sistema.</p>
                     </div>
                     {% endif %}
+                </div>
+                
+                <div id="noAlunosMessage" class="empty-alunos-message" style="display: none;">
+                    <p>🔍 Nenhum aluno encontrado com os critérios de busca.</p>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Função para filtrar os cards de alunos
-        function filterAlunos() {
-            const searchFilter = document.getElementById('busca_aluno').value.toLowerCase().trim();
+        // ============================================
+        // TOGGLE DE CARD DE ALUNO (CLIQUE NO CARD)
+        // ============================================
+        function toggleCardAluno(card) {
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                
+                // Toggle classe selected
+                if (checkbox.checked) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+                
+                atualizarContadorAlunos();
+            }
+        }
 
-            const alunoCards = document.querySelectorAll('.aluno-card');
+        // ============================================
+        // CONTADOR DE ALUNOS SELECIONADOS
+        // ============================================
+        function atualizarContadorAlunos() {
+            const checkboxes = document.querySelectorAll('.aluno-card input[type="checkbox"]');
+            const selecionados = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const counter = document.getElementById('alunosCounter');
+            if (counter) {
+                counter.innerHTML = `<strong>${selecionados}</strong> aluno(s) selecionado(s)`;
+            }
+        }
+
+        // ============================================
+        // SELECIONAR TODOS OS ALUNOS VISÍVEIS
+        // ============================================
+        function selecionarTodosAlunos() {
+            const cards = document.querySelectorAll('.aluno-card');
+            const checkboxes = document.querySelectorAll('.aluno-card input[type="checkbox"]');
+            
+            // Seleciona apenas os alunos visíveis
+            cards.forEach((card, index) => {
+                if (card.style.display !== 'none') {
+                    checkboxes[index].checked = true;
+                    card.classList.add('selected');
+                }
+            });
+            
+            atualizarContadorAlunos();
+        }
+
+        // ============================================
+        // LIMPAR SELEÇÃO DE ALUNOS
+        // ============================================
+        function limparSelecaoAlunos() {
+            const checkboxes = document.querySelectorAll('.aluno-card input[type="checkbox"]');
+            const cards = document.querySelectorAll('.aluno-card');
+            
+            checkboxes.forEach(cb => cb.checked = false);
+            cards.forEach(card => card.classList.remove('selected'));
+            
+            atualizarContadorAlunos();
+        }
+
+        // ============================================
+        // FILTRAR ALUNOS POR BUSCA
+        // ============================================
+        function filtrarAlunos() {
+            const searchTerm = document.getElementById('searchAlunos').value.toLowerCase();
+            const cards = document.querySelectorAll('.aluno-card');
+            const noMessage = document.getElementById('noAlunosMessage');
+            const container = document.getElementById('alunosContainer');
             let visibleCount = 0;
-            let matriculadosCount = 0;
-            let disponiveisCount = 0;
 
-            alunoCards.forEach(card => {
-                const nome = card.dataset.nome || '';
-                const username = card.dataset.username || '';
-                const email = card.dataset.email || '';
-                const matriculado = card.dataset.matriculado === 'true';
-
-                // A busca procura em nome, username e email
-                const searchMatch = !searchFilter ||
-                    nome.includes(searchFilter) ||
-                    username.includes(searchFilter) ||
-                    email.includes(searchFilter);
-
-                if (searchMatch) {
+            cards.forEach(card => {
+                const alunoInfo = card.getAttribute('data-aluno-info');
+                
+                if (!searchTerm || alunoInfo.includes(searchTerm)) {
                     card.style.display = '';
                     visibleCount++;
-                    if (matriculado) {
-                        matriculadosCount++;
-                    } else {
-                        disponiveisCount++;
-                    }
                 } else {
                     card.style.display = 'none';
                 }
             });
 
-            // Atualizar estatísticas
-            const totalCount = document.getElementById('total-count');
-            const matriculadosCountEl = document.getElementById('alunos_matriculados');
-            const disponiveisCountEl = document.getElementById('alunos_disponiveis');
-
-            if (totalCount) totalCount.textContent = visibleCount;
-            if (matriculadosCountEl) matriculadosCountEl.textContent = matriculadosCount;
-            if (disponiveisCountEl) disponiveisCountEl.textContent = disponiveisCount;
-
-            // Mostrar/ocultar mensagem de empty state
-            const emptyState = document.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+            // Mostra/esconde mensagem de "nenhum aluno encontrado"
+            if (noMessage && container) {
+                if (visibleCount === 0) {
+                    container.style.display = 'none';
+                    noMessage.style.display = 'block';
+                } else {
+                    container.style.display = 'grid';
+                    noMessage.style.display = 'none';
+                }
             }
         }
 
-        // Função para selecionar/desmarcar todos os checkboxes
-        function toggleTodos() {
-            const checkboxes = document.querySelectorAll('input[name="alunos_selecionados"]:not([style*="display: none"])');
-            const todosMarcados = Array.from(checkboxes).every(cb => cb.checked);
-
-            checkboxes.forEach(cb => {
-                cb.checked = !todosMarcados;
-            });
-        }
-
-        // Verificar se há alunos selecionados antes de submeter
-        document.getElementById('form-alunos').addEventListener('submit', function (e) {
-            const selecionados = document.querySelectorAll('input[name="alunos_selecionados"]:checked');
-
+        // ============================================
+        // CONFIRMAR AÇÃO ANTES DE SUBMETER
+        // ============================================
+        function confirmarAcao(acao) {
+            const selecionados = document.querySelectorAll('.aluno-card input[type="checkbox"]:checked');
+            
             if (selecionados.length === 0) {
-                e.preventDefault();
-                alert('Selecione pelo menos um aluno para realizar a ação.');
+                alert('⚠️ Selecione pelo menos um aluno para realizar a ação.');
                 return false;
             }
-        });
-
-        // Função para limpar filtros
-        function limparFiltros() {
-            document.getElementById('busca_aluno').value = '';
-            filterAlunos();
+            
+            const mensagem = acao === 'matricular' 
+                ? `✅ Confirma a matrícula de ${selecionados.length} aluno(s)?`
+                : `❌ Confirma a desmatrícula de ${selecionados.length} aluno(s)?`;
+            
+            return confirm(mensagem);
         }
 
-        // Adicionar event listener para busca automática
-        document.addEventListener('DOMContentLoaded', function () {
-            const buscaInput = document.getElementById('busca_aluno');
-
-            // Busca automática com debounce
-            let timeoutId;
-            buscaInput.addEventListener('input', function () {
-                clearTimeout(timeoutId);
-                timeoutId = setTimeout(() => {
-                    filterAlunos();
-                }, 300); // 300ms de debounce
-            });
-
-            // Aplicar filtro inicial se há valor
-            if (buscaInput.value.trim()) {
-                filterAlunos();
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchAlunos');
+            const checkboxes = document.querySelectorAll('.aluno-card input[type="checkbox"]');
+            
+            // Event listener para busca com debounce
+            if (searchInput) {
+                let timeoutId;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => {
+                        filtrarAlunos();
+                    }, 300);
+                });
             }
+            
+            // Event listener para checkboxes (atualizar contador)
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const card = this.closest('.aluno-card');
+                    if (this.checked) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                    atualizarContadorAlunos();
+                });
+            });
+            
+            // Inicializar cards já marcados como selected
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    checkbox.closest('.aluno-card').classList.add('selected');
+                }
+            });
+            
+            // Atualizar contador inicial
+            atualizarContadorAlunos();
         });
     </script>
 </body>
