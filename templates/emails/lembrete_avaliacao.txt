@@ -1,0 +1,42 @@
+====================================================================
+    LEMBRETE DE AVALIAÇÃO DOCENTE
+====================================================================
+
+Olá, {{ nome_aluno }}!
+
+Este é um lembrete para que você avalie a disciplina do ciclo 
+{{ nome_ciclo }}.
+
+INFORMAÇÕES DA AVALIAÇÃO:
+----------------------------------------
+📖 Curso: {{ nome_curso }}
+🏫 Turma: {{ codigo_turma }}
+📅 Ciclo: {{ nome_ciclo }}
+⏰ Prazo final: {{ data_fim|date:"d/m/Y" }}
+
+⚠️ IMPORTANTE:
+----------------------------------------
+Sua participação é fundamental para a melhoria contínua da 
+qualidade do ensino. A avaliação é anônima e leva apenas 
+alguns minutos.
+
+COMO AVALIAR:
+----------------------------------------
+Acesse o link abaixo para realizar sua avaliação:
+
+{{ link_avaliacao }}
+
+{% if rodada > 1 %}
+⚠️ ATENÇÃO: Este é o {{ rodada }}º lembrete enviado. 
+Por favor, não deixe para depois!
+{% else %}
+Caso você já tenha respondido, por favor desconsidere este e-mail.
+{% endif %}
+
+====================================================================
+Sistema de Avaliação Docente | IFMT
+Este é um e-mail automático, por favor não responda.
+
+Se você está tendo problemas para acessar o sistema, 
+entre em contato com o suporte técnico.
+====================================================================

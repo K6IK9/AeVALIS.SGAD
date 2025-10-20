@@ -71,12 +71,12 @@
 
         <div class="form-group">
           <div class="checkbox-group">
-            {{ form.ativa }}
-            <label for="{{ form.ativa.id_for_label }}">{{ form.ativa.label }}</label>
+            {{ form.ativo }}
+            <label for="{{ form.ativo.id_for_label }}">{{ form.ativo.label }}</label>
           </div>
-          {% if form.ativa.errors %}
+          {% if form.ativo.errors %}
           <div class="error-message">
-            {% for error in form.ativa.errors %}{{ error }}{% endfor %}
+            {% for error in form.ativo.errors %}{{ error }}{% endfor %}
           </div>
           {% endif %}
         </div>
@@ -144,43 +144,41 @@
       </div>
     </div>
 
-    {% if not editing %}
-    <div class="form-section">
-      <div class="section-header">
-        <h2>📋 Categorias Cadastradas ({{ categorias.count }})</h2>
-      </div>
-      
-      <!-- Seção de Filtros -->
-      <div class="filters-section" id="filtersSection">
+<!-- Filtros e Busca -->
+      <div class="filters-section">
+        <h3 class="filters-title">Filtros e Busca</h3>
         <div class="filter-row">
           <div class="filter-group">
             <label for="searchCategoriaNome">Buscar por Nome:</label>
-            <input type="text" 
-                   id="searchCategoriaNome" 
-                   placeholder="Digite o nome da categoria"
-                   autocomplete="off">
+            <div class="search-box">
+              <input type="text" 
+                     id="searchCategoriaNome" 
+                     class="form-control"
+                     placeholder="Digite o nome da categoria..."
+                     autocomplete="off">
+            </div>
           </div>
           
           <div class="filter-group">
-            <label for="filterStatus">Status:</label>
-            <select id="filterStatus">
+            <label for="filterStatus">Filtrar por Status:</label>
+            <select id="filterStatus" class="form-control">
               <option value="">Todos os status</option>
-              <option value="ativa">Ativa</option>
-              <option value="inativa">Inativa</option>
+              <option value="ativo">Ativo</option>
+              <option value="inativo">Inativo</option>
             </select>
           </div>
-        </div>
-
-        <div class="filter-row">
+          
           <div class="filter-group">
-            <button type="button" 
-                    onclick="clearFilters()" 
-                    class="btn btn-clear"
-                    title="Limpar todos os filtros">
-              🧹 Limpar Filtros
-            </button>
+            <button type="button" class="btn-filter" onclick="clearFilters()">Limpar Filtros</button>
           </div>
         </div>
+      </div>
+
+
+    <!-- Seção de Categorias (sempre visível) -->
+    <div class="form-section">
+      <div class="section-header">
+        <h2>📋 Categorias Cadastradas ({{ categorias|length }})</h2>
       </div>
 
       {% if categorias %}
@@ -214,7 +212,7 @@
                 <span class="counter-badge">{{ categoria.ordem }}</span>
               </td>
               <td>
-                {% if categoria.ativa %}
+                {% if categoria.ativo %}
                   <span class="status-badge status-active">✅ Ativa</span>
                 {% else %}
                   <span class="status-badge status-inactive">❌ Inativa</span>
@@ -262,7 +260,6 @@
         </div>
       {% endif %}
     </div>
-    {% endif %}
   </div>
 
   <script src="{% static 'js/gerenciar-global.js' %}"></script>

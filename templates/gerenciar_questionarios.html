@@ -134,14 +134,12 @@
         <!-- Filtros e Busca -->
         {% if not editing %}
         <div class="filters-section">
-            <h3 class="filters-title">Filtros e Busca</h3>
+            <h3 class="filters-title">🔍 Filtros e Busca</h3>
             <div class="filter-row">
                 <div class="filter-group">
                     <label for="searchQuestionarioTitulo">Buscar por Título:</label>
-                    <div class="search-box">
-                        <input type="text" id="searchQuestionarioTitulo" class="form-control"
-                            placeholder="Digite o título do questionário..." autocomplete="off">
-                    </div>
+                    <input type="text" id="searchQuestionarioTitulo" class="form-control"
+                        placeholder="Digite o título do questionário..." autocomplete="off">
                 </div>
                 <div class="filter-group">
                     <label for="filterStatus">Filtrar por Status:</label>
@@ -165,7 +163,7 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <button type="button" class="btn-filter" onclick="clearFilters()">Limpar Filtros</button>
+                    <button type="button" class="btn-filter" onclick="clearFilters()">🔄 Limpar Filtros</button>
                 </div>
             </div>
         </div>
@@ -257,66 +255,90 @@
         </div>
     </div>
 
+    <!-- Script global para funcionalidades de gerenciamento -->
+    <script src="{% static 'js/gerenciar-global.js' %}"></script>
+    
     <script>
-        // Função para filtrar a tabela
-        function filterTable() {
-            const tituloFilter = document.getElementById('searchQuestionarioTitulo').value.toLowerCase();
-            const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
-            const criadorFilter = document.getElementById('filterCriador').value.toLowerCase();
-
-            const tableRows = document.querySelectorAll('.data-table tbody tr');
-            let visibleCount = 0;
-
-            tableRows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-
-                if (cells.length > 1) {
-                    const questionarioTitulo = cells[0].textContent.toLowerCase().trim();
-                    const questionarioCriador = cells[2].textContent.toLowerCase().trim();
-                    const questionarioStatus = cells[4].textContent.toLowerCase().trim();
-
-                    const tituloMatch = !tituloFilter || questionarioTitulo.includes(tituloFilter);
-                    const criadorMatch = !criadorFilter || questionarioCriador.includes(criadorFilter);
-                    const statusMatch = !statusFilter || questionarioStatus.includes(statusFilter);
-
-                    if (tituloMatch && criadorMatch && statusMatch) {
-                        row.style.display = '';
-                        visibleCount++;
-                    } else {
-                        row.style.display = 'none';
-                    }
-                }
-            });
-
-            // Atualiza o contador
-            const sectionHeader = document.querySelector('.section-header h2');
-            if (sectionHeader) {
-                sectionHeader.textContent = `📋 Questionários Cadastrados (${visibleCount})`;
-            }
-        }
-
-        // Função para limpar filtros
-        function clearFilters() {
-            document.getElementById('searchQuestionarioTitulo').value = '';
-            document.getElementById('filterStatus').value = '';
-            document.getElementById('filterCriador').value = '';
-            filterTable();
-        }
-
-        // Event listeners
+        // Configuração específica dos filtros para esta página
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchQuestionarioTitulo');
             const statusSelect = document.getElementById('filterStatus');
             const criadorSelect = document.getElementById('filterCriador');
+            const tableRows = document.querySelectorAll('.data-table tbody tr');
 
-            if (searchInput) searchInput.addEventListener('input', filterTable);
-            if (statusSelect) statusSelect.addEventListener('change', filterTable);
-            if (criadorSelect) criadorSelect.addEventListener('change', filterTable);
+            function filterQuestionarios() {
+                if (!searchInput || !statusSelect || !criadorSelect) {
+                    console.error('❌ Elementos de filtro não encontrados');
+                    return;
+                }
+                
+                const tituloFilter = searchInput.value.toLowerCase().trim();
+                const statusFilter = statusSelect.value.toLowerCase().trim();
+                const criadorFilter = criadorSelect.value.toLowerCase().trim();
+
+                let visibleCount = 0;
+                const totalCount = tableRows.length;
+
+                tableRows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+
+                    if (cells.length >= 5) {
+                        const questionarioTitulo = cells[0].textContent.toLowerCase().trim();
+                        const questionarioCriador = cells[2].textContent.toLowerCase().trim();
+                        const questionarioStatusText = cells[4].textContent.toLowerCase().trim();
+
+                        const tituloMatch = !tituloFilter || questionarioTitulo.includes(tituloFilter);
+                        const criadorMatch = !criadorFilter || questionarioCriador === criadorFilter;
+                        
+                        // Comparação precisa de status
+                        let statusMatch = true;
+                        if (statusFilter) {
+                            if (statusFilter === 'ativo') {
+                                statusMatch = questionarioStatusText.includes('✓ ativo');
+                            } else if (statusFilter === 'inativo') {
+                                statusMatch = questionarioStatusText.includes('inativo');
+                            }
+                        }
+
+                        if (tituloMatch && criadorMatch && statusMatch) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+
+                // Atualiza o contador
+                const sectionHeader = document.querySelector('.section-header h2');
+                if (sectionHeader) {
+                    sectionHeader.textContent = `📋 Questionários Cadastrados (${visibleCount}${visibleCount !== totalCount ? ' de ' + totalCount : ''})`;
+                }
+            }
+
+            // Função global para limpar filtros (chamada pelo botão onclick)
+            window.clearFilters = function() {
+                if (searchInput) searchInput.value = '';
+                if (statusSelect) statusSelect.value = '';
+                if (criadorSelect) criadorSelect.value = '';
+                filterQuestionarios();
+            };
+
+            // Event listeners para filtros
+            if (searchInput) {
+                searchInput.addEventListener('input', filterQuestionarios);
+                console.log('✅ Busca por título configurada');
+            }
+            if (statusSelect) {
+                statusSelect.addEventListener('change', filterQuestionarios);
+                console.log('✅ Filtro de status configurado');
+            }
+            if (criadorSelect) {
+                criadorSelect.addEventListener('change', filterQuestionarios);
+                console.log('✅ Filtro de criador configurado');
+            }
         });
     </script>
-    
-    <!-- Script global para funcionalidades de gerenciamento -->
-    <script src="{% static 'js/gerenciar-global.js' %}"></script>
 </body>
 
 </html>

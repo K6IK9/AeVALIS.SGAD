@@ -20,7 +20,7 @@ import os
 import sys
 import django
 import random
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 # Configurar Django
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -29,6 +29,7 @@ django.setup()
 
 from django.contrib.auth.models import User
 from django.utils import timezone
+from rolepermissions.roles import assign_role
 from avaliacao_docente.models import (
     PerfilAluno,
     PerfilProfessor,
@@ -135,36 +136,40 @@ class PopuladorBancoDados:
 
         # Professores
         nomes_professores = [
-            ("João", "Silva", "Matemática"),
-            ("Maria", "Santos", "Física"),
-            ("Pedro", "Oliveira", "Química"),
-            ("Ana", "Costa", "Biologia"),
-            ("Carlos", "Souza", "História"),
-            ("Julia", "Lima", "Geografia"),
-            ("Roberto", "Alves", "Português"),
-            ("Fernanda", "Rodrigues", "Inglês"),
-            ("Paulo", "Martins", "Programação"),
-            ("Mariana", "Ferreira", "Algoritmos"),
-            ("Lucas", "Pereira", "Estrutura de Dados"),
-            ("Beatriz", "Gomes", "Banco de Dados"),
-            ("Ricardo", "Barbosa", "Redes"),
-            ("Camila", "Ribeiro", "Sistemas Operacionais"),
-            ("André", "Carvalho", "Engenharia de Software"),
+            ("João", "Silva"),
+            ("Maria", "Santos"),
+            ("Pedro", "Oliveira"),
+            ("Ana", "Costa"),
+            ("Carlos", "Souza"),
+            ("Julia", "Lima"),
+            ("Roberto", "Alves"),
+            ("Fernanda", "Rodrigues"),
+            ("Paulo", "Martins"),
+            ("Mariana", "Ferreira"),
+            ("Lucas", "Pereira"),
+            ("Beatriz", "Gomes"),
+            ("Ricardo", "Barbosa"),
+            ("Camila", "Ribeiro"),
+            ("André", "Carvalho"),
         ]
 
-        for idx, (nome, sobrenome, especialidade) in enumerate(nomes_professores, 1):
-            username = f"prof.{nome.lower()}.{sobrenome.lower()}"
+        for idx, (nome, sobrenome) in enumerate(nomes_professores, 1):
+            # Username é apenas o número de registro
+            registro = f"{idx:04d}"
             user = User.objects.create_user(
-                username=username,
-                email=f"{username}@escola.edu.br",
+                username=registro,
+                email=f"prof{registro}@escola.edu.br",
                 password="senha123",
                 first_name=nome,
                 last_name=sobrenome,
             )
 
+            # Atribuir role de professor
+            assign_role(user, "professor")
+
             professor = PerfilProfessor.objects.create(
                 user=user,
-                registro_academico=f"PROF{idx:04d}",
+                registro_academico=f"PROF{registro}",
             )
 
             self.usuarios.append(user)
@@ -227,16 +232,18 @@ class PopuladorBancoDados:
         ]
 
         for idx, (nome, sobrenome) in enumerate(nomes_alunos, 1):
-            username = f"aluno.{nome.lower().replace(' ', '')}.{sobrenome.lower()}"
-            # Criar username único que servirá como matrícula
-            matricula = f"ALU{2024000 + idx}"
+            # Username é apenas o número de matrícula (ALU + ano + sequencial)
+            matricula = f"{2024000 + idx}"
             user = User.objects.create_user(
-                username=matricula,  # Usar matrícula como username
-                email=f"{username[:30]}@aluno.escola.edu.br",
+                username=matricula,
+                email=f"aluno{matricula}@escola.edu.br",
                 password="senha123",
                 first_name=nome,
                 last_name=sobrenome,
             )
+
+            # Atribuir role de aluno
+            assign_role(user, "aluno")
 
             aluno = PerfilAluno.objects.create(user=user, situacao="Ativo")
 
@@ -468,7 +475,7 @@ class PopuladorBancoDados:
             horarios_disponiveis = horarios_turno[turma.turno]
             horario = random.choice(horarios_disponiveis)
 
-            for dia_nome, dia_num in dias_aula:
+            for _, dia_num in dias_aula:
                 HorarioTurma.objects.create(
                     turma=turma,
                     dia_semana=dia_num,
@@ -514,6 +521,8 @@ class PopuladorBancoDados:
             admin_user = User.objects.create_superuser(
                 username="admin", email="admin@escola.edu.br", password="admin123"
             )
+            # Atribuir role de admin
+            assign_role(admin_user, "admin")
 
         questionario = QuestionarioAvaliacao.objects.create(
             titulo="Avaliação Docente 2024",
@@ -715,7 +724,7 @@ class PopuladorBancoDados:
                 list(matriculas_turma), min(num_respondentes, matriculas_turma.count())
             )
 
-            for matricula in respondentes:
+            for _ in respondentes:
                 # Marcar avaliação como em andamento
                 if avaliacao.status == "pendente":
                     avaliacao.status = "em_andamento"

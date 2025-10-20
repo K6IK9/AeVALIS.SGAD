@@ -1,5 +1,27 @@
 /* ===== Responder Avaliação CSS ===== */
 
+/* Garantir visibilidade do botão voltar */
+.back-button {
+    background: var(--cor03) !important;
+    color: white !important;
+    text-decoration: none !important;
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-bottom: 20px;
+    transition: all var(--transition-fast);
+    font-weight: 500;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.back-button:hover {
+    background: var(--cor04) !important;
+    transform: translateY(-2px);
+    color: white !important;
+    text-decoration: none !important;
+}
+
 /* Card principal da avaliação */
 .avaliacao-card {
     padding: 20px;
@@ -7,6 +29,8 @@
     border-radius: var(--border-radius-medium);
     margin-bottom: 30px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    max-width: 100%;
 }
 
 /* Centro do card da avaliação */
@@ -17,6 +41,10 @@
 .avaliacao-subtitle {
     color: #666;
     margin: 10px 0;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 .avaliacao-ciclo {
@@ -31,6 +59,8 @@
     padding: 20px;
     margin-bottom: 25px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+    max-width: 100%;
 }
 
 .pergunta-header {
@@ -57,6 +87,10 @@
     margin-bottom: 20px;
     font-weight: 500;
     color: var(--cor04);
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 /* Navegação do formulário */
@@ -225,6 +259,10 @@
     border-radius: var(--border-radius-small);
     display: block;
     transition: all var(--transition-fast);
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 .multipla-escolha .form-check-input+.form-check-label:hover {
@@ -308,11 +346,22 @@
 }
 
 /* ===== TEXTO LIVRE ===== */
+.texto-livre {
+    overflow: hidden;
+    max-width: 100%;
+}
+
 .texto-livre textarea {
     border: 2px solid var(--cor01);
     border-radius: var(--border-radius-small);
     padding: 15px;
     transition: all var(--transition-fast);
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .texto-livre textarea:focus {
@@ -324,13 +373,15 @@
 .btn-secondary {
     background-color: var(--form-primary);
     border-color: var(--form-primary);
-    color: var(--cor07);
+    color: var(--cor07) !important;
+    text-decoration: none !important;
 }
 
 .btn-secondary:hover {
     background-color: var(--cor04);
     border-color: var(--cor04);
-    color: var(--cor07);
+    color: var(--cor07) !important;
+    text-decoration: none !important;
 }
 
 /* ===== RESPONSIVIDADE ===== */

@@ -8,83 +8,159 @@
     <title>IF SADD - Configuração do Site</title>
     <link rel="stylesheet" href="{% static 'css/global.css' %}" />
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-    <style>
-        .form-group ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        .form-group li {
-            margin-bottom: 5px;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
         <a href="{% url 'admin_hub' %}" class="back-button">← Voltar ao Hub de Administração</a>
 
         <div class="header">
-            <h1>⚙️ Configuração do Site</h1>
-            <p>Ajuste configurações globais do sistema, incluindo o método de envio de e-mails.</p>
+            <h1>⚙️ Configurações do Sistema</h1>
+            <p>Gerencie as configurações globais de e-mail e lembretes automáticos</p>
         </div>
 
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}" role="alert">
-                    {{ message }}
-                </div>
-            {% endfor %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
         {% endif %}
 
-        <div class="form-section">
-            <h2><span class="icon">⚙️</span> Configurações de E-mail</h2>
-            <p>Configure aqui o e-mail que receberá notificações de erros quando o sistema estiver em modo de produção (DEBUG=False).</p>
-            <form method="post" class="mt-4">
-                {% csrf_token %}
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Seção 1: Configurações de E-mail -->
+            <div class="form-section">
+                <h2>📧 Configurações de E-mail</h2>
+                <p class="mb-4">Defina como o sistema enviará e-mails e quem receberá notificações de erros</p>
                 
-                <h3>Método de Envio de E-mail</h3>
                 <div class="form-group">
+                    <label for="{{ form.metodo_envio_email.id_for_label }}">
+                        <strong>Método de Envio</strong>
+                    </label>
                     {{ form.metodo_envio_email }}
                     {% if form.metodo_envio_email.help_text %}
                         <small class="form-text text-muted">{{ form.metodo_envio_email.help_text }}</small>
                     {% endif %}
                 </div>
 
-                <hr>
-
-                <h3>Configurações Gerais</h3>
                 <div class="form-group">
-                    <label for="{{ form.email_notificacao_erros.id_for_label }}">{{ form.email_notificacao_erros.label }}</label>
+                    <label for="{{ form.email_notificacao_erros.id_for_label }}">
+                        <strong>{{ form.email_notificacao_erros.label }}</strong>
+                    </label>
                     {{ form.email_notificacao_erros }}
                     {% if form.email_notificacao_erros.help_text %}
                         <small class="form-text text-muted">{{ form.email_notificacao_erros.help_text }}</small>
+                    {% else %}
+                        <small class="form-text text-muted">E-mail para receber notificações de erros do sistema (modo produção)</small>
                     {% endif %}
                 </div>
 
-                <div class="card-actions mt-4">
-                    <button type="submit" class="btn">Salvar Configurações</button>
-                </div>
-            </form>
-            <div class="mt-4">
-                <h4>Instruções de Configuração (.env)</h4>
-                <p>As credenciais de e-mail devem ser configuradas no seu arquivo <code>.env</code>.</p>
-                <div id="smtp-instructions" style="display: none;">
-                    <h5>Para SMTP:</h5>
-                    <pre><code>EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
+                <!-- Instruções de configuração do .env -->
+                <div class="alert alert-info mt-3">
+                    <strong>ℹ️ Credenciais no arquivo .env</strong>
+                    <div id="smtp-instructions" style="display: none;" class="mt-2">
+                        <p><strong>Para SMTP, adicione:</strong></p>
+                        <pre style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 0.85em;"><code>EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST='smtp.seuprovedor.com'
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
 EMAIL_HOST_USER='seu-email@provedor.com'
 EMAIL_HOST_PASSWORD='sua-senha'
 DEFAULT_FROM_EMAIL='seu-email@provedor.com'</code></pre>
-                </div>
-                <div id="api-instructions" style="display: none;">
-                    <h5>Para API SendGrid:</h5>
-                    <pre><code># Remova as variáveis EMAIL_* acima e adicione estas:
-SENDGRID_API_KEY='SUA_CHAVE_API_DO_SENDGRID'
+                    </div>
+                    <div id="api-instructions" style="display: none;" class="mt-2">
+                        <p><strong>Para API SendGrid, adicione:</strong></p>
+                        <pre style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 0.85em;"><code>SENDGRID_API_KEY='SUA_CHAVE_API_DO_SENDGRID'
 DEFAULT_FROM_EMAIL='email_verificado@sendgrid.com'</code></pre>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Seção 2: Sistema de Lembretes Automáticos -->
+            <div class="form-section">
+                <h2>🔔 Sistema de Lembretes Automáticos</h2>
+                <p class="mb-4">Configure o comportamento dos lembretes enviados aos alunos durante os ciclos de avaliação</p>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.limiar_minimo_percentual.id_for_label }}">
+                                <strong>{{ form.limiar_minimo_percentual.label }}</strong>
+                                <span class="badge bg-success" style="float: right;">Padrão: 10%</span>
+                            </label>
+                            {{ form.limiar_minimo_percentual }}
+                            {% if form.limiar_minimo_percentual.help_text %}
+                                <small class="form-text text-muted">{{ form.limiar_minimo_percentual.help_text }}</small>
+                            {% else %}
+                                <small class="form-text text-muted">Meta de respostas para parar os lembretes automaticamente</small>
+                            {% endif %}
+                            {% if form.limiar_minimo_percentual.errors %}
+                                <div class="alert alert-error mt-2">
+                                    {{ form.limiar_minimo_percentual.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.frequencia_lembrete_horas.id_for_label }}">
+                                <strong>{{ form.frequencia_lembrete_horas.label }}</strong>
+                                <span class="badge bg-success" style="float: right;">Padrão: 48h</span>
+                            </label>
+                            {{ form.frequencia_lembrete_horas }}
+                            {% if form.frequencia_lembrete_horas.help_text %}
+                                <small class="form-text text-muted">{{ form.frequencia_lembrete_horas.help_text }}</small>
+                            {% else %}
+                                <small class="form-text text-muted">Tempo de espera entre cada rodada de envios</small>
+                            {% endif %}
+                            {% if form.frequencia_lembrete_horas.errors %}
+                                <div class="alert alert-error mt-2">
+                                    {{ form.frequencia_lembrete_horas.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.max_lembretes_por_aluno.id_for_label }}">
+                                <strong>{{ form.max_lembretes_por_aluno.label }}</strong>
+                                <span class="badge bg-success" style="float: right;">Padrão: 3</span>
+                            </label>
+                            {{ form.max_lembretes_por_aluno }}
+                            {% if form.max_lembretes_por_aluno.help_text %}
+                                <small class="form-text text-muted">{{ form.max_lembretes_por_aluno.help_text }}</small>
+                            {% else %}
+                                <small class="form-text text-muted">Limite de lembretes por aluno no ciclo</small>
+                            {% endif %}
+                            {% if form.max_lembretes_por_aluno.errors %}
+                                <div class="alert alert-error mt-2">
+                                    {{ form.max_lembretes_por_aluno.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning mt-3">
+                    <strong>⚙️ Configuração Avançada:</strong> O tamanho do lote de envio pode ser ajustado via comando. Use <code>python manage.py enviar_lembretes_ciclos --batch-size 200</code> para enviar até 200 e-mails por iteração.
+                </div>
+            </div>
+
+            <!-- Botão de Salvar -->
+            <div class="form-section" style="text-align: center;">
+                <button type="submit" class="btn btn-primary" style="padding: 15px 50px; font-size: 1.1em;">
+                    💾 Salvar Todas as Configurações
+                </button>
+                <p class="mt-3 text-muted">
+                    <small>As alterações serão aplicadas imediatamente após salvar</small>
+                </p>
+            </div>
+        </form>
     </div>
 
     <script>

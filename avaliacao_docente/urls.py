@@ -104,6 +104,11 @@ urlpatterns = [
     # URLs para Avaliação Docente
     path("avaliacoes/", views.listar_avaliacoes, name="listar_avaliacoes"),
     path("minhas-avaliacoes/", views.minhas_avaliacoes, name="minhas_avaliacoes"),
+    path(
+        "admin-hub/dashboard-ciclos/",
+        views.dashboard_gestao_ciclos,
+        name="dashboard_gestao_ciclos",
+    ),
     # path(
     #     "avaliacoes/criar-questionario/",
     #     views.criar_questionario_avaliacao,
@@ -148,6 +153,16 @@ urlpatterns = [
         "avaliacoes/relatorios/",
         views.relatorio_avaliacoes,
         name="relatorio_avaliacoes",
+    ),
+    path(
+        "avaliacoes/relatorios/professores/",
+        views.relatorio_professores,
+        name="relatorio_professores",
+    ),
+    path(
+        "avaliacoes/relatorios/professores/<int:professor_id>/",
+        views.detalhe_professor_relatorio,
+        name="detalhe_professor_relatorio",
     ),
     # URLs para CRUD de categorias
     path("categorias/", views.gerenciar_categorias, name="gerenciar_categorias"),
