@@ -513,7 +513,13 @@ def editar_curso(request, curso_id):
         else:
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, f"Erro no campo {field}: {error}")
+                    if field == "__all__":
+                        messages.error(request, str(error))
+                    else:
+                        field_name = (
+                            form.fields[field].label if field in form.fields else field
+                        )
+                        messages.error(request, f"{field_name}: {error}")
     else:
         form = CursoForm(instance=curso)
 
@@ -586,11 +592,15 @@ def gerenciar_disciplinas(request):
             )
             return redirect("gerenciar_disciplinas")
         else:
-            # Debug: Mostra os erros do formulário
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, f"Erro no campo {field}: {error}")
-            messages.error(request, "Verifique os dados do formulário.")
+                    if field == "__all__":
+                        messages.error(request, str(error))
+                    else:
+                        field_name = (
+                            form.fields[field].label if field in form.fields else field
+                        )
+                        messages.error(request, f"{field_name}: {error}")
     else:
         form = DisciplinaForm()
 
@@ -634,7 +644,13 @@ def editar_disciplina(request, disciplina_id):
         else:
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, f"Erro no campo {field}: {error}")
+                    if field == "__all__":
+                        messages.error(request, str(error))
+                    else:
+                        field_name = (
+                            form.fields[field].label if field in form.fields else field
+                        )
+                        messages.error(request, f"{field_name}: {error}")
     else:
         form = DisciplinaForm(instance=disciplina)
 
@@ -751,7 +767,13 @@ def editar_periodo(request, periodo_id):
         else:
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, f"Erro no campo {field}: {error}")
+                    if field == "__all__":
+                        messages.error(request, str(error))
+                    else:
+                        field_name = (
+                            form.fields[field].label if field in form.fields else field
+                        )
+                        messages.error(request, f"{field_name}: {error}")
     else:
         form = PeriodoLetivoForm(instance=periodo)
 
@@ -791,7 +813,13 @@ def editar_periodo_simples(request, periodo_id):
         else:
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, f"Erro no campo {field}: {error}")
+                    if field == "__all__":
+                        messages.error(request, str(error))
+                    else:
+                        field_name = (
+                            form.fields[field].label if field in form.fields else field
+                        )
+                        messages.error(request, f"{field_name}: {error}")
     else:
         form = PeriodoLetivoForm(instance=periodo)
 
@@ -1235,7 +1263,13 @@ class RegistrarUsuarioView(FormView):
         # Adiciona mensagens de erro
         for field, errors in form.errors.items():
             for error in errors:
-                messages.error(self.request, f"Erro no campo {field}: {error}")
+                if field == "__all__":
+                    messages.error(self.request, str(error))
+                else:
+                    field_name = (
+                        form.fields[field].label if field in form.fields else field
+                    )
+                    messages.error(self.request, f"{field_name}: {error}")
         return super().form_invalid(form)
 
 
@@ -1518,8 +1552,6 @@ def listar_avaliacoes(request):
         )
         titulo = "Avaliações Docentes"
         # Ciclos ativos separados por status para facilitar exibição
-        from django.utils import timezone
-
         now = timezone.now()
         ciclos_queryset = CicloAvaliacao.objects.filter(ativo=True)
         ciclos_em_andamento = []
@@ -2050,8 +2082,6 @@ def responder_avaliacao(request, avaliacao_id):
     if respostas_existentes:
         messages.warning(request, "Esta avaliação já foi respondida.")
         return redirect("visualizar_avaliacao", avaliacao_id=avaliacao.id)
-
-    from django.utils import timezone
 
     now = timezone.now()
     # Verificar se o ciclo está ativo e dentro do período
@@ -3359,7 +3389,13 @@ def editar_ciclo_simples(request, ciclo_id):
         else:
             for field, errors in form.errors.items():
                 for error in errors:
-                    messages.error(request, f"Erro no campo {field}: {error}")
+                    if field == "__all__":
+                        messages.error(request, str(error))
+                    else:
+                        field_name = (
+                            form.fields[field].label if field in form.fields else field
+                        )
+                        messages.error(request, f"{field_name}: {error}")
     else:
         form = CicloAvaliacaoForm(instance=ciclo)
 
