@@ -262,8 +262,27 @@ def editar_usuario(request, usuario_id):
 
     if request.method == "POST":
         try:
+            # Validar matrícula (username) - deve conter apenas números
+            novo_username = request.POST.get("username", "").strip()
+            if not novo_username:
+                messages.error(request, "A matrícula é obrigatória.")
+                raise ValueError("Matrícula obrigatória")
+
+            if not novo_username.isdigit():
+                messages.error(request, "A matrícula deve conter apenas números.")
+                raise ValueError("Matrícula inválida")
+
+            # Verificar duplicação de username (matrícula)
+            if novo_username != usuario.username:
+                if User.objects.filter(username=novo_username).exists():
+                    messages.error(
+                        request,
+                        f"A matrícula '{novo_username}' já está em uso por outro usuário.",
+                    )
+                    raise ValueError("Matrícula duplicada")
+
             # Atualizar campos básicos
-            usuario.username = request.POST.get("username", usuario.username)
+            usuario.username = novo_username
             usuario.email = request.POST.get("email", usuario.email)
             usuario.first_name = request.POST.get("first_name", usuario.first_name)
             usuario.last_name = request.POST.get("last_name", usuario.last_name)
@@ -285,128 +304,27 @@ def editar_usuario(request, usuario_id):
                     for error in e.messages:
                         messages.error(request, error)
                     # Retornar ao formulário de edição mantendo os dados
-                    matricula = ""
-                    if hasattr(usuario, "perfil_aluno") and usuario.perfil_aluno:
-                        matricula = usuario.perfil_aluno.matricula or ""
-                    elif (
-                        hasattr(usuario, "perfil_professor")
-                        and usuario.perfil_professor
-                    ):
-                        matricula = usuario.perfil_professor.registro_academico or ""
-                    else:
-                        matricula = usuario.username or ""
                     context = {
                         "usuario": usuario,
-                        "matricula": matricula,
                         "editing": True,
                     }
                     return render(request, "gerenciar_usuarios.html", context)
 
             usuario.save()
 
-            # Atualizar matrícula no perfil se fornecida
-            matricula = request.POST.get("matricula", "")
-            if matricula:
-                if hasattr(usuario, "perfil_aluno") and usuario.perfil_aluno:
-                    # Para alunos, a matrícula é na verdade o username
-                    usuario.username = matricula
-                elif hasattr(usuario, "perfil_professor") and usuario.perfil_professor:
-                    # Para professores e coordenadores
-                    usuario.perfil_professor.registro_academico = matricula
-                    usuario.perfil_professor.save()
-                else:
-                    # Para administradores ou usuários sem perfil específico
-                    # A matrícula pode ser armazenada no username como identificação
-                    usuario.username = matricula
-
-                usuario.save()
-
             messages.success(
                 request, f"Usuário '{usuario.username}' atualizado com sucesso!"
             )
             return redirect("gerenciar_usuarios")
 
+        except ValueError:
+            # Erros de validação já foram tratados com messages.error
+            pass
         except Exception as e:
             messages.error(request, f"Erro ao atualizar usuário: {str(e)}")
 
-    # Buscar matrícula do perfil
-    matricula = ""
-    if hasattr(usuario, "perfil_aluno") and usuario.perfil_aluno:
-        matricula = usuario.perfil_aluno.matricula or ""
-    elif hasattr(usuario, "perfil_professor") and usuario.perfil_professor:
-        matricula = usuario.perfil_professor.registro_academico or ""
-    else:
-        # Para administradores ou usuários sem perfil específico
-        # A matrícula pode estar no username
-        matricula = usuario.username or ""
-
-    context = {"usuario": usuario, "matricula": matricula, "editing": True}
+    context = {"usuario": usuario, "editing": True}
     return render(request, "gerenciar_usuarios.html", context)
-
-
-@login_required
-def excluir_usuario(request, usuario_id):
-    """
-    View para desativar (soft delete) um usuário sem remover dados vinculados.
-    Preserva avaliações, matrículas e todos os relacionamentos.
-    """
-    if not check_user_permission(request.user, ["coordenador", "admin"]):
-        messages.error(request, "Permissão negada")
-        return redirect("gerenciar_usuarios")
-
-    if request.method == "POST":
-        try:
-            usuario = get_object_or_404(User, id=usuario_id)
-
-            # Não permite desativar o próprio usuário
-            if usuario == request.user:
-                messages.error(request, "Não é possível desativar seu próprio usuário")
-                return redirect("gerenciar_usuarios")
-
-            # Não permite desativar usuários admin se não for admin
-            if has_role(usuario, "admin") and not has_role(request.user, "admin"):
-                messages.error(
-                    request,
-                    "Apenas administradores podem desativar outros administradores",
-                )
-                return redirect("gerenciar_usuarios")
-
-            # Verificar se usuário já está inativo
-            if not usuario.is_active:
-                messages.warning(request, "Usuário já está inativo.")
-                return redirect("gerenciar_usuarios")
-
-            # Anonimização e desativação (soft delete)
-            original_username = usuario.username
-            original_email = usuario.email or "sememail"
-
-            usuario.is_active = False
-            usuario.first_name = "Usuário"
-            usuario.last_name = "Desativado"
-            usuario.email = f"desativado_{usuario.id}_{original_email}"
-            usuario.username = f"del_{usuario.id}_{original_username}"
-
-            # Remover roles (mantém perfis intactos)
-            for role_name in ["aluno", "professor", "coordenador", "admin"]:
-                try:
-                    if has_role(usuario, role_name):
-                        remove_role(usuario, role_name)
-                except Exception:
-                    pass
-
-            usuario.save()
-
-            messages.success(
-                request,
-                f"Usuário '{original_username}' desativado com sucesso. Todos os dados históricos foram preservados.",
-            )
-            return redirect("gerenciar_usuarios")
-
-        except Exception as e:
-            messages.error(request, f"Erro ao desativar usuário: {str(e)}")
-            return redirect("gerenciar_usuarios")
-
-    return redirect("gerenciar_usuarios")
 
 
 @login_required
