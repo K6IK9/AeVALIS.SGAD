@@ -14,11 +14,6 @@ urlpatterns = [
         "editar-usuario/<int:usuario_id>/", views.editar_usuario, name="editar_usuario"
     ),
     path(
-        "excluir-usuario/<int:usuario_id>/",
-        views.excluir_usuario,
-        name="excluir_usuario",
-    ),
-    path(
         "resetar-senha-usuario/<int:usuario_id>/",
         views.resetar_senha_usuario,
         name="resetar_senha_usuario",

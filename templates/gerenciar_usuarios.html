@@ -12,6 +12,9 @@
   <!-- CSS externos -->
   <link rel="stylesheet" href="{% static 'css/global.css' %}">
   <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}">
+  
+  <!-- Scripts de validação (carregado antes para disponibilizar funções) -->
+  <script src="{% static 'js/form-validation.js' %}"></script>
 </head>
 
 <body>
@@ -63,35 +66,32 @@
         {% csrf_token %}
         <div class="form-row">
           <div class="form-group">
-            <label for="username">Matrícula:</label>
+            <label for="username">Matrícula (Username):<span class="required">*</span></label>
             <input type="text" id="username" name="username" value="{{ usuario.username }}" class="form-control"
-              required>
+              required pattern="[0-9]+" title="A matrícula deve conter apenas números"
+              maxlength="20" minlength="1">
+            <small class="form-text">Apenas números. Esta será a matrícula de login do usuário.</small>
           </div>
           <div class="form-group">
-            <label for="email">Email:</label>
+            <label for="email">Email:<span class="required">*</span></label>
             <input type="email" id="email" name="email" value="{{ usuario.email }}" class="form-control" required>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="first_name">Nome:</label>
+            <label for="first_name">Nome:<span class="required">*</span></label>
             <input type="text" id="first_name" name="first_name" value="{{ usuario.first_name }}" class="form-control"
               required>
           </div>
           <div class="form-group">
-            <label for="last_name">Sobrenome:</label>
+            <label for="last_name">Sobrenome:<span class="required">*</span></label>
             <input type="text" id="last_name" name="last_name" value="{{ usuario.last_name }}" class="form-control"
               required>
           </div>
         </div>
 
         <div class="form-row">
-          <div class="form-group">
-            <label for="matricula">Matrícula:</label>
-            <input type="text" id="matricula" name="matricula" value="{{ matricula }}" class="form-control"
-              placeholder="Opcional">
-          </div>
           <div class="form-group">
             <label for="password">Nova senha:</label>
             <input type="password" id="password" name="password" class="form-control" 
@@ -191,7 +191,7 @@
             {% for item in usuarios %}
             <tr data-nome="{{ item.usuario.get_full_name|default:item.usuario.username }}"
               data-email="{{ item.usuario.email|default:'' }}"
-              data-matricula="{% if item.usuario.perfil_aluno %}{{ item.usuario.perfil_aluno.matricula|default:'' }}{% elif item.usuario.perfil_professor %}{{ item.usuario.perfil_professor.registro_academico|default:'' }}{% else %}{{ item.usuario.username|default:'' }}{% endif %}"
+              data-matricula="{{ item.usuario|get_matricula_display }}"
               data-role="{{ item.role }}" data-status="{{ item.status }}">
               <td>
                 <div class="user-avatar">
@@ -203,13 +203,7 @@
               </td>
               <td data-label="Email">{{ item.usuario.email|default:"Não informado" }}</td>
               <td data-label="Matrícula">
-                {% if item.usuario.perfil_aluno %}
-                {{ item.usuario.perfil_aluno.matricula|default:"Não informada" }}
-                {% elif item.usuario.perfil_professor %}
-                {{ item.usuario.perfil_professor.registro_academico|default:"Não informada" }}
-                {% else %}
-                {{ item.usuario.username|default:"Não informada" }}
-                {% endif %}
+                {{ item.usuario|get_matricula_display }}
               </td>
               <td data-label="Funções">
                 <span class="role-badge {{ item.usuario|get_user_role_class }}">
@@ -248,16 +242,6 @@
                     title="Permitir que o SUAP volte a gerenciar automaticamente a role">
                     🔓 Resetar Auto
                   </button>
-                  {% endif %}
-                  {% if user.is_superuser and user != item.usuario %}
-                  <form method="post" action="{% url 'excluir_usuario' item.usuario.id %}" class="inline-form"
-                    onsubmit="return confirm('Tem certeza que deseja desativar o usuário {{ item.usuario.get_full_name|escapejs }}?\n\nO usuário será desativado e seus dados históricos (avaliações, matrículas) serão preservados.\nEsta ação pode ser revertida reativando o usuário posteriormente.')">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger"
-                      title="Desativar usuário">
-                      🚫 Desativar
-                    </button>
-                  </form>
                   {% endif %}
                 </div>
               </td>
@@ -329,232 +313,89 @@
 
   <!-- Scripts específicos da página -->
   {% if not editing %}
-  <script>
-    let usuarioAtual = null;
-
-    // Função para filtrar a tabela de usuários usando a função global
-    function filterTableUsuarios() {
-      const searchFilter = document.getElementById('searchUsuario').value.toLowerCase();
-      const roleFilter = document.getElementById('filterRole').value.toLowerCase();
-      const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
-
-      const tableRows = document.querySelectorAll('.data-table tbody tr');
-      let visibleCount = 0;
-
-      tableRows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-
-        // Verifica se a linha tem células (não é a linha "Nenhum usuário encontrado")
-        if (cells.length > 1) {
-          // Busca personalizada em múltiplos campos data-
-          const searchMatch = !searchFilter ||
-            (row.getAttribute('data-nome') || '').toLowerCase().includes(searchFilter) ||
-            (row.getAttribute('data-email') || '').toLowerCase().includes(searchFilter) ||
-            (row.getAttribute('data-matricula') || '').toLowerCase().includes(searchFilter);
-
-          const roleMatch = !roleFilter || (row.getAttribute('data-role') || '').toLowerCase().includes(roleFilter);
-          const statusMatch = !statusFilter || (row.getAttribute('data-status') || '').toLowerCase().includes(statusFilter);
-
-          if (searchMatch && roleMatch && statusMatch) {
-            row.style.display = '';
-            visibleCount++;
-          } else {
-            row.style.display = 'none';
-          }
-        }
-      });
-
-      // Atualizar contador específico desta página
-      updateUserCounter();
-
-      // Lidar com empty state
-      handleEmptyState();
-    }
-
-    // Função para atualizar o contador de usuários
-    function updateUserCounter() {
-      const visibleRows = document.querySelectorAll('.data-table tbody tr:not([style*="display: none"])');
-      let visibleCount = 0;
-
-      visibleRows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        // Conta apenas linhas que têm células (não é a linha "Nenhum usuário encontrado")
-        if (cells.length > 1) {
-          visibleCount++;
-        }
-      });
-
-      // Atualiza o contador no título
-      const sectionTitle = document.querySelector('.section-header h2');
-      if (sectionTitle) {
-        sectionTitle.textContent = `👤 Lista de Usuários (${visibleCount})`;
-      }
-
-      return visibleCount;
-    }
-
-    // Função para lidar com estado vazio
-    function handleEmptyState() {
-      const visibleCount = updateUserCounter(); // Reutiliza a contagem
-      const emptyState = document.querySelector('.empty-state');
-
-      // Mostra/esconde empty state baseado na contagem
-      if (emptyState) {
-        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
-      }
-
-      // Remove mensagem temporária se existir
-      const noResultsRow = document.querySelector('.no-results-row');
-      if (noResultsRow) {
-        noResultsRow.remove();
-      }
-    }
-
-    // Função para limpar filtros
-    function clearFiltersUsuarios() {
-      document.getElementById('searchUsuario').value = '';
-      document.getElementById('filterRole').value = '';
-      document.getElementById('filterStatus').value = '';
-      filterTableUsuarios();
-    }
-
-    // Funções para alteração de roles
-    function alterarRole(userId, nome, matricula, roleAtual) {
-      usuarioAtual = userId;
-
-      // Atualizar informações do usuário
-      document.getElementById('user-info').innerHTML = `
-        <h4>Dados do Usuário</h4>
-        <p><strong>Nome:</strong> ${nome}</p>
-        <p><strong>Matrícula:</strong> ${matricula}</p>
-        <p><strong>Role Atual:</strong> <span class="role-badge role-${roleAtual.toLowerCase()}">${roleAtual}</span></p>
-      `;
-
-      // Definir o ID do usuário no formulário
-      document.getElementById('usuario-id').value = userId;
-
-      // Limpar seleção anterior
-      document.getElementById('role-select').value = '';
-
-      // Mostrar modal usando a função global
-      openModal('modal-overlay');
-    }
-
-    function resetarRoleAutomatica(userId, username) {
-      if (confirm(`Tem certeza que deseja permitir que o SUAP volte a gerenciar automaticamente a role do usuário ${username}?\n\nIsso significa que a role será redefinida baseada no tipo de usuário no SUAP no próximo login.`)) {
-        window.location.href = `/resetar-role-automatica/${userId}/`;
-      }
-    }
-
-    // Adiciona event listeners aos campos de filtro
-    document.addEventListener('DOMContentLoaded', function () {
-      const searchUsuario = document.getElementById('searchUsuario');
-      const filterRole = document.getElementById('filterRole');
-      const filterStatus = document.getElementById('filterStatus');
-
-      if (searchUsuario) searchUsuario.addEventListener('input', filterTableUsuarios);
-      if (filterRole) filterRole.addEventListener('change', filterTableUsuarios);
-      if (filterStatus) filterStatus.addEventListener('change', filterTableUsuarios);
-
-      // Inicializa o contador na carga da página
-      updateUserCounter();
-    });
-  </script>
+  <script src="{% static 'js/gerenciar-usuarios.js' %}"></script>
   {% else %}
   <!-- Script de validação para formulário de edição -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const passwordInput = document.getElementById('password');
-      const form = document.querySelector('form');
+      // Configurar validação de matrícula principal (username)
+      setupMatriculaValidation('username', 'Matrícula', true);
       
-      if (passwordInput && form) {
-        // Função para validar a senha
-        function validatePassword(password) {
-          const errors = [];
-          
-          if (password.length > 0) { // Só valida se algo foi digitado
-            if (password.length < 8) {
-              errors.push('A senha deve ter pelo menos 8 caracteres.');
-            }
-            if (!/[a-z]/.test(password)) {
-              errors.push('A senha deve conter pelo menos uma letra minúscula.');
-            }
-            if (!/[A-Z]/.test(password)) {
-              errors.push('A senha deve conter pelo menos uma letra maiúscula.');
-            }
-            if (!/\d/.test(password)) {
-              errors.push('A senha deve conter pelo menos um número.');
-            }
-            // Verifica se é muito comum
-            const commonPasswords = ['12345678', 'password', '123456789', 'qwerty', 'abc123', 'password1'];
-            if (commonPasswords.includes(password.toLowerCase())) {
-              errors.push('Esta senha é muito comum. Escolha uma senha mais segura.');
-            }
-          }
-          
-          return errors;
-        }
-        
-        // Função para mostrar erros
-        function showErrors(errors) {
-          // Remove erros anteriores
-          const existingError = passwordInput.parentElement.querySelector('.field-error');
-          if (existingError) {
-            existingError.remove();
-          }
-          passwordInput.classList.remove('error');
-          
-          if (errors.length > 0) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'field-error';
-            errorDiv.innerHTML = errors.join('<br>');
-            passwordInput.parentElement.appendChild(errorDiv);
-            passwordInput.classList.add('error');
-          }
-        }
-        
-        // Validação em tempo real (ao sair do campo)
-        passwordInput.addEventListener('blur', function() {
-          const password = this.value;
-          const errors = validatePassword(password);
-          showErrors(errors);
-        });
-        
-        // Limpa erros ao digitar
-        passwordInput.addEventListener('input', function() {
-          const existingError = this.parentElement.querySelector('.field-error');
-          if (existingError) {
-            existingError.remove();
-          }
-          this.classList.remove('error');
-        });
-        
-        // Validação no submit
+      // Configurar validação de senha (opcional)
+      setupPasswordValidation('password');
+      
+      // Configurar validação de email
+      setupEmailValidation('email', true);
+      
+      // Configurar validação de nomes
+      setupNameValidation('first_name', 'Nome', true);
+      setupNameValidation('last_name', 'Sobrenome', true);
+      
+      // Validação no submit do formulário
+      const form = document.querySelector('form');
+      if (form) {
         form.addEventListener('submit', function(e) {
-          const password = passwordInput.value;
-          const errors = validatePassword(password);
+          const usernameInput = document.getElementById('username');
+          const passwordInput = document.getElementById('password');
+          const emailInput = document.getElementById('email');
+          const firstNameInput = document.getElementById('first_name');
+          const lastNameInput = document.getElementById('last_name');
           
-          if (errors.length > 0) {
-            e.preventDefault();
-            showErrors(errors);
-            passwordInput.focus();
-            
-            // Mostra mensagem de erro no topo
-            const messagesContainer = document.querySelector('.messages');
-            if (messagesContainer) {
-              messagesContainer.remove();
+          let hasErrors = false;
+          
+          // Validar username (matrícula obrigatória)
+          if (usernameInput) {
+            const result = validateMatricula(usernameInput.value, true);
+            if (!result.valid) {
+              showFieldErrors(usernameInput, result.errors.map(err => `Matrícula: ${err}`));
+              hasErrors = true;
             }
+          }
+          
+          // Validar senha (opcional)
+          if (passwordInput && passwordInput.value.length > 0) {
+            const result = validatePassword(passwordInput.value);
+            if (!result.valid) {
+              showFieldErrors(passwordInput, result.errors);
+              hasErrors = true;
+            }
+          }
+          
+          // Validar email
+          if (emailInput) {
+            const result = validateEmail(emailInput.value, true);
+            if (!result.valid) {
+              showFieldErrors(emailInput, result.errors);
+              hasErrors = true;
+            }
+          }
+          
+          // Validar nomes
+          if (firstNameInput) {
+            const result = validateName(firstNameInput.value, true);
+            if (!result.valid) {
+              showFieldErrors(firstNameInput, result.errors.map(err => `Nome: ${err}`));
+              hasErrors = true;
+            }
+          }
+          
+          if (lastNameInput) {
+            const result = validateName(lastNameInput.value, true);
+            if (!result.valid) {
+              showFieldErrors(lastNameInput, result.errors.map(err => `Sobrenome: ${err}`));
+              hasErrors = true;
+            }
+          }
+          
+          if (hasErrors) {
+            e.preventDefault();
+            showFormErrorMessage('Por favor, corrija os erros no formulário antes de continuar.');
             
-            const newMessage = document.createElement('ul');
-            newMessage.className = 'messages';
-            const messageItem = document.createElement('li');
-            messageItem.className = 'error';
-            messageItem.textContent = 'Por favor, corrija os erros na senha antes de continuar.';
-            newMessage.appendChild(messageItem);
-            
-            const formSection = document.querySelector('.form-section');
-            if (formSection) {
-              formSection.insertBefore(newMessage, formSection.firstChild.nextSibling);
+            // Foca no primeiro campo com erro
+            const firstError = document.querySelector('.error');
+            if (firstError) {
+              firstError.focus();
+              firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
           }
         });

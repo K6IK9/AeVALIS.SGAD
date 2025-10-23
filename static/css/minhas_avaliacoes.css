@@ -14,7 +14,11 @@
     border-radius: var(--border-radius-medium);
     padding: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform var(--transition-fast), box-shadow   var(--transition-fast);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    /* Prevenir overflow de texto */
+    overflow: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .avaliacao-card:hover {
@@ -26,6 +30,8 @@
     border-bottom: 2px solid var(--cor01);
     margin-bottom: 15px;
     padding-bottom: 10px;
+    /* Prevenir overflow no header */
+    overflow: hidden;
 }
 
 .minhas-avaliacoes-header h3 {
@@ -33,6 +39,10 @@
     margin-bottom: 5px;
     font-size: var(--font-size-lg);
     font-weight: 600;
+    /* Quebra de linha para nomes longos */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 .avaliacao-info {
@@ -44,6 +54,10 @@
     color: var(--cor04);
     font-size: var(--font-size-sm);
     line-height: 1.4;
+    /* Quebra de linha para textos longos */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 .avaliacao-info strong {
@@ -82,11 +96,11 @@
     .avaliacoes-grid {
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     }
-    
+
     .header h1 {
         font-size: var(--font-size-xl);
     }
-    
+
     .back-button {
         width: 100%;
         text-align: center;
@@ -98,39 +112,39 @@
         grid-template-columns: 1fr;
         gap: 15px;
     }
-    
+
     .avaliacao-card {
         padding: 15px;
     }
-    
+
     .minhas-avaliacoes-header h3 {
         font-size: var(--font-size-md);
     }
-    
+
     .avaliacao-info p {
         font-size: var(--font-size-xs);
         margin-bottom: 6px;
     }
-    
+
     .btn {
         padding: 8px 12px;
         font-size: var(--font-size-xs);
         width: 100%;
     }
-    
+
     .empty-state {
         padding: 30px 15px;
     }
-    
+
     .header {
         padding: 15px;
         margin-bottom: 20px;
     }
-    
+
     .header h1 {
         font-size: var(--font-size-lg);
     }
-    
+
     .header p {
         font-size: var(--font-size-xs);
     }

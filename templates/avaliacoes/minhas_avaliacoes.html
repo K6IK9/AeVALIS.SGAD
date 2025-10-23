@@ -34,7 +34,7 @@
             </p>
             <p><strong>Turma:</strong> {{ avaliacao.turma.codigo_turma }}</p>
             <p>
-              <strong>Período:</strong> {{ avaliacao.turma.periodo_letivo.nome }}
+              <strong>Período:</strong> {{ avaliacao.turma.disciplina.periodo_letivo.ano }}.{{ avaliacao.turma.disciplina.periodo_letivo.semestre }}
             </p>
             <p>
               <strong>Data da Avaliação:</strong> {{ avaliacao.data_criacao|date:"d/m/Y" }}

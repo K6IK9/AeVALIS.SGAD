@@ -148,3 +148,20 @@ def is_servidor(user):
     Template filter para verificar se o usuário é servidor
     """
     return check_role(user, "servidor")
+
+
+@register.filter
+def get_matricula_display(user):
+    """
+    Template filter para obter a matrícula do usuário de forma unificada.
+    Prioriza: perfil_aluno.matricula > perfil_professor.registro_academico > username
+
+    Uso no template:
+        {{ usuario|get_matricula_display }}
+    """
+    if hasattr(user, "perfil_aluno") and user.perfil_aluno:
+        return user.perfil_aluno.matricula or "Não informada"
+    elif hasattr(user, "perfil_professor") and user.perfil_professor:
+        return user.perfil_professor.registro_academico or "Não informada"
+    else:
+        return user.username or "Não informada"
