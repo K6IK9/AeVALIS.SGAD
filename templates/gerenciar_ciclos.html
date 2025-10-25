@@ -6,7 +6,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gerenciar Ciclos de Avaliação - IF SADD</title>
+  <title>Gerenciar Ciclos de Avaliação - {% if brand.enabled %}{{ brand.name_short }}{% else %}{{ brand.name_old }}{% endif %}</title>
+
+    <!-- Favicons -->
+    {% include 'partials/favicon_meta.html' %}
 
   <!-- CSS personalizado -->
   <link rel="stylesheet" type="text/css" href="{% static 'css/global.css' %}" />

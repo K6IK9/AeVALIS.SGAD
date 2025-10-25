@@ -5,90 +5,163 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IF SADD - Login</title>
+    <title>{% if brand.enabled %}{{ brand.name_short }}{% else %}{{ brand.name_old }}{% endif %} - Login</title>
+
+    <!-- Favicons -->
+    {% include 'partials/favicon_meta.html' %}
 
     <!-- CSS Global -->
     <link rel="stylesheet" href="{% static 'css/global.css' %}" />
     <!-- CSS Específico do Login -->
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
 
   <body>
-    <header>
-      <img src="{% static 'assets/saad_logo.svg' %}" alt="SADD Logo" />
-      <div>
-        <h1>Login no SADD</h1>
-        <p>Sistema de Avaliação e Desenvolvimento Docente</p>
-      </div>
-    </header>
-    <main>
-      <form method="post" id="loginForm">
-        {% csrf_token %}
-        {% include "partials/messages.html" %}
-
-        <aside id="perfilImg">
-          <img src="{% static 'assets/saad_logo.svg' %}" alt="SUAP Logo" />
-        </aside>
-
-        <!-- Modo SUAP (padrão) -->
-        <div id="suapMode" class="login-mode active">
-          <div class="botao-login-container">
-            <a href="{% url 'social:begin' 'suap' %}" id="buttonLogin">
-              Entrar com SUAP
-            </a>
+    <!-- Background decorativo com gradiente animado -->
+    <div class="background-overlay"></div>
+    
+    <!-- Container principal centralizado -->
+    <div class="login-container">
+      
+      <!-- Card de Login -->
+      <div class="login-card">
+        
+        <!-- Header do card com logo -->
+        <div class="login-header">
+          <div class="logo-wrapper">
+            <img src="{% static brand.logo_curta %}" alt="{{ brand.alt.logo_curta }}" class="login-logo" />
           </div>
-
-          <div class="info-texto">
-            <p>
-              Clique no botão acima para fazer login<br />
-              usando suas credenciais do SUAP
-            </p>
-          </div>
-
-          <div class="alternar-login">
-            <button type="button" id="toggleLoginMode" class="btn-link">
-              Não sou aluno? Clique aqui
-            </button>
-          </div>
+          <h1 class="login-title">
+            {% if brand.enabled %}{{ brand.name_short }}{% else %}{{ brand.name_old }}{% endif %}
+          </h1>
+          <p class="login-subtitle">{{ brand.name_full }}</p>
         </div>
 
-        <!-- Modo Login Tradicional -->
-        <div id="traditionalMode" class="login-mode">
-          <div class="form-fields">
-            <label for="id_username" class="labelInput">
-              <img src="{% static 'assets/perfil.svg' %}" alt="Usuário">
-              <input type="text" name="username" id="id_username" placeholder="Matrícula ou Username" required>
-            </label>
+        <!-- Mensagens de erro/sucesso -->
+        <div class="messages-container">
+          {% include "partials/messages.html" %}
+        </div>
 
-            <label for="id_password" class="labelInput">
-              <img src="{% static 'assets/lock.svg' %}" alt="Senha">
-              <input type="password" name="password" id="id_password" placeholder="Senha" required>
-              <button type="button" class="toggle-password" data-target="id_password">
-                <img src="{% static 'assets/eye.svg' %}" alt="Mostrar senha">
+        <!-- Formulário de Login -->
+        <form method="post" id="loginForm" class="login-form">
+          {% csrf_token %}
+
+          <!-- Modo SUAP (padrão) -->
+          <div id="suapMode" class="login-mode active">
+            <div class="mode-content">
+              <div class="welcome-text">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>Acesso Institucional</h2>
+                <p>Use suas credenciais do SUAP para entrar</p>
+              </div>
+
+              <div class="login-actions">
+                <a href="{% url 'social:begin' 'suap' %}" class="btn btn-primary btn-suap">
+                  <i class="fas fa-sign-in-alt"></i>
+                  Entrar com SUAP
+                </a>
+              </div>
+
+              <div class="divider">
+                <span>ou</span>
+              </div>
+
+              <button type="button" id="toggleLoginMode" class="btn btn-link">
+                <i class="fas fa-user-lock"></i>
+                Acessar com usuário e senha
               </button>
-            </label>
+            </div>
           </div>
 
-          <div class="botao-login-container">
-            <button type="submit" id="buttonLoginTraditional">
-              Entrar
-            </button>
+          <!-- Modo Login Tradicional -->
+          <div id="traditionalMode" class="login-mode">
+            <div class="mode-content">
+              <div class="welcome-text">
+                <i class="fas fa-user-shield"></i>
+                <h2>Login Manual</h2>
+                <p>Entre com seu usuário e senha</p>
+              </div>
+
+              <div class="form-group">
+                <label for="id_username" class="login-form-label">
+                  <i class="fas fa-user"></i>
+                  Usuário
+                </label>
+                <div class="input-wrapper">
+                  <img src="{% static 'assets/perfil.svg' %}" alt="Usuário" class="input-icon">
+                  <input 
+                    type="text" 
+                    name="username" 
+                    id="id_username" 
+                    class="form-input"
+                    placeholder="Matrícula ou Username" 
+                    autocomplete="username"
+                    required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="id_password" class="login-form-label">
+                  <i class="fas fa-lock"></i>
+                  Senha
+                </label>
+                <div class="input-wrapper">
+                  <img src="{% static 'assets/lock.svg' %}" alt="Senha" class="input-icon">
+                  <input 
+                    type="password" 
+                    name="password" 
+                    id="id_password" 
+                    class="form-input"
+                    placeholder="Digite sua senha" 
+                    autocomplete="current-password"
+                    required>
+                  <button type="button" class="toggle-password" data-target="id_password" aria-label="Mostrar/Ocultar senha">
+                    <img src="{% static 'assets/eye.svg' %}" alt="Mostrar senha" class="eye-icon">
+                  </button>
+                </div>
+              </div>
+
+              <div class="login-actions">
+                <button type="submit" class="btn btn-primary btn-submit">
+                  <i class="fas fa-arrow-right"></i>
+                  Entrar
+                </button>
+              </div>
+
+              <button type="button" id="backToSuap" class="btn btn-link">
+                <i class="fas fa-arrow-left"></i>
+                Voltar ao login com SUAP
+              </button>
+            </div>
           </div>
 
-          <div class="alternar-login">
-            <button type="button" id="backToSuap" class="btn-link">
-              ← Voltar ao login com SUAP
-            </button>
-          </div>
+        </form>
+
+        <!-- Footer do card -->
+        <div class="login-footer">
+          <p class="footer-main">
+            <i class="fas fa-shield-alt"></i>
+            Sistema integrado com SUAP
+          </p>
+          <p class="footer-sub">
+            Instituto Federal de Mato Grosso
+          </p>
+          <p class="footer-help">
+            Use suas credenciais institucionais para acessar
+          </p>
         </div>
-      </form>
-    </main>
-    <footer>
-      <p>Sistema integrado com SUAP - Instituto Federal de Mato Grosso</p>
-      <p class="institucional">
-        Use suas credenciais institucionais para acessar
-      </p>
-    </footer>
+
+      </div>
+
+      <!-- Logo institucional no rodapé -->
+      <div class="institutional-footer">
+        <img src="{% static brand.logo_extend %}" alt="{{ brand.alt.logo_extend }}" class="institutional-logo" />
+      </div>
+
+    </div>
 
     <!-- Scripts -->
     <script src="{% static 'js/login.js' %}"></script>

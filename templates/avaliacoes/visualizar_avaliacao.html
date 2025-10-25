@@ -6,7 +6,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Visualizar Avaliação - IF SADD</title>
+    <title>Visualizar Avaliação - {% if brand.enabled %}{{ brand.name_short }}{% else %}{{ brand.name_old }}{% endif %}</title>
+
+    <!-- Favicons -->
+    {% include 'partials/favicon_meta.html' %}
 
     <!-- CSS personalizado -->
     <link

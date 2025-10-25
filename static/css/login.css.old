@@ -1,0 +1,460 @@
+/* ================================================
+   PÁGINA DE LOGIN - Sistema de Avaliação Docente
+   ================================================ */
+
+/* ===== LAYOUT ESPECÍFICO DO LOGIN ===== */
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    background: linear-gradient(-45deg, var(--cor04), var(--cor03));
+}
+
+body header,
+body main,
+body footer {
+    width: 90%;
+    max-width: 500px;
+    margin: auto;
+}
+
+body header,
+body footer {
+    height: auto;
+    position: absolute;
+}
+
+body header {
+    top: 5vh;
+}
+
+body footer {
+    bottom: 5vh;
+}
+
+body main {
+    height: auto;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+}
+
+/* ===== HEADER DO LOGIN ===== */
+header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+header img {
+    width: 70px;
+    height: 70px;
+    background: var(--cor01);
+    border-radius: 20px;
+    margin-right: 20px;
+}
+
+header h1,
+header p {
+    color: var(--cor01);
+}
+
+header h1 {
+    margin: 0 0 5px 0;
+    font-family: var(--font02);
+    font-size: 1.8rem;
+}
+
+header p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* ===== MENSAGENS DE ERRO ===== */
+.login-error {
+    background-color: rgba(255, 0, 0, 0.15);
+    border-left: 4px solid var(--cor08);
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    animation: errorPulse 2s infinite;
+}
+
+@keyframes errorPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 60, 60, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(255, 60, 60, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 60, 60, 0);
+    }
+}
+
+.login-error p {
+    color: var(--cor07);
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.login-error p:first-child {
+    font-weight: 600;
+}
+
+.login-error strong {
+    color: white;
+}
+
+/* ===== MAIN DO LOGIN ===== */
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== FORMULÁRIO DE LOGIN ===== */
+#loginForm {
+    width: 100%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+
+    background: var(--cor03);
+    box-shadow: var(--shadow);
+    border-radius: 25px;
+    padding: 100px 40px 40px 40px;
+
+    position: relative;
+}
+
+/* ===== IMAGEM DE PERFIL ===== */
+#perfilImg {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: var(--cor07);
+
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#perfilImg img {
+    width: 80px;
+}
+
+/* ===== BOTÃO DE LOGIN ===== */
+#buttonLogin {
+    width: 200px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: none;
+    box-shadow: var(--shadow);
+
+    background: var(--cor02);
+    color: var(--cor05);
+
+    font-weight: bold;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    /* Mantém o botão dentro da caixa */
+    display: inline-block;
+    margin: 0 auto;
+    text-decoration: none;
+}
+
+#buttonLogin:hover {
+    background: #00e085;
+    box-shadow: 0 6px 12px rgba(0, 253, 148, 0.3);
+    color: var(--cor05);
+    text-decoration: none;
+}
+
+/* ===== CAMPOS DE INPUT ===== */
+.labelInput {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.labelInput img {
+    width: 15px;
+    position: absolute;
+    left: 10px;
+}
+
+.labelInput input {
+    width: 100%;
+    padding: 12px 10px 12px 30px;
+    font-size: 14px;
+
+    border-radius: 5px;
+    border: none;
+    box-shadow: var(--shadow);
+
+    background: var(--cor07);
+}
+
+.labelInput input:focus {
+    outline: 1px solid var(--cor02);
+}
+
+.labelInput input[type="password"],
+.labelInput input[type="text"] {
+    padding-right: 40px !important;
+}
+
+/* ===== BOTÃO MOSTRAR/OCULTAR SENHA ===== */
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 2;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-password img {
+    width: 22px;
+    height: 22px;
+}
+
+/* ===== FOOTER DO LOGIN ===== */
+footer {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+footer p {
+    color: var(--cor01);
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+footer span {
+    color: var(--cor06);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* ===== TEXTO INFORMATIVO ===== */
+.info-texto {
+    text-align: center;
+    color: var(--cor01);
+    margin-top: 14px;
+}
+
+.info-texto p {
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ===== CONTAINER DO BOTÃO ===== */
+.botao-login-container {
+    text-align: center;
+    margin: 10px 0 0 0;
+}
+
+/* ===== MODOS DE LOGIN ===== */
+.login-mode {
+    display: none;
+    flex-direction: column;
+    gap: 25px;
+    width: 100%;
+}
+
+.login-mode.active {
+    display: flex;
+}
+
+.login-mode .form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* ===== BOTÃO DE ALTERNÂNCIA ===== */
+.alternar-login {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--cor02);
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.btn-link:hover {
+    color: #00e085;
+}
+
+/* ===== BOTÃO DE LOGIN TRADICIONAL ===== */
+#buttonLoginTraditional {
+    width: 200px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: none;
+    box-shadow: var(--shadow);
+
+    background: var(--cor02);
+    color: var(--cor05);
+
+    font-weight: bold;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    /* Mantém o botão dentro da caixa */
+    display: block;
+    margin: 0 auto;
+}
+
+#buttonLoginTraditional:hover {
+    background: #00e085;
+    box-shadow: 0 6px 12px rgba(0, 253, 148, 0.3);
+    color: var(--cor05);
+}
+
+/* ===== ANIMAÇÕES DE TRANSIÇÃO ===== */
+.login-mode {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.login-mode.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+body.loaded .login-mode.active {
+    animation: fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== RESPONSIVIDADE DO LOGIN ===== */
+@media (max-width: 768px) {
+    body header {
+        flex-direction: column;
+        text-align: center;
+        top: 2vh;
+    }
+
+    body header img {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    body main {
+        padding: 20px 0;
+    }
+
+    #loginForm {
+        padding: 80px 25px 40px 25px;
+    }
+
+    header h1 {
+        font-size: 1.6rem;
+    }
+
+    header p {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+
+    body header,
+    body footer {
+        width: 95%;
+    }
+
+    body header h1 {
+        font-size: 1.5rem;
+    }
+
+    #perfilImg {
+        width: 120px;
+        height: 120px;
+    }
+
+    #perfilImg img {
+        width: 60px;
+    }
+
+    #loginForm {
+        padding: 70px 20px 30px 20px;
+        gap: 20px;
+    }
+
+    #buttonLogin {
+        width: 180px;
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+
+    .labelInput input {
+        padding: 10px 8px 10px 28px;
+        font-size: 13px;
+    }
+
+    .labelInput img {
+        width: 14px;
+        left: 8px;
+    }
+
+    footer p {
+        font-size: 0.7rem;
+    }
+
+    .info-texto p {
+        font-size: 0.8rem;
+    }
+}

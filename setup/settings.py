@@ -15,7 +15,7 @@ from decouple import config, Csv, RepositoryEnv
 import os
 
 # Carrega o arquivo .env explicitamente da pasta raiz do projeto
-DOTENV_FILE = Path(__file__).resolve().parent.parent / '.env'
+DOTENV_FILE = Path(__file__).resolve().parent.parent / ".env"
 if DOTENV_FILE.exists():
     # Usa um repositório customizado para o decouple ler o arquivo
     custom_repo = RepositoryEnv(DOTENV_FILE)
@@ -79,6 +79,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "social_django.context_processors.backends",
                 "social_django.context_processors.login_redirect",
+                "setup.brand.brand_context",  # Context processor de branding
             ],
         },
     },
@@ -106,12 +107,12 @@ DATABASES = {
 }
 
 # Use para desenvolvimento rapido
-#DATABASES = {
+# DATABASES = {
 #    "default": {
 #        "ENGINE": "django.db.backends.sqlite3",
 #        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
 #    }
-#}
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -152,23 +153,22 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Configuração de Logging para enviar e-mails de erro
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'mail_admins_dynamic': {
-            'level': 'ERROR',
-            'class': 'avaliacao_docente.utils.DynamicAdminEmailHandler',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "mail_admins_dynamic": {
+            "level": "ERROR",
+            "class": "avaliacao_docente.utils.DynamicAdminEmailHandler",
         },
     },
-    'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins_dynamic'],
-            'level': 'ERROR',
-            'propagate': True,
+    "loggers": {
+        "django.request": {
+            "handlers": ["mail_admins_dynamic"],
+            "level": "ERROR",
+            "propagate": True,
         },
     },
 }
-
 
 
 # ============ CONFIGURAÇÕES DE AUTENTICAÇÃO ============
@@ -278,3 +278,41 @@ if "VERCEL" in os.environ:
 def allow_all_users(strategy, details, user=None, *args, **kwargs):
     # Pipeline que não bloqueia nenhuma credencial retornada pelo SUAP
     return
+
+
+# ============ CONFIGURAÇÕES DE BRANDING ============
+# Controle centralizado da identidade visual do sistema
+# Para ativar a nova marca, defina BRAND_ENABLE_NEW=True no .env
+
+BRAND_ENABLE_NEW = True
+
+BRAND_NAME_FULL = "Sistema de Avaliação Docente"
+BRAND_NAME_SHORT = "ÆVALIS"
+BRAND_NAME_OLD = "IF SADD"  # Mantido para referência/fallback
+
+# Assets de marca - caminhos relativos a static/
+BRAND_ASSETS = {
+    "logo_curta": (
+        "assets/logo_curta.svg" if BRAND_ENABLE_NEW else "assets/saad_logo.svg"
+    ),
+    "logo_extend": (
+        "assets/logo_extend.svg" if BRAND_ENABLE_NEW else "assets/saad_logo.svg"
+    ),
+    "logo_glass": (
+        "assets/logo_glass.svg" if BRAND_ENABLE_NEW else "assets/saad_logo.svg"
+    ),
+    "favicon": "favicon.ico",  # Otimizado multi-resolução com cores vibrantes
+}
+
+# Textos de alt/title para acessibilidade
+BRAND_ALT_TEXT = {
+    "logo_curta": (
+        f"{BRAND_NAME_SHORT} — {BRAND_NAME_FULL}"
+        if BRAND_ENABLE_NEW
+        else BRAND_NAME_OLD
+    ),
+    "logo_extend": BRAND_NAME_FULL if BRAND_ENABLE_NEW else BRAND_NAME_OLD,
+    "logo_glass": (
+        f"{BRAND_NAME_SHORT} Logo" if BRAND_ENABLE_NEW else f"{BRAND_NAME_OLD} Logo"
+    ),
+}
