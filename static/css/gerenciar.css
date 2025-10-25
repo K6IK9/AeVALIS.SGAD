@@ -380,10 +380,13 @@
     margin-bottom: 0;
 }
 
+/* Texto de ajuda em formulários */
 .form-text {
-    margin-top: 0.25rem;
+    color: var(--cor04);
     font-size: 0.875em;
-    color: #6c757d;
+    margin-top: 4px;
+    display: block;
+    font-style: italic;
 }
 
 /* Utilitários de texto */
@@ -547,15 +550,6 @@ textarea.error {
     color: #dc3545;
     margin-left: 2px;
     font-weight: bold;
-}
-
-/* Texto de ajuda do formulário */
-.form-text {
-    color: #6c757d;
-    font-size: 0.875em;
-    margin-top: 4px;
-    display: block;
-    font-style: italic;
 }
 
 /* Formulário inline para ações */
@@ -1105,6 +1099,7 @@ textarea.error {
     transition: all var(--transition-fast);
     font-family: var(--font01);
     white-space: nowrap;
+    text-align: center;
 }
 
 .btn-filter:hover {
@@ -1908,23 +1903,24 @@ input[type="checkbox"] {
     align-items: center;
     justify-content: center;
     padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 700;
+    border-radius: var(--border-radius-small);
+    font-size: 0.8rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     white-space: nowrap;
 }
 
+/* Estado de matrícula */
 .status-badge.matriculado {
-    background: rgba(0, 253, 148, 0.2);
-    color: var(--cor03);
+    background: var(--cor02);
+    color: var(--cor05);
     border: 1.5px solid var(--cor02);
 }
 
 .status-badge.disponivel {
-    background: rgba(180, 180, 180, 0.2);
-    color: #666;
+    background: var(--cor01);
+    color: var(--cor04);
     border: 1.5px solid #ccc;
 }
 
@@ -2191,6 +2187,7 @@ input[type="checkbox"] {
     gap: 5px;
     transition: all 0.3s ease;
     white-space: nowrap;
+    text-align: center;
 }
 
 .btn-search {
@@ -2285,7 +2282,8 @@ input[type="checkbox"] {
 }
 
 .aluno-card {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
     padding: 15px;
     background: var(--cor07);
@@ -2293,21 +2291,24 @@ input[type="checkbox"] {
     border-radius: var(--border-radius-medium);
     transition: all 0.3s ease;
     gap: 15px;
+    cursor: pointer;
+    user-select: none;
 }
 
 .aluno-card:hover {
-    border-color: var(--cor03);
-    transform: translateX(3px);
-    box-shadow: var(--shadow-light);
+    border-color: var(--cor02);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
 }
 
 .aluno-card.matriculado {
-    background: #f0f8f0;
-    border-color: var(--cor02);
+    border-left: 4px solid var(--cor02);
+    background: linear-gradient(to right, rgba(0, 253, 148, 0.1), transparent);
 }
 
 .aluno-card.matriculado:hover {
     border-color: var(--cor03);
+    border-left-color: var(--cor02);
 }
 
 .aluno-checkbox {
