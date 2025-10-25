@@ -5,7 +5,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IF SADD - Gerenciar Períodos</title>
+    <title>{% if brand.enabled %}{{ brand.name_short }}{% else %}{{ brand.name_old }}{% endif %} - Gerenciar Períodos</title>
+
+    <!-- Favicons -->
+    {% include 'partials/favicon_meta.html' %}
 
     <!-- CSS Global -->
     <link rel="stylesheet" href="{% static 'css/global.css' %}" />

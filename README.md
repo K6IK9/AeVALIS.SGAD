@@ -1,8 +1,8 @@
-# Sistema de Avaliação Docente
+# ÆVALIS — Sistema de Avaliação Docente
 
 ## 📋 Sobre o Projeto
 
-O **Sistema de Avaliação Docente** é uma aplicação web desenvolvida em Django que permite a gestão e avaliação de professores por alunos em instituições de ensino. O sistema oferece um ambiente completo para administração de cursos, disciplinas, turmas e avaliações docentes.
+O **ÆVALIS** (Sistema de Avaliação Docente) é uma aplicação web desenvolvida em Django que permite a gestão e avaliação de professores por alunos em instituições de ensino. O sistema oferece um ambiente completo para administração de cursos, disciplinas, turmas e avaliações docentes.
 
 ### ✨ Principais Funcionalidades
 

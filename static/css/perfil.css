@@ -86,7 +86,6 @@
 
 .nav-logo img {
     height: 45px;
-    filter: brightness(0) saturate(100%) invert(24%) sepia(12%) saturate(1547%) hue-rotate(132deg) brightness(93%) contrast(90%);
 }
 
 /* ===== CONTEÚDO DO HERO ===== */

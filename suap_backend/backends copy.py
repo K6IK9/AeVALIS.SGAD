@@ -1,10 +1,6 @@
-# coding: utf-8
-
 from social_core.backends.oauth import BaseOAuth2
 import logging
 from django.conf import settings
-import requests
-import urllib3
 
 
 class SuapOAuth2(BaseOAuth2):
@@ -12,7 +8,7 @@ class SuapOAuth2(BaseOAuth2):
     AUTHORIZATION_URL = "https://suap.ifmt.edu.br/o/authorize/"
     ACCESS_TOKEN_METHOD = "POST"
     ACCESS_TOKEN_URL = "https://suap.ifmt.edu.br/o/token/"
-    # ACCESS_TOKEN_URL = "https://suap.ifmt.edu.br/api/token/refresh"
+    #ACCESS_TOKEN_URL = "https://suap.ifmt.edu.br/api/token/refresh"
     ID_KEY = "identificacao"
     RESPONSE_TYPE = "code"
     REDIRECT_STATE = True
@@ -36,33 +32,6 @@ class SuapOAuth2(BaseOAuth2):
         ("sexo", "sexo"),
     ]
 
-    def __init__(self, *args, **kwargs):
-        """Inicializa o backend e configura SSL para desenvolvimento."""
-        super().__init__(*args, **kwargs)
-
-        # Desabilita verificação SSL apenas em modo DEBUG (desenvolvimento)
-        if getattr(settings, "DEBUG", False):
-            # Desabilita warnings de SSL não verificado
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-            logger = logging.getLogger("suap_backend")
-            logger.warning(
-                "[DESENVOLVIMENTO] Verificação SSL desabilitada para SUAP OAuth. "
-                "NÃO USE EM PRODUÇÃO!"
-            )
-
-    def request(self, url, method="GET", *args, **kwargs):
-        """
-        Sobrescreve o método request para desabilitar verificação SSL em desenvolvimento.
-
-        Em produção (DEBUG=False), mantém verificação SSL habilitada.
-        """
-        # Desabilita verificação SSL apenas em desenvolvimento
-        if getattr(settings, "DEBUG", False):
-            kwargs["verify"] = False
-
-        return super().request(url, method, *args, **kwargs)
-
     def user_data(self, access_token, *args, **kwargs):
         """Busca dados do usuário no SUAP e filtra apenas os campos permitidos."""
         # LOG TEMPORÁRIO: imprimir o token para fins de teste/debug.
@@ -73,7 +42,7 @@ class SuapOAuth2(BaseOAuth2):
             logger.info("[TESTE][SUAP OAuth] Access Token obtido: %s", access_token)
             # Print explícito para garantir visualização mesmo se logging estiver filtrando
             print(f"[TESTE][SUAP OAuth] Access Token obtido: {access_token}")
-
+            
         raw = self.request(
             url=self.USER_DATA_URL,
             data={

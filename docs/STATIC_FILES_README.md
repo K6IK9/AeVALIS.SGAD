@@ -42,15 +42,36 @@ python manage.py runserver
 projeto/
 ├── static/                    # Arquivos estáticos fonte
 │   ├── assets/               # Imagens e ícones
-│   │   ├── saad_logo.svg    # Logo principal
+│   │   ├── logo_curta.svg   # Logo ÆVALIS compacta (navbar) - 120x120
+│   │   ├── logo_extend.svg  # Logo ÆVALIS estendida (login/header) - 350x110
+│   │   ├── logo_glass.svg   # Logo ÆVALIS glass (transparente) - 350x110
+│   │   ├── saad_logo.svg    # Logo antiga (fallback)
+│   │   ├── favicon-192.png  # Favicon PWA Android - 192x192
+│   │   ├── favicon-512.png  # Favicon PWA splash - 512x512
+│   │   ├── apple-touch-icon.png  # Favicon iOS - 180x180
 │   │   ├── perfil.svg       # Ícone de perfil
 │   │   ├── email.svg        # Ícone de email
 │   │   ├── eye.svg          # Ícone de visualização
 │   │   └── ...              # Outros assets
-│   └── image.png            # Imagem adicional
+│   ├── image.png            # Imagem adicional
+│   └── favicon.ico          # Favicon multi-resolução (16/32/48/64)
 ├── staticfiles/              # Arquivos coletados (gerado automaticamente)
 └── media/                    # Uploads de usuários
 ```
+
+### 🎨 Sobre os Favicons
+
+Os favicons foram otimizados para garantir legibilidade em tamanhos pequenos:
+
+- **favicon.ico**: Multi-resolução (16x16, 32x32, 48x64, 64x64)
+  - Usa verde vibrante (#00FD94) para 16x16 e 32x32
+  - Usa verde médio (#376F6C) para 48x48 e 64x64
+  - Inclui "A" do ÆVALIS simplificado com 3 barras vermelhas (#F02D3A)
+
+- **favicon-192.png / favicon-512.png**: Para PWA e Android
+- **apple-touch-icon.png**: Para dispositivos iOS
+
+Os favicons são incluídos automaticamente via `{% include 'partials/favicon_meta.html' %}` em todos os templates.
 
 ### 🔍 Verificação de Problemas
 
@@ -88,6 +109,11 @@ chmod -R 755 static/
 
 - **Desenvolvimento**: `http://127.0.0.1:8000/static/`
 - **Produção**: Configurado via `STATIC_ROOT`
+- **Assets de marca**: 
+  - Logo curta: `/static/assets/logo_curta.svg`
+  - Logo estendida: `/static/assets/logo_extend.svg`
+  - Logo glass: `/static/assets/logo_glass.svg`
+  - Favicons: `/static/favicon.ico`, `/static/assets/favicon-192.png`, etc.
 
 ### 📝 Configurações Importantes
 
