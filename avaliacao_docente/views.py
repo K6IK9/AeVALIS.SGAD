@@ -208,19 +208,21 @@ def gerenciar_usuarios(request):
     else:
         form = GerenciarRoleForm()
 
-    # Obter todos os usuários ordenados
-    usuarios_queryset = User.objects.all().order_by("username")
+    # Obter todos os usuários ordenados - Força avaliação do queryset a cada request
+    usuarios_queryset = User.objects.all().order_by("username", "first_name", "last_name")
 
     # Lista todos os usuários com suas roles
-    usuarios_detalhados = []
+    usuarios = []
     for user in usuarios_queryset:
         role_atual = get_user_role_name(user)
+        role_manual = is_role_manually_changed(user)
 
-        usuarios_detalhados.append(
+        usuarios.append(
             {
                 "usuario": user,
                 "role": role_atual,
-                "nome_completo": f"{user.first_name} {user.last_name}",
+                "role_manual": role_manual,
+                "nome_completo": f"{user.first_name} {user.last_name}".strip(),
                 "status": "Ativo" if user.is_active else "Inativo",
             }
         )  # Estatísticas para o template
@@ -231,8 +233,7 @@ def gerenciar_usuarios(request):
 
     context = {
         "form": form,
-        "usuarios_detalhados": usuarios_detalhados,
-        "usuarios": usuarios_detalhados,  # Todos os usuários para filtragem client-side
+        "usuarios": usuarios,  # Lista única e atualizada para o template
         "total_usuarios": total_usuarios,
         "usuarios_ativos": usuarios_ativos,
         "professores_count": professores_count,
