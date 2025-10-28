@@ -36,7 +36,17 @@ function filterTableUsuarios() {
         (row.getAttribute('data-email') || '').toLowerCase().includes(searchFilter) ||
         (row.getAttribute('data-matricula') || '').toLowerCase().includes(searchFilter);
 
-      const roleMatch = !roleFilter || (row.getAttribute('data-role') || '').toLowerCase().includes(roleFilter);
+      // Filtro de role - trata especialmente "sem-role"
+      let roleMatch = !roleFilter;
+      if (roleFilter) {
+        const dataRole = (row.getAttribute('data-role') || '').toLowerCase();
+        if (roleFilter === 'sem-role') {
+          roleMatch = dataRole === 'sem role' || dataRole === '';
+        } else {
+          roleMatch = dataRole.includes(roleFilter);
+        }
+      }
+
       const statusMatch = !statusFilter || (row.getAttribute('data-status') || '').toLowerCase().includes(statusFilter);
 
       if (searchMatch && roleMatch && statusMatch) {
