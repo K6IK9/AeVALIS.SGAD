@@ -1,26 +1,5 @@
 /* ===== Responder Avaliação CSS ===== */
-
-/* Garantir visibilidade do botão voltar */
-.back-button {
-    background: var(--cor03) !important;
-    color: white !important;
-    text-decoration: none !important;
-    padding: 10px 20px;
-    border-radius: 8px;
-    display: inline-block;
-    margin-bottom: 20px;
-    transition: all var(--transition-fast);
-    font-weight: 500;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-
-.back-button:hover {
-    background: var(--cor04) !important;
-    transform: translateY(-2px);
-    color: white !important;
-    text-decoration: none !important;
-}
+/* Nota: .back-button está definido em global.css */
 
 /* Card principal da avaliação */
 .avaliacao-card {
@@ -369,22 +348,9 @@
     box-shadow: 0 0 0 0.2rem var(--form-focus-shadow);
 }
 
-/* ===== BOTÕES ESPECÍFICOS ===== */
-.btn-secondary {
-    background-color: var(--form-primary);
-    border-color: var(--form-primary);
-    color: var(--cor07) !important;
-    text-decoration: none !important;
-}
-
-.btn-secondary:hover {
-    background-color: var(--cor04);
-    border-color: var(--cor04);
-    color: var(--cor07) !important;
-    text-decoration: none !important;
-}
-
 /* ===== RESPONSIVIDADE ===== */
+/* Nota: .btn-secondary está definido em global.css */
+
 @media (max-width: 768px) {
     .avaliacao-card {
         padding: 15px;
