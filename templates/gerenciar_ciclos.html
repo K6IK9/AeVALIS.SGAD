@@ -335,6 +335,10 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Paginação -->
+        {% include 'partials/pagination.html' with page_obj=ciclos %}
+
         {% else %}
         <div class="empty-state">
           <h3>📅 Nenhum ciclo de avaliação cadastrado</h3>

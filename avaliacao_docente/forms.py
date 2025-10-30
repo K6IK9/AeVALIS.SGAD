@@ -20,6 +20,51 @@ from .models import (
 )
 
 
+# ============ FUNÇÕES AUXILIARES DE VALIDAÇÃO ============
+
+
+def validar_formato_username(username):
+    """
+    Valida o formato de username (matrícula).
+    Retorna None se válido, ou uma string com mensagem de erro.
+    """
+    if not username:
+        return None
+
+    if not username.isdigit():
+        return "A matrícula deve conter apenas números."
+
+    if len(username) < 6:
+        return "A matrícula deve ter pelo menos 6 dígitos."
+
+    return None
+
+
+def validar_unicidade_username(username, instance=None):
+    """
+    Valida se username (matrícula) já existe no sistema.
+    Retorna None se único, ou uma string com mensagem de erro.
+
+    Args:
+        username: Username a verificar
+        instance: Instância do usuário em edição (None para criação)
+    """
+    if not username:
+        return None
+
+    queryset = User.objects.filter(username=username)
+    if instance and instance.pk:
+        queryset = queryset.exclude(pk=instance.pk)
+
+    if queryset.exists():
+        return "Esta matrícula já está sendo usada por outro usuário."
+
+    return None
+
+
+# ============ WIDGETS CUSTOMIZADOS ============
+
+
 class DateTimeLocalInput(forms.DateTimeInput):
     """
     Widget customizado para campos datetime-local que formata corretamente o valor inicial
@@ -98,14 +143,16 @@ class RegistroForm(UserCreationForm):
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
-        if username:
-            # Validação para formato de matrícula (opcional - pode ser personalizada)
-            if not username.isdigit():
-                raise forms.ValidationError("A matrícula deve conter apenas números.")
-            if len(username) < 6:
-                raise forms.ValidationError(
-                    "A matrícula deve ter pelo menos 6 dígitos."
-                )
+
+        # Validar formato
+        erro_formato = validar_formato_username(username)
+        if erro_formato:
+            raise forms.ValidationError(erro_formato)
+
+        # Validar unicidade (sem instance pois é criação)
+        erro_unicidade = validar_unicidade_username(username, instance=None)
+        if erro_unicidade:
+            raise forms.ValidationError(erro_unicidade)
 
         return username
 
@@ -205,22 +252,17 @@ class GerenciarUsuarioForm(forms.ModelForm):
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
-        if username:
-            # Validação para formato de matrícula
-            if not username.isdigit():
-                raise forms.ValidationError("A matrícula deve conter apenas números.")
-            if len(username) < 6:
-                raise forms.ValidationError(
-                    "A matrícula deve ter pelo menos 6 dígitos."
-                )
-            # Verifica se a matrícula já existe (exceto para o próprio usuário em edição)
-            queryset = User.objects.filter(username=username)
-            if self.instance and self.instance.pk:
-                queryset = queryset.exclude(pk=self.instance.pk)
-            if queryset.exists():
-                raise forms.ValidationError(
-                    "Esta matrícula já está sendo usada por outro usuário."
-                )
+
+        # Validar formato
+        erro_formato = validar_formato_username(username)
+        if erro_formato:
+            raise forms.ValidationError(erro_formato)
+
+        # Validar unicidade (com instance para edição)
+        erro_unicidade = validar_unicidade_username(username, instance=self.instance)
+        if erro_unicidade:
+            raise forms.ValidationError(erro_unicidade)
+
         return username
 
 

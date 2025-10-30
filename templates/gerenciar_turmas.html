@@ -201,6 +201,10 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Paginação -->
+      {% include 'partials/pagination.html' with page_obj=turmas %}
+
       {% else %}
       <div class="empty-state">
         <p class="empty-message">Nenhuma turma encontrada.</p>

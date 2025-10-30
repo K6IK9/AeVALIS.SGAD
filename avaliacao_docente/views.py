@@ -1,9 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.edit import CreateView, FormView
+from django.views.generic.edit import FormView
 from django.views.generic import TemplateView
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
@@ -37,12 +37,16 @@ from .utils import (
     mark_role_manually_changed,
     reset_role_manual_flag,
     is_role_manually_changed,
+    processar_mudanca_role,
+    display_form_errors,
+    calcular_estatisticas_respostas,
+    sanitize_csv_value,
+    preparar_response_csv,
 )
 from django.contrib import messages
 from django.core.paginator import Paginator
 from .forms import (
     GerenciarRoleForm,
-    GerenciarUsuarioForm,
     CursoForm,
     DisciplinaForm,
     PeriodoLetivoForm,
@@ -87,19 +91,8 @@ def gerenciar_roles(request):
             usuario = form.cleaned_data["usuario"]
             nova_role = form.cleaned_data["role"]
 
-            # Remove todas as roles existentes
-            for role in ["admin", "coordenador", "professor", "aluno"]:
-                if has_role(usuario, role):
-                    remove_role(usuario, role)
-
-            # Atribui a nova role
-            assign_role(usuario, nova_role)
-
-            # Marcar que a role foi alterada manualmente para evitar sobrescrita no próximo login
-            mark_role_manually_changed(usuario)
-
-            # Gerenciar perfis usando função utilitária
-            mensagens_perfil = gerenciar_perfil_usuario(usuario, nova_role)
+            # Processar mudança de role (função consolidada)
+            mensagens_perfil = processar_mudanca_role(usuario, nova_role)
 
             # Adicionar mensagens informativas sobre mudanças de perfil
             for msg in mensagens_perfil:
@@ -182,19 +175,8 @@ def gerenciar_usuarios(request):
             usuario = form.cleaned_data["usuario"]
             nova_role = form.cleaned_data["role"]
 
-            # Remove todas as roles existentes
-            for role in ["admin", "coordenador", "professor", "aluno"]:
-                if has_role(usuario, role):
-                    remove_role(usuario, role)
-
-            # Atribui a nova role
-            assign_role(usuario, nova_role)
-
-            # Marcar que a role foi alterada manualmente para evitar sobrescrita no próximo login
-            mark_role_manually_changed(usuario)
-
-            # Gerenciar perfis usando função utilitária
-            mensagens_perfil = gerenciar_perfil_usuario(usuario, nova_role)
+            # Processar mudança de role (função consolidada)
+            mensagens_perfil = processar_mudanca_role(usuario, nova_role)
 
             # Adicionar mensagens informativas sobre mudanças de perfil
             for msg in mensagens_perfil:
@@ -209,15 +191,17 @@ def gerenciar_usuarios(request):
         form = GerenciarRoleForm()
 
     # Obter todos os usuários ordenados - Força avaliação do queryset a cada request
-    usuarios_queryset = User.objects.all().order_by("username", "first_name", "last_name")
+    usuarios_queryset = User.objects.all().order_by(
+        "username", "first_name", "last_name"
+    )
 
     # Lista todos os usuários com suas roles
-    usuarios = []
+    usuarios_list = []
     for user in usuarios_queryset:
         role_atual = get_user_role_name(user)
         role_manual = is_role_manually_changed(user)
 
-        usuarios.append(
+        usuarios_list.append(
             {
                 "usuario": user,
                 "role": role_atual,
@@ -225,7 +209,22 @@ def gerenciar_usuarios(request):
                 "nome_completo": f"{user.first_name} {user.last_name}".strip(),
                 "status": "Ativo" if user.is_active else "Inativo",
             }
-        )  # Estatísticas para o template
+        )
+
+    # Paginação - 15 usuários por página
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+    paginator = Paginator(usuarios_list, 15)  # 15 usuários por página
+    page_number = request.GET.get("page", 1)
+
+    try:
+        usuarios = paginator.page(page_number)
+    except PageNotAnInteger:
+        usuarios = paginator.page(1)
+    except EmptyPage:
+        usuarios = paginator.page(paginator.num_pages)
+
+    # Estatísticas para o template
     total_usuarios = User.objects.count()
     usuarios_ativos = User.objects.filter(is_active=True).count()
     professores_count = User.objects.filter(groups__name="professor").count()
@@ -233,7 +232,7 @@ def gerenciar_usuarios(request):
 
     context = {
         "form": form,
-        "usuarios": usuarios,  # Lista única e atualizada para o template
+        "usuarios": usuarios,  # Objeto Page com paginação
         "total_usuarios": total_usuarios,
         "usuarios_ativos": usuarios_ativos,
         "professores_count": professores_count,
@@ -395,10 +394,23 @@ def gerenciar_cursos(request):
         form = CursoForm()
 
     # Lista todos os cursos
-    cursos = Curso.objects.all().order_by("curso_nome")
+    cursos_list = Curso.objects.all().order_by("curso_nome")
+
+    # Paginação - 15 cursos por página
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+    paginator = Paginator(cursos_list, 15)
+    page_number = request.GET.get("page", 1)
+
+    try:
+        cursos = paginator.page(page_number)
+    except PageNotAnInteger:
+        cursos = paginator.page(1)
+    except EmptyPage:
+        cursos = paginator.page(paginator.num_pages)
 
     # Lista apenas os coordenadores que estão associados aos cursos
-    coordenadores_de_cursos = cursos.values_list(
+    coordenadores_de_cursos = cursos_list.values_list(
         "coordenador_curso", flat=True
     ).distinct()
     coordenadores = PerfilProfessor.objects.filter(
@@ -430,15 +442,7 @@ def editar_curso(request, curso_id):
             )
             return redirect("gerenciar_cursos")
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    if field == "__all__":
-                        messages.error(request, str(error))
-                    else:
-                        field_name = (
-                            form.fields[field].label if field in form.fields else field
-                        )
-                        messages.error(request, f"{field_name}: {error}")
+            display_form_errors(request, form)
     else:
         form = CursoForm(instance=curso)
 
@@ -511,20 +515,25 @@ def gerenciar_disciplinas(request):
             )
             return redirect("gerenciar_disciplinas")
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    if field == "__all__":
-                        messages.error(request, str(error))
-                    else:
-                        field_name = (
-                            form.fields[field].label if field in form.fields else field
-                        )
-                        messages.error(request, f"{field_name}: {error}")
+            display_form_errors(request, form)
     else:
         form = DisciplinaForm()
 
     # Lista todas as disciplinas
-    disciplinas = Disciplina.objects.all().order_by("disciplina_nome")
+    disciplinas_list = Disciplina.objects.all().order_by("disciplina_nome")
+
+    # Paginação - 15 disciplinas por página
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+    paginator = Paginator(disciplinas_list, 15)
+    page_number = request.GET.get("page", 1)
+
+    try:
+        disciplinas = paginator.page(page_number)
+    except PageNotAnInteger:
+        disciplinas = paginator.page(1)
+    except EmptyPage:
+        disciplinas = paginator.page(paginator.num_pages)
 
     # Buscar dados para os filtros
     cursos = Curso.objects.all().order_by("curso_nome")
@@ -561,15 +570,7 @@ def editar_disciplina(request, disciplina_id):
             )
             return redirect("gerenciar_disciplinas")
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    if field == "__all__":
-                        messages.error(request, str(error))
-                    else:
-                        field_name = (
-                            form.fields[field].label if field in form.fields else field
-                        )
-                        messages.error(request, f"{field_name}: {error}")
+            display_form_errors(request, form)
     else:
         form = DisciplinaForm(instance=disciplina)
 
@@ -684,15 +685,7 @@ def editar_periodo(request, periodo_id):
             )
             return redirect("gerenciar_periodos")
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    if field == "__all__":
-                        messages.error(request, str(error))
-                    else:
-                        field_name = (
-                            form.fields[field].label if field in form.fields else field
-                        )
-                        messages.error(request, f"{field_name}: {error}")
+            display_form_errors(request, form)
     else:
         form = PeriodoLetivoForm(instance=periodo)
 
@@ -730,15 +723,7 @@ def editar_periodo_simples(request, periodo_id):
                     request, f"Não foi possível atualizar o período: {str(e)}"
                 )
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    if field == "__all__":
-                        messages.error(request, str(error))
-                    else:
-                        field_name = (
-                            form.fields[field].label if field in form.fields else field
-                        )
-                        messages.error(request, f"{field_name}: {error}")
+            display_form_errors(request, form)
     else:
         form = PeriodoLetivoForm(instance=periodo)
 
@@ -941,22 +926,12 @@ def gerenciar_turmas(request):
             )
             return redirect("gerenciar_turmas")
         else:
-            # Mostra os erros do formulário de forma limpa
-            for field, errors in form.errors.items():
-                for error in errors:
-                    # Traduz o nome do campo __all__ para algo mais amigável
-                    if field == "__all__":
-                        messages.error(request, str(error))
-                    else:
-                        field_name = (
-                            form.fields[field].label if field in form.fields else field
-                        )
-                        messages.error(request, f"{field_name}: {error}")
+            display_form_errors(request, form)
     else:
         form = TurmaForm()
 
     # Base queryset
-    turmas = (
+    turmas_list = (
         Turma.objects.select_related(
             "disciplina",
             "disciplina__professor__user",
@@ -972,11 +947,24 @@ def gerenciar_turmas(request):
 
     # Aplicar filtros
     if filtro_turno:
-        turmas = turmas.filter(turno=filtro_turno)
+        turmas_list = turmas_list.filter(turno=filtro_turno)
     if filtro_periodo:
-        turmas = turmas.filter(disciplina__periodo_letivo_id=filtro_periodo)
+        turmas_list = turmas_list.filter(disciplina__periodo_letivo_id=filtro_periodo)
     if filtro_status:
-        turmas = turmas.filter(status=filtro_status)
+        turmas_list = turmas_list.filter(status=filtro_status)
+
+    # Paginação - 15 turmas por página
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+    paginator = Paginator(turmas_list, 15)
+    page_number = request.GET.get("page", 1)
+
+    try:
+        turmas = paginator.page(page_number)
+    except PageNotAnInteger:
+        turmas = paginator.page(1)
+    except EmptyPage:
+        turmas = paginator.page(paginator.num_pages)
 
     # Períodos disponíveis para o filtro
     periodos_disponiveis = PeriodoLetivo.objects.all().order_by("-ano", "-semestre")
@@ -1021,16 +1009,7 @@ def editar_turma(request, turma_id):
             )
             return redirect("gerenciar_turmas")
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    # Traduz o nome do campo __all__ para algo mais amigável
-                    if field == "__all__":
-                        messages.error(request, str(error))
-                    else:
-                        field_name = (
-                            form.fields[field].label if field in form.fields else field
-                        )
-                        messages.error(request, f"{field_name}: {error}")
+            display_form_errors(request, form)
     else:
         form = TurmaForm(instance=turma)
 
@@ -1180,15 +1159,7 @@ class RegistrarUsuarioView(FormView):
 
     def form_invalid(self, form):
         # Adiciona mensagens de erro
-        for field, errors in form.errors.items():
-            for error in errors:
-                if field == "__all__":
-                    messages.error(self.request, str(error))
-                else:
-                    field_name = (
-                        form.fields[field].label if field in form.fields else field
-                    )
-                    messages.error(self.request, f"{field_name}: {error}")
+        display_form_errors(self.request, form)
         return super().form_invalid(form)
 
 
@@ -1485,10 +1456,18 @@ def listar_avaliacoes(request):
             "finalizados": ciclos_finalizados,
         }
 
-    # Remover a linha duplicada de ciclos que estava fora do if/else    # Paginação
-    paginator = Paginator(avaliacoes, 10)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
+    # Remover a linha duplicada de ciclos que estava fora do if/else    # Paginação - 15 avaliações por página
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+    paginator = Paginator(avaliacoes, 15)
+    page_number = request.GET.get("page", 1)
+
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
 
     context = {
         "avaliacoes": page_obj,
@@ -1666,7 +1645,20 @@ def gerenciar_questionarios(request):
             form = QuestionarioAvaliacaoForm()
 
     # Listar todos os questionários
-    questionarios = QuestionarioAvaliacao.objects.all().order_by("-data_criacao")
+    questionarios_list = QuestionarioAvaliacao.objects.all().order_by("-data_criacao")
+
+    # Paginação - 15 questionários por página
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+    paginator = Paginator(questionarios_list, 15)
+    page_number = request.GET.get("page", 1)
+
+    try:
+        questionarios = paginator.page(page_number)
+    except PageNotAnInteger:
+        questionarios = paginator.page(1)
+    except EmptyPage:
+        questionarios = paginator.page(paginator.num_pages)
 
     context = {
         "form": form,
@@ -2221,33 +2213,15 @@ def relatorio_avaliacoes(request):
                     valor_numerico__isnull=False,
                 )
 
-                if respostas_pergunta.exists():
-                    # Calcular média
-                    media = (
-                        respostas_pergunta.aggregate(media=Avg("valor_numerico"))[
-                            "media"
-                        ]
-                        or 0
-                    )
-
-                    # Calcular moda (valor mais frequente)
-                    valores = (
-                        respostas_pergunta.values("valor_numerico")
-                        .annotate(count=Count("valor_numerico"))
-                        .order_by("-count")
-                    )
-                    moda = valores[0]["valor_numerico"] if valores else 0
-
-                    # Contar respostas
-                    respostas_count = respostas_pergunta.count()
-
+                stats = calcular_estatisticas_respostas(respostas_pergunta)
+                if stats:
                     pergunta_stats.append(
                         {
                             "pergunta": pergunta,
                             "tipo": "numerico",
-                            "media": round(media, 1),
-                            "moda": moda,
-                            "respostas_count": respostas_count,
+                            "media": round(stats["media"], 1),
+                            "moda": stats["moda"],
+                            "respostas_count": stats["count"],
                         }
                     )
 
@@ -2548,7 +2522,7 @@ def gerar_csv_avaliacoes(
         ).exclude(valor_texto="")
 
         comentarios_texto = " | ".join(
-            [c.valor_texto for c in comentarios[:5]]
+            [sanitize_csv_value(c.valor_texto) for c in comentarios[:5]]
         )  # Máximo 5 comentários
         if comentarios.count() > 5:
             comentarios_texto += f" | ... (+{comentarios.count() - 5} comentários)"
@@ -2569,11 +2543,11 @@ def gerar_csv_avaliacoes(
             # Se não há perguntas, escrever linha básica
             writer.writerow(
                 [
-                    disciplina,
-                    professor,
-                    turma,
-                    periodo,
-                    ciclo,
+                    sanitize_csv_value(disciplina),
+                    sanitize_csv_value(professor),
+                    sanitize_csv_value(turma),
+                    sanitize_csv_value(periodo),
+                    sanitize_csv_value(ciclo),
                     total_alunos,
                     respondentes,
                     taxa_resposta,
@@ -2604,17 +2578,17 @@ def gerar_csv_avaliacoes(
                         contagens = resultado["contagens"]
                         writer.writerow(
                             [
-                                disciplina,
-                                professor,
-                                turma,
-                                periodo,
-                                ciclo,
+                                sanitize_csv_value(disciplina),
+                                sanitize_csv_value(professor),
+                                sanitize_csv_value(turma),
+                                sanitize_csv_value(periodo),
+                                sanitize_csv_value(ciclo),
                                 total_alunos,
                                 respondentes,
                                 taxa_resposta,
                                 media_geral,
                                 classificacao_geral,
-                                pergunta.enunciado,
+                                sanitize_csv_value(pergunta.enunciado),
                                 "Múltipla Escolha",
                                 resultado["media"],
                                 avaliacao.get_classificacao_media(resultado["media"]),
@@ -2639,47 +2613,30 @@ def gerar_csv_avaliacoes(
                         valor_numerico__isnull=False,
                     )
 
-                    if respostas_pergunta.exists():
-                        # Calcular estatísticas
-                        media = (
-                            respostas_pergunta.aggregate(media=Avg("valor_numerico"))[
-                                "media"
-                            ]
-                            or 0
-                        )
-
-                        # Calcular moda (valor mais frequente)
-                        valores = (
-                            respostas_pergunta.values("valor_numerico")
-                            .annotate(count=Count("valor_numerico"))
-                            .order_by("-count")
-                        )
-                        moda = valores[0]["valor_numerico"] if valores else 0
-
-                        respostas_count = respostas_pergunta.count()
-
+                    stats = calcular_estatisticas_respostas(respostas_pergunta)
+                    if stats:
                         writer.writerow(
                             [
-                                disciplina,
-                                professor,
-                                turma,
-                                periodo,
-                                ciclo,
+                                sanitize_csv_value(disciplina),
+                                sanitize_csv_value(professor),
+                                sanitize_csv_value(turma),
+                                sanitize_csv_value(periodo),
+                                sanitize_csv_value(ciclo),
                                 total_alunos,
                                 respondentes,
                                 taxa_resposta,
                                 media_geral,
                                 classificacao_geral,
-                                pergunta.enunciado,
+                                sanitize_csv_value(pergunta.enunciado),
                                 pergunta.get_tipo_display(),
-                                round(media, 1),
+                                round(stats["media"], 1),
                                 "N/A",
                                 "N/A",
                                 "N/A",
                                 "N/A",
                                 "N/A",
                                 "N/A",
-                                respostas_count,
+                                stats["count"],
                                 (
                                     comentarios_texto
                                     if pergunta_questionario.ordem_no_questionario == 1
@@ -2773,9 +2730,9 @@ def relatorio_professores(request):
             professor = item["professor"]
             writer.writerow(
                 [
-                    professor.user.get_full_name(),
-                    professor.matricula,
-                    item["cursos"],
+                    sanitize_csv_value(professor.user.get_full_name()),
+                    sanitize_csv_value(professor.matricula),
+                    sanitize_csv_value(item["cursos"]),
                     item["avaliacoes_respondidas"],
                     item["total_respondentes"],
                     item["total_alunos_aptos"],
@@ -3273,7 +3230,20 @@ def gerenciar_ciclos(request):
         form = CicloAvaliacaoForm()
 
     # Lista todos os ciclos
-    ciclos = CicloAvaliacao.objects.all().order_by("-data_inicio")
+    ciclos_list = CicloAvaliacao.objects.all().order_by("-data_inicio")
+
+    # Paginação - 15 ciclos por página
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+    paginator = Paginator(ciclos_list, 15)
+    page_number = request.GET.get("page", 1)
+
+    try:
+        ciclos = paginator.page(page_number)
+    except PageNotAnInteger:
+        ciclos = paginator.page(1)
+    except EmptyPage:
+        ciclos = paginator.page(paginator.num_pages)
 
     context = {"form": form, "ciclos": ciclos}
 
@@ -3306,15 +3276,7 @@ def editar_ciclo_simples(request, ciclo_id):
             except Exception as e:
                 messages.error(request, f"Não foi possível atualizar o ciclo: {str(e)}")
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    if field == "__all__":
-                        messages.error(request, str(error))
-                    else:
-                        field_name = (
-                            form.fields[field].label if field in form.fields else field
-                        )
-                        messages.error(request, f"{field_name}: {error}")
+            display_form_errors(request, form)
     else:
         form = CicloAvaliacaoForm(instance=ciclo)
 
@@ -3446,16 +3408,8 @@ def exportar_usuarios_csv(request):
         messages.error(request, "Você não tem permissão para acessar esta página.")
         return redirect("inicio")
 
-    # Preparar resposta HTTP para CSV
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
-    nome_arquivo = f"usuarios_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
-
-    # Escrever BOM para UTF-8 (compatibilidade com Excel)
-    response.write("\ufeff")
-
-    # Criar writer CSV
-    writer = csv.writer(response)
+    # Preparar resposta CSV (função consolidada)
+    response, writer = preparar_response_csv("usuarios")
 
     # Cabeçalhos
     writer.writerow(
@@ -3488,9 +3442,7 @@ def exportar_usuarios_csv(request):
         elif hasattr(usuario, "perfil_aluno") and usuario.perfil_aluno:
             role_principal = "Aluno"
 
-        # Verificar se é admin ou coordenador usando has_role
-        from rolepermissions.checkers import has_role
-
+        # Verificar se é admin ou coordenador usando has_role (já importado no topo)
         if has_role(usuario, "admin"):
             role_principal = "Admin"
         elif has_role(usuario, "coordenador"):
@@ -3499,10 +3451,12 @@ def exportar_usuarios_csv(request):
         writer.writerow(
             [
                 usuario.id,
-                usuario.get_full_name()
-                or f"{usuario.first_name} {usuario.last_name}".strip(),
-                usuario.email,
-                usuario.username,
+                sanitize_csv_value(
+                    usuario.get_full_name()
+                    or f"{usuario.first_name} {usuario.last_name}".strip()
+                ),
+                sanitize_csv_value(usuario.email),
+                sanitize_csv_value(usuario.username),
                 role_principal,
                 (
                     "Sim"
@@ -3540,29 +3494,21 @@ def exportar_cursos_csv(request):
         messages.error(request, "Você não tem permissão para acessar esta página.")
         return redirect("inicio")
 
-    # Preparar resposta HTTP para CSV
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
-    nome_arquivo = f"cursos_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
-
-    # Escrever BOM para UTF-8
-    response.write("\ufeff")
-
-    # Criar writer CSV
-    writer = csv.writer(response)
+    # Preparar resposta CSV (função consolidada)
+    response, writer = preparar_response_csv("cursos")
 
     # Cabeçalhos
     writer.writerow(
         [
             "ID",
             "Nome do Curso",
-            "Sigla",  # Corrigido
+            "Sigla",
             "Coordenador",
             "Email Coordenador",
             "Total de Disciplinas",
             "Total de Turmas",
-            "Observações",  # Corrigido
-            "Informações Adicionais",  # Corrigido
+            "Ativo",
+            "Data de Criação",
         ]
     )
 
@@ -3583,22 +3529,26 @@ def exportar_cursos_csv(request):
         writer.writerow(
             [
                 curso.id,
-                curso.curso_nome,
-                curso.curso_sigla,  # Corrigido: era codigo_curso
-                (
-                    curso.coordenador_curso.user.get_full_name()  # Corrigido: era coordenador
+                sanitize_csv_value(curso.curso_nome),
+                sanitize_csv_value(curso.curso_sigla),
+                sanitize_csv_value(
+                    curso.coordenador_curso.user.get_full_name()
                     if curso.coordenador_curso
                     else "Não definido"
                 ),
-                (
+                sanitize_csv_value(
                     curso.coordenador_curso.user.email
                     if curso.coordenador_curso
                     else ""
-                ),  # Corrigido: era coordenador
+                ),
                 total_disciplinas,
                 total_turmas,
-                "N/A",  # Não há campo ativo no modelo Curso
-                "N/A",  # Não há campo data_criacao no modelo Curso
+                "Sim" if curso.ativo else "Não",
+                (
+                    curso.data_criacao.strftime("%d/%m/%Y %H:%M")
+                    if curso.data_criacao
+                    else ""
+                ),
             ]
         )
 
@@ -3614,35 +3564,29 @@ def exportar_disciplinas_csv(request):
         messages.error(request, "Você não tem permissão para acessar esta página.")
         return redirect("inicio")
 
-    # Preparar resposta HTTP para CSV
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
-    nome_arquivo = f"disciplinas_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
-
-    # Escrever BOM para UTF-8
-    response.write("\ufeff")
-
-    # Criar writer CSV
-    writer = csv.writer(response)
+    # Preparar resposta CSV (função consolidada)
+    response, writer = preparar_response_csv("disciplinas")
 
     # Cabeçalhos
     writer.writerow(
         [
             "ID",
             "Nome da Disciplina",
-            "Sigla",  # Corrigido
+            "Sigla",
             "Curso",
-            "Tipo",  # Corrigido
+            "Tipo",
+            "Período Letivo",
+            "Professor Responsável",
             "Total de Turmas",
-            "Professores Atuais",
-            "Observações",  # Corrigido
+            "Ativo",
+            "Data de Criação",
         ]
     )
 
     # Buscar disciplinas com related data
     disciplinas = (
-        Disciplina.objects.select_related("curso")
-        .prefetch_related("turmas__professor__user")
+        Disciplina.objects.select_related("curso", "professor__user", "periodo_letivo")
+        .prefetch_related("turmas")
         .order_by("curso__curso_nome", "disciplina_nome")
     )
 
@@ -3650,24 +3594,26 @@ def exportar_disciplinas_csv(request):
         # Contar turmas
         total_turmas = disciplina.turmas.count()
 
-        # Listar professores únicos
-        professores = set()
-        for turma in disciplina.turmas.all():
-            if turma.professor:
-                professores.add(turma.professor.user.get_full_name())
-
-        professores_str = ", ".join(sorted(professores)) if professores else "Nenhum"
-
         writer.writerow(
             [
                 disciplina.id,
-                disciplina.disciplina_nome,
-                disciplina.disciplina_sigla,  # Corrigido: era disciplina_codigo
-                disciplina.curso.curso_nome,
-                disciplina.disciplina_tipo,  # Adicionado: tipo da disciplina
+                sanitize_csv_value(disciplina.disciplina_nome),
+                sanitize_csv_value(disciplina.disciplina_sigla),
+                sanitize_csv_value(disciplina.curso.curso_nome),
+                disciplina.disciplina_tipo,
+                sanitize_csv_value(disciplina.periodo_letivo.nome),
+                sanitize_csv_value(
+                    disciplina.professor.user.get_full_name()
+                    if disciplina.professor
+                    else "Não definido"
+                ),
                 total_turmas,
-                professores_str,
-                "N/A",  # Observações
+                "Sim" if disciplina.ativo else "Não",
+                (
+                    disciplina.data_criacao.strftime("%d/%m/%Y %H:%M")
+                    if disciplina.data_criacao
+                    else ""
+                ),
             ]
         )
 
@@ -3683,16 +3629,8 @@ def exportar_turmas_csv(request):
         messages.error(request, "Você não tem permissão para acessar esta página.")
         return redirect("inicio")
 
-    # Preparar resposta HTTP para CSV
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
-    nome_arquivo = f"turmas_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
-
-    # Escrever BOM para UTF-8
-    response.write("\ufeff")
-
-    # Criar writer CSV
-    writer = csv.writer(response)
+    # Preparar resposta CSV (função consolidada)
+    response, writer = preparar_response_csv("turmas")
 
     # Cabeçalhos
     writer.writerow(
@@ -3733,20 +3671,20 @@ def exportar_turmas_csv(request):
         writer.writerow(
             [
                 turma.id,
-                turma.codigo_turma,
-                turma.disciplina.disciplina_nome,
-                turma.disciplina.curso.curso_nome,
-                (
+                sanitize_csv_value(turma.codigo_turma),
+                sanitize_csv_value(turma.disciplina.disciplina_nome),
+                sanitize_csv_value(turma.disciplina.curso.curso_nome),
+                sanitize_csv_value(
                     turma.disciplina.professor.user.get_full_name()
                     if turma.disciplina.professor
                     else "Não definido"
                 ),
-                (
+                sanitize_csv_value(
                     turma.disciplina.professor.user.email
                     if turma.disciplina.professor
                     else ""
                 ),
-                turma.disciplina.periodo_letivo.nome,
+                sanitize_csv_value(turma.disciplina.periodo_letivo.nome),
                 total_alunos,
                 alunos_ativos,
                 (
@@ -3767,40 +3705,31 @@ def exportar_periodos_csv(request):
         messages.error(request, "Você não tem permissão para acessar esta página.")
         return redirect("inicio")
 
-    # Preparar resposta HTTP para CSV
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
-    nome_arquivo = f"periodos_letivos_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
-
-    # Escrever BOM para UTF-8
-    response.write("\ufeff")
-
-    # Criar writer CSV
-    writer = csv.writer(response)
+    # Preparar resposta CSV (função consolidada)
+    response, writer = preparar_response_csv("periodos_letivos")
 
     # Cabeçalhos
     writer.writerow(
         [
             "ID",
             "Nome do Período",
-            "Ano/Semestre",  # Corrigido
-            "Informações",  # Corrigido
+            "Ano",
+            "Semestre",
             "Total de Turmas",
+            "Total de Ciclos",
             "Total de Avaliações",
-            "Observações",  # Corrigido
         ]
     )
 
     # Buscar períodos com related data
     periodos = PeriodoLetivo.objects.prefetch_related(
         "turmas", "ciclos_avaliacao"
-    ).order_by(
-        "-ano", "-semestre"
-    )  # Corrigido: era data_inicio
+    ).order_by("-ano", "-semestre")
 
     for periodo in periodos:
-        # Contar turmas e avaliações
+        # Contar turmas, ciclos e avaliações
         total_turmas = periodo.turmas.count()
+        total_ciclos = periodo.ciclos_avaliacao.count()
         total_avaliacoes = sum(
             ciclo.avaliacoes.count() for ciclo in periodo.ciclos_avaliacao.all()
         )
@@ -3808,12 +3737,12 @@ def exportar_periodos_csv(request):
         writer.writerow(
             [
                 periodo.id,
-                periodo.nome,
-                f"{periodo.ano}.{periodo.semestre}",  # Corrigido: não há data_inicio
-                "Período letivo acadêmico",  # Informações descritivas
+                sanitize_csv_value(periodo.nome),
+                periodo.ano,
+                periodo.semestre,
                 total_turmas,
+                total_ciclos,
                 total_avaliacoes,
-                "N/A",  # Observações
             ]
         )
 
