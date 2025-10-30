@@ -123,7 +123,7 @@
       <!-- Lista de Cursos -->
       <div class="form-section">
         <div class="section-header">
-          <h2>📋 Lista de Cursos ({{ cursos.count }})</h2>
+          <h2>📋 Lista de Cursos ({{ cursos.paginator.count }})</h2>
         </div>
 
         {% if cursos %}
@@ -134,7 +134,6 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th class="col-id">ID</th>
                 <th class="col-nome">Nome do Curso</th>
                 <th class="col-sigla">Sigla</th>
                 <th class="col-coordenador">Coordenador</th>
@@ -147,7 +146,6 @@
               <tr data-nome="{{ curso.curso_nome }}" 
                   data-sigla="{{ curso.curso_sigla }}" 
                   data-coordenador="{% if curso.coordenador_curso %}{{ curso.coordenador_curso }}{% else %}sem coordenador{% endif %}">
-                <td class="col-id">{{ curso.id }}</td>
                 <td class="col-nome">
                   <strong>{{ curso.curso_nome }}</strong>
                 </td>
@@ -244,7 +242,7 @@
           if (!noResultsRow) {
             noResultsRow = document.createElement('tr');
             noResultsRow.className = 'no-results-row';
-            noResultsRow.innerHTML = '<td colspan="6" style="text-align: center; padding: 20px; color: #666;">Nenhum curso encontrado com os filtros aplicados.</td>';
+            noResultsRow.innerHTML = '<td colspan="5" style="text-align: center; padding: 20px; color: #666;">Nenhum curso encontrado com os filtros aplicados.</td>';
             tbody.appendChild(noResultsRow);
           }
           noResultsRow.style.display = '';
