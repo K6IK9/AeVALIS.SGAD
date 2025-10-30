@@ -139,7 +139,7 @@
     <!-- Listagem de Turmas -->
     <div class="form-section">
       <div class="section-header">
-        <h2>📚 Turmas Cadastradas ({{ turmas|length }})</h2>
+        <h2>📚 Turmas Cadastradas ({{ turmas.paginator.count }})</h2>
       </div>
 
       {% if turmas %}
