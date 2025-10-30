@@ -256,6 +256,40 @@
         </table>
       </div>
 
+      <!-- Paginação -->
+      {% if usuarios.has_other_pages %}
+      <div class="pagination-container">
+        <div class="pagination-info">
+          Mostrando {{ usuarios.start_index }} a {{ usuarios.end_index }} de {{ usuarios.paginator.count }} usuários
+        </div>
+        <div class="pagination">
+          {% if usuarios.has_previous %}
+          <a href="?page=1" class="pagination-btn" title="Primeira página">«</a>
+          <a href="?page={{ usuarios.previous_page_number }}" class="pagination-btn" title="Página anterior">‹</a>
+          {% else %}
+          <span class="pagination-btn disabled">«</span>
+          <span class="pagination-btn disabled">‹</span>
+          {% endif %}
+
+          {% for num in usuarios.paginator.page_range %}
+            {% if usuarios.number == num %}
+              <span class="pagination-btn active">{{ num }}</span>
+            {% elif num > usuarios.number|add:'-3' and num < usuarios.number|add:'3' %}
+              <a href="?page={{ num }}" class="pagination-btn">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+
+          {% if usuarios.has_next %}
+          <a href="?page={{ usuarios.next_page_number }}" class="pagination-btn" title="Próxima página">›</a>
+          <a href="?page={{ usuarios.paginator.num_pages }}" class="pagination-btn" title="Última página">»</a>
+          {% else %}
+          <span class="pagination-btn disabled">›</span>
+          <span class="pagination-btn disabled">»</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
       {% else %}
       <div class="empty-state">
         <p class="empty-message">Nenhum usuário encontrado.</p>

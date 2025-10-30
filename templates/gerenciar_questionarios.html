@@ -249,6 +249,10 @@
                 </tbody>
             </table>
             </div>
+
+            <!-- Paginação -->
+            {% include 'partials/pagination.html' with page_obj=questionarios %}
+
             {% else %}
             <div class="empty-state">
                 <h3>📝 Nenhum questionário cadastrado</h3>

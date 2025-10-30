@@ -1,0 +1,41 @@
+{% comment %}
+  Partial para paginação reutilizável
+  
+  Uso:
+  {% include 'partials/pagination.html' with page_obj=<object_name> %}
+  
+  Onde <object_name> é o nome da variável de paginação no contexto (ex: disciplinas, turmas, etc.)
+{% endcomment %}
+
+{% if page_obj.has_other_pages %}
+<div class="pagination-container">
+  <div class="pagination-info">
+    Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} de {{ page_obj.paginator.count }} registro{{ page_obj.paginator.count|pluralize }}
+  </div>
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page=1{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="pagination-btn" title="Primeira página">«</a>
+    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="pagination-btn" title="Página anterior">‹</a>
+    {% else %}
+    <span class="pagination-btn disabled">«</span>
+    <span class="pagination-btn disabled">‹</span>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <span class="pagination-btn active">{{ num }}</span>
+      {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <a href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="pagination-btn">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="pagination-btn" title="Próxima página">›</a>
+    <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" class="pagination-btn" title="Última página">»</a>
+    {% else %}
+    <span class="pagination-btn disabled">›</span>
+    <span class="pagination-btn disabled">»</span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
