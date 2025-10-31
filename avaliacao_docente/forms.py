@@ -86,19 +86,19 @@ class DateTimeLocalInput(forms.DateTimeInput):
 
 class RegistroForm(UserCreationForm):
     first_name = forms.CharField(
-        max_length=150,
+        max_length=30,
         required=True,
         label="Nome",
-        widget=forms.TextInput(attrs={"placeholder": "Nome"}),
+        widget=forms.TextInput(attrs={"placeholder": "Nome", "maxlength": "30"}),
     )
     last_name = forms.CharField(
-        max_length=150,
+        max_length=30,
         required=True,
         label="Sobrenome",
-        widget=forms.TextInput(attrs={"placeholder": "Sobrenome"}),
+        widget=forms.TextInput(attrs={"placeholder": "Sobrenome", "maxlength": "30"}),
     )
     email = forms.EmailField(
-        max_length=254,
+        max_length=50,
         required=True,
         label="Email Institucional",
         widget=forms.EmailInput(attrs={"placeholder": "Email institucional"}),
@@ -193,23 +193,31 @@ class GerenciarUsuarioForm(forms.ModelForm):
     """
 
     first_name = forms.CharField(
-        max_length=150,
+        max_length=30,
         required=True,
         label="Nome",
         widget=forms.TextInput(
-            attrs={"class": "form-control", "placeholder": "Digite o nome"}
+            attrs={
+                "class": "form-control",
+                "placeholder": "Digite o nome",
+                "maxlength": "30",
+            }
         ),
     )
     last_name = forms.CharField(
-        max_length=150,
+        max_length=30,
         required=True,
         label="Sobrenome",
         widget=forms.TextInput(
-            attrs={"class": "form-control", "placeholder": "Digite o sobrenome"}
+            attrs={
+                "class": "form-control",
+                "placeholder": "Digite o sobrenome",
+                "maxlength": "30",
+            }
         ),
     )
     email = forms.EmailField(
-        max_length=254,
+        max_length=30,
         required=True,
         label="Email Institucional",
         widget=forms.EmailInput(
@@ -320,7 +328,7 @@ class DisciplinaForm(forms.ModelForm):
     """
 
     disciplina_nome = forms.CharField(
-        max_length=100,
+        max_length=50,
         required=True,
         label="Nome da Disciplina",
         widget=forms.TextInput(
@@ -331,7 +339,7 @@ class DisciplinaForm(forms.ModelForm):
         ),
     )
     disciplina_sigla = forms.CharField(
-        max_length=45,
+        max_length=10,
         required=True,
         label="Sigla da Disciplina",
         widget=forms.TextInput(
@@ -399,7 +407,7 @@ class DisciplinaForm(forms.ModelForm):
 class PeriodoLetivoForm(forms.ModelForm):
 
     nome = forms.CharField(
-        max_length=50,
+        max_length=10,
         required=True,
         label="Nome do Período",
         widget=forms.TextInput(
@@ -635,8 +643,8 @@ class QuestionarioAvaliacaoForm(forms.ModelForm):
 
     def clean_titulo(self):
         titulo = self.cleaned_data.get("titulo")
-        if titulo and len(titulo) > 100:
-            raise forms.ValidationError("O título deve ter no máximo 100 caracteres.")
+        if titulo and len(titulo) > 50:
+            raise forms.ValidationError("O título deve ter no máximo 50 caracteres.")
         return titulo
 
 

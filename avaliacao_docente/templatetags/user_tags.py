@@ -160,3 +160,32 @@ def get_matricula_display(user):
         {{ usuario|get_matricula_display }}
     """
     return user.username or "Não informada"
+
+
+@register.simple_tag(takes_context=True)
+def query_string(context, **kwargs):
+    """
+    Template tag para gerar query strings preservando parâmetros GET
+    mas permitindo sobrescrever alguns deles.
+
+    Uso no template:
+        {% query_string page=2 %}  -> preserva outros params, muda page
+        {% query_string page=2 busca='' %}  -> remove busca
+    """
+    request = context.get("request")
+    if not request:
+        return ""
+
+    # Copia os parâmetros GET atuais
+    params = request.GET.copy()
+
+    # Atualiza com os novos parâmetros
+    for key, value in kwargs.items():
+        if value is None or value == "":
+            # Remove o parâmetro se valor for None ou vazio
+            params.pop(key, None)
+        else:
+            params[key] = value
+
+    # Retorna a query string codificada
+    return params.urlencode() if params else ""

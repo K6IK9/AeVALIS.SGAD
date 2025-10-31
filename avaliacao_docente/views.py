@@ -190,16 +190,42 @@ def gerenciar_usuarios(request):
     else:
         form = GerenciarRoleForm()
 
+    # Capturar parâmetros de filtro
+    filtro_busca = request.GET.get("busca", "").strip()
+    filtro_role = request.GET.get("role", "").strip()
+    filtro_status = request.GET.get("status", "").strip()
+
     # Obter todos os usuários ordenados - Força avaliação do queryset a cada request
     usuarios_queryset = User.objects.all().order_by(
         "username", "first_name", "last_name"
     )
+
+    # Aplicar filtros no QuerySet
+    if filtro_busca:
+        from django.db.models import Q
+
+        usuarios_queryset = usuarios_queryset.filter(
+            Q(username__icontains=filtro_busca)
+            | Q(first_name__icontains=filtro_busca)
+            | Q(last_name__icontains=filtro_busca)
+            | Q(email__icontains=filtro_busca)
+        )
+
+    if filtro_status:
+        if filtro_status == "ativo":
+            usuarios_queryset = usuarios_queryset.filter(is_active=True)
+        elif filtro_status == "inativo":
+            usuarios_queryset = usuarios_queryset.filter(is_active=False)
 
     # Lista todos os usuários com suas roles
     usuarios_list = []
     for user in usuarios_queryset:
         role_atual = get_user_role_name(user)
         role_manual = is_role_manually_changed(user)
+
+        # Filtrar por role (após obter a role do usuário)
+        if filtro_role and role_atual.lower() != filtro_role.lower():
+            continue
 
         usuarios_list.append(
             {
@@ -244,6 +270,10 @@ def gerenciar_usuarios(request):
             {"value": "professor", "label": "Professor"},
             {"value": "aluno", "label": "Aluno"},
         ],
+        # Valores dos filtros para manter no formulário
+        "filtro_busca": filtro_busca,
+        "filtro_role": filtro_role,
+        "filtro_status": filtro_status,
     }
 
     return render(request, "gerenciar_usuarios.html", context)
@@ -381,6 +411,10 @@ def gerenciar_cursos(request):
         messages.error(request, "Você não tem permissão para acessar esta página.")
         return redirect("inicio")
 
+    # Capturar filtros da requisição
+    filtro_busca = request.GET.get("busca", "")
+    filtro_coordenador = request.GET.get("coordenador", "")
+
     if request.method == "POST":
         form = CursoForm(request.POST)
         if form.is_valid():
@@ -393,8 +427,25 @@ def gerenciar_cursos(request):
     else:
         form = CursoForm()
 
-    # Lista todos os cursos
-    cursos_list = Curso.objects.all().order_by("curso_nome")
+    # Lista todos os cursos com filtros
+    cursos_list = Curso.objects.all()
+
+    # Aplicar filtros
+    if filtro_busca:
+        from django.db.models import Q
+
+        cursos_list = cursos_list.filter(
+            Q(curso_nome__icontains=filtro_busca)
+            | Q(curso_sigla__icontains=filtro_busca)
+        )
+
+    if filtro_coordenador:
+        if filtro_coordenador == "sem_coordenador":
+            cursos_list = cursos_list.filter(coordenador_curso__isnull=True)
+        else:
+            cursos_list = cursos_list.filter(coordenador_curso_id=filtro_coordenador)
+
+    cursos_list = cursos_list.order_by("curso_nome")
 
     # Paginação - 15 cursos por página
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -409,15 +460,20 @@ def gerenciar_cursos(request):
     except EmptyPage:
         cursos = paginator.page(paginator.num_pages)
 
-    # Lista apenas os coordenadores que estão associados aos cursos
-    coordenadores_de_cursos = cursos_list.values_list(
-        "coordenador_curso", flat=True
-    ).distinct()
-    coordenadores = PerfilProfessor.objects.filter(
-        id__in=coordenadores_de_cursos
-    ).select_related("user")
+    # Lista todos os coordenadores para o filtro
+    coordenadores = (
+        PerfilProfessor.objects.all()
+        .select_related("user")
+        .order_by("user__first_name", "user__last_name")
+    )
 
-    context = {"form": form, "cursos": cursos, "coordenadores": coordenadores}
+    context = {
+        "form": form,
+        "cursos": cursos,
+        "coordenadores": coordenadores,
+        "filtro_busca": filtro_busca,
+        "filtro_coordenador": filtro_coordenador,
+    }
 
     return render(request, "gerenciar_cursos.html", context)
 
@@ -505,6 +561,12 @@ def gerenciar_disciplinas(request):
         messages.error(request, "Você não tem permissão para acessar esta página.")
         return redirect("inicio")
 
+    # Capturar filtros da requisição
+    filtro_busca = request.GET.get("busca", "")
+    filtro_curso = request.GET.get("curso", "")
+    filtro_tipo = request.GET.get("tipo", "")
+    filtro_periodo = request.GET.get("periodo", "")
+
     if request.method == "POST":
         form = DisciplinaForm(request.POST)
         if form.is_valid():
@@ -519,8 +581,28 @@ def gerenciar_disciplinas(request):
     else:
         form = DisciplinaForm()
 
-    # Lista todas as disciplinas
-    disciplinas_list = Disciplina.objects.all().order_by("disciplina_nome")
+    # Lista todas as disciplinas com filtros
+    disciplinas_list = Disciplina.objects.all()
+
+    # Aplicar filtros
+    if filtro_busca:
+        from django.db.models import Q
+
+        disciplinas_list = disciplinas_list.filter(
+            Q(disciplina_nome__icontains=filtro_busca)
+            | Q(disciplina_sigla__icontains=filtro_busca)
+        )
+
+    if filtro_curso:
+        disciplinas_list = disciplinas_list.filter(curso_id=filtro_curso)
+
+    if filtro_tipo:
+        disciplinas_list = disciplinas_list.filter(disciplina_tipo=filtro_tipo)
+
+    if filtro_periodo:
+        disciplinas_list = disciplinas_list.filter(periodo_letivo_id=filtro_periodo)
+
+    disciplinas_list = disciplinas_list.order_by("disciplina_nome")
 
     # Paginação - 15 disciplinas por página
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -544,6 +626,10 @@ def gerenciar_disciplinas(request):
         "disciplinas": disciplinas,
         "cursos": cursos,
         "periodos": periodos,
+        "filtro_busca": filtro_busca,
+        "filtro_curso": filtro_curso,
+        "filtro_tipo": filtro_tipo,
+        "filtro_periodo": filtro_periodo,
     }
 
     return render(request, "gerenciar_disciplinas.html", context)
@@ -645,6 +731,11 @@ def gerenciar_periodos(request):
         messages.error(request, "Você não tem permissão para acessar esta página.")
         return redirect("inicio")
 
+    # Capturar filtros da requisição
+    filtro_busca = request.GET.get("busca", "")
+    filtro_ano = request.GET.get("ano", "")
+    filtro_semestre = request.GET.get("semestre", "")
+
     if request.method == "POST":
         form = PeriodoLetivoForm(request.POST)
         if form.is_valid():
@@ -657,10 +748,47 @@ def gerenciar_periodos(request):
     else:
         form = PeriodoLetivoForm()
 
-    # Lista todos os períodos
-    periodos = PeriodoLetivo.objects.all().order_by("-ano", "-semestre")
+    # Lista todos os períodos com filtros
+    periodos_list = PeriodoLetivo.objects.all()
 
-    context = {"form": form, "periodos": periodos}
+    # Aplicar filtros
+    if filtro_busca:
+        periodos_list = periodos_list.filter(nome__icontains=filtro_busca)
+
+    if filtro_ano:
+        periodos_list = periodos_list.filter(ano=filtro_ano)
+
+    if filtro_semestre:
+        periodos_list = periodos_list.filter(semestre=filtro_semestre)
+
+    periodos_list = periodos_list.order_by("-ano", "-semestre")
+
+    # Paginação - 15 períodos por página
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+    paginator = Paginator(periodos_list, 15)
+    page_number = request.GET.get("page", 1)
+
+    try:
+        periodos = paginator.page(page_number)
+    except PageNotAnInteger:
+        periodos = paginator.page(1)
+    except EmptyPage:
+        periodos = paginator.page(paginator.num_pages)
+
+    # Anos disponíveis para o filtro (valores únicos)
+    anos_disponiveis = (
+        PeriodoLetivo.objects.values_list("ano", flat=True).distinct().order_by("-ano")
+    )
+
+    context = {
+        "form": form,
+        "periodos": periodos,
+        "anos_disponiveis": anos_disponiveis,
+        "filtro_busca": filtro_busca,
+        "filtro_ano": filtro_ano,
+        "filtro_semestre": filtro_semestre,
+    }
 
     return render(request, "gerenciar_periodos.html", context)
 
@@ -3202,6 +3330,12 @@ def gerenciar_ciclos(request):
         messages.error(request, "Você não tem permissão para acessar esta página.")
         return redirect("inicio")
 
+    # Capturar filtros da requisição
+    filtro_busca = request.GET.get("busca", "")
+    filtro_periodo = request.GET.get("periodo", "")
+    filtro_status = request.GET.get("status", "")
+    filtro_ativo = request.GET.get("ativo", "")
+
     if request.method == "POST":
         form = CicloAvaliacaoForm(request.POST)
         if form.is_valid():
@@ -3229,8 +3363,26 @@ def gerenciar_ciclos(request):
     else:
         form = CicloAvaliacaoForm()
 
-    # Lista todos os ciclos
-    ciclos_list = CicloAvaliacao.objects.all().order_by("-data_inicio")
+    # Lista todos os ciclos com filtros
+    ciclos_list = CicloAvaliacao.objects.all()
+
+    # Aplicar filtros
+    if filtro_busca:
+        ciclos_list = ciclos_list.filter(nome__icontains=filtro_busca)
+
+    if filtro_periodo:
+        ciclos_list = ciclos_list.filter(periodo_letivo_id=filtro_periodo)
+
+    # Nota: O filtro de status foi removido porque 'status' é uma propriedade calculada,
+    # não um campo do modelo. O status é determinado dinamicamente pelas datas.
+
+    if filtro_ativo:
+        if filtro_ativo == "sim":
+            ciclos_list = ciclos_list.filter(ativo=True)
+        elif filtro_ativo == "nao":
+            ciclos_list = ciclos_list.filter(ativo=False)
+
+    ciclos_list = ciclos_list.order_by("-data_inicio")
 
     # Paginação - 15 ciclos por página
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -3245,7 +3397,18 @@ def gerenciar_ciclos(request):
     except EmptyPage:
         ciclos = paginator.page(paginator.num_pages)
 
-    context = {"form": form, "ciclos": ciclos}
+    # Buscar periodos para o filtro
+    periodos = PeriodoLetivo.objects.all().order_by("nome")
+
+    context = {
+        "form": form,
+        "ciclos": ciclos,
+        "periodos": periodos,
+        "filtro_busca": filtro_busca,
+        "filtro_periodo": filtro_periodo,
+        "filtro_status": filtro_status,
+        "filtro_ativo": filtro_ativo,
+    }
 
     return render(request, "gerenciar_ciclos.html", context)
 

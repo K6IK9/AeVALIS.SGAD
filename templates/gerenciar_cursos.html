@@ -91,31 +91,32 @@
 
       <!-- Filtros de Busca -->
       {% if not editing %}
-      <div class="filters-section" id="filtersSection">
+      <form method="get" class="filters-section" id="filter-form">
         <div class="filter-row">
           <div class="filter-group">
-            <label for="searchCurso">Buscar por Nome/Sigla:</label>
-            <input type="text" id="searchCurso" placeholder="Digite o nome ou sigla do curso">
+            <label for="busca">Buscar por Nome/Sigla:</label>
+            <input type="text" id="busca" name="busca" class="form-control" placeholder="Digite o nome ou sigla do curso" value="{{ filtro_busca }}">
           </div>
         </div>
         <div class="filter-row">
           <div class="filter-group">
-            <label for="filterCoordenador">Filtrar por Coordenador:</label>
-            <select id="filterCoordenador">
+            <label for="coordenador">Filtrar por Coordenador:</label>
+            <select id="coordenador" name="coordenador" class="form-control">
               <option value="">Todos os coordenadores</option>
-              <option value="sem coordenador">Sem Coordenador</option>
+              <option value="sem_coordenador" {% if filtro_coordenador == "sem_coordenador" %}selected{% endif %}>Sem Coordenador</option>
               {% for coord in coordenadores %}
-              <option value="{{ coord }}">
-                {{ coord }}
+              <option value="{{ coord.id }}" {% if filtro_coordenador == coord.id|stringformat:"s" %}selected{% endif %}>
+                {{ coord.user.get_full_name }}
               </option>
               {% endfor %}
             </select>
           </div>
-          <div class="filter-group">
-            <button type="button" onclick="clearFiltersCursos()" class="btn btn-clear">Limpar Filtros</button>
+          <div class="filter-group filter-actions">
+            <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+            <button type="button" onclick="window.location.href='?'" class="btn btn-clear">✖ Limpar Filtros</button>
           </div>
         </div>
-      </div>
+      </form>
       {% endif %}
 
 
@@ -186,91 +187,6 @@
       </div>
       {% endif %}
     </div>
-
-    <script>
-      // Função de filtro para cursos
-      function filterTableCursos() {
-        const searchFilter = document.getElementById('searchCurso').value.toLowerCase();
-        const coordenadorFilter = document.getElementById('filterCoordenador').value.toLowerCase();
-        
-        const tableRows = document.querySelectorAll('.data-table tbody tr');
-        let visibleCount = 0;
-
-        tableRows.forEach(row => {
-          const cells = row.querySelectorAll('td');
-          
-          // Verifica se a linha tem células (não é a linha "Nenhum curso encontrado")
-          if (cells.length > 1) {
-            const nomeData = row.getAttribute('data-nome').toLowerCase();
-            const siglaData = row.getAttribute('data-sigla').toLowerCase();
-            const coordenadorData = row.getAttribute('data-coordenador').toLowerCase();
-
-            // A busca procura em nome e sigla
-            const searchMatch = !searchFilter || 
-              nomeData.includes(searchFilter) || 
-              siglaData.includes(searchFilter);
-            
-            const coordenadorMatch = !coordenadorFilter || coordenadorData.includes(coordenadorFilter);
-
-            if (searchMatch && coordenadorMatch) {
-              row.style.display = '';
-              visibleCount++;
-            } else {
-              row.style.display = 'none';
-            }
-          }
-        });
-
-        // Atualiza o contador no título
-        const sectionTitle = document.querySelector('.section-header h2');
-        if (sectionTitle) {
-          sectionTitle.textContent = `📋 Lista de Cursos (${visibleCount})`;
-        }
-
-        // Mostra mensagem se nenhum resultado for encontrado
-        const emptyState = document.querySelector('.empty-state');
-        if (emptyState) {
-          emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
-        }
-        
-        // Se não há resultados, mostra mensagem
-        if (visibleCount === 0 && !emptyState) {
-          // Se não existe uma mensagem de empty state, cria uma temporária
-          const tbody = document.querySelector('.data-table tbody');
-          let noResultsRow = tbody.querySelector('.no-results-row');
-          
-          if (!noResultsRow) {
-            noResultsRow = document.createElement('tr');
-            noResultsRow.className = 'no-results-row';
-            noResultsRow.innerHTML = '<td colspan="5" style="text-align: center; padding: 20px; color: #666;">Nenhum curso encontrado com os filtros aplicados.</td>';
-            tbody.appendChild(noResultsRow);
-          }
-          noResultsRow.style.display = '';
-        } else {
-          // Remove mensagem temporária se existir
-          const noResultsRow = document.querySelector('.no-results-row');
-          if (noResultsRow) {
-            noResultsRow.style.display = 'none';
-          }
-        }
-      }
-
-      // Função para limpar filtros
-      function clearFiltersCursos() {
-        document.getElementById('searchCurso').value = '';
-        document.getElementById('filterCoordenador').value = '';
-        filterTableCursos();
-      }
-
-      // Adiciona event listeners aos campos de filtro
-      document.addEventListener('DOMContentLoaded', function() {
-        const searchCurso = document.getElementById('searchCurso');
-        const filterCoordenador = document.getElementById('filterCoordenador');
-
-        if (searchCurso) searchCurso.addEventListener('input', filterTableCursos);
-        if (filterCoordenador) filterCoordenador.addEventListener('change', filterTableCursos);
-      });
-    </script>
     
     <!-- Script global para funcionalidades de gerenciamento -->
     <script src="{% static 'js/gerenciar-global.js' %}"></script>

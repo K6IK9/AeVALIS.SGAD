@@ -163,15 +163,6 @@
           </div>
           
           <div class="filter-group">
-            <label for="filterStatus">Filtrar por Status:</label>
-            <select id="filterStatus" class="form-control">
-              <option value="">Todos os status</option>
-              <option value="ativo">Ativo</option>
-              <option value="inativo">Inativo</option>
-            </select>
-          </div>
-          
-          <div class="filter-group">
             <button type="button" class="btn-filter" onclick="clearFilters()">Limpar Filtros</button>
           </div>
         </div>
@@ -195,7 +186,6 @@
               <th>Nome</th>
               <th>Descrição</th>
               <th>Ordem</th>
-              <th>Status</th>
               <th>Perguntas</th>
               <th>Ações</th>
             </tr>
@@ -213,13 +203,6 @@
               </td>
               <td>
                 <span class="counter-badge">{{ categoria.ordem }}</span>
-              </td>
-              <td>
-                {% if categoria.ativo %}
-                  <span class="status-badge status-active">✅ Ativa</span>
-                {% else %}
-                  <span class="status-badge status-inactive">❌ Inativa</span>
-                {% endif %}
               </td>
               <td>
                 <span class="counter-badge">{{ categoria.perguntas.count }}</span>
@@ -270,7 +253,6 @@
     // Função para filtrar a tabela
     function filterTable() {
       const nomeFilter = document.getElementById('searchCategoriaNome').value.toLowerCase();
-      const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
       
       const tableRows = document.querySelectorAll('.data-table tbody tr');
       let visibleCount = 0;
@@ -280,12 +262,10 @@
         
         if (cells.length > 1) {
           const categoriaNome = cells[0].textContent.toLowerCase().trim();
-          const categoriaStatus = cells[3].textContent.toLowerCase().trim();
 
           const nomeMatch = !nomeFilter || categoriaNome.includes(nomeFilter);
-          const statusMatch = !statusFilter || categoriaStatus.includes(statusFilter);
 
-          if (nomeMatch && statusMatch) {
+          if (nomeMatch) {
             row.style.display = '';
             visibleCount++;
           } else {
@@ -304,17 +284,14 @@
     // Função para limpar filtros
     function clearFilters() {
       document.getElementById('searchCategoriaNome').value = '';
-      document.getElementById('filterStatus').value = '';
       filterTable();
     }
 
     // Adicionar event listeners para filtros
     document.addEventListener('DOMContentLoaded', function() {
       const searchCategoriaNome = document.getElementById('searchCategoriaNome');
-      const filterStatus = document.getElementById('filterStatus');
 
       if (searchCategoriaNome) searchCategoriaNome.addEventListener('input', filterTable);
-      if (filterStatus) filterStatus.addEventListener('change', filterTable);
       
       console.log("Página de categorias carregada com filtros funcionais");
     });

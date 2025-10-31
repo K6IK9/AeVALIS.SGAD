@@ -309,25 +309,6 @@
             </div>
             {% endif %}
         </div>
-
-        <!-- Links Rápidos -->
-        <div class="form-section">
-            <h2>🔗 Links Rápidos</h2>
-            <div class="d-flex gap-2 flex-wrap">
-                <a href="{% url 'gerenciar_ciclos' %}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle"></i> Criar Novo Ciclo
-                </a>
-                <a href="{% url 'admin:avaliacao_docente_joblembretecicloturma_changelist' %}" class="btn btn-secondary" target="_blank">
-                    <i class="bi bi-envelope-check"></i> Monitorar Jobs de Lembrete
-                </a>
-                <a href="{% url 'gerenciar_configuracao_site' %}" class="btn btn-secondary">
-                    <i class="bi bi-gear"></i> Configurações do Sistema
-                </a>
-                <a href="#" onclick="alert('Consulte docs/GESTAO_CICLOS.md'); return false;" class="btn btn-outline-secondary">
-                    <i class="bi bi-book"></i> Documentação
-                </a>
-            </div>
-        </div>
     </div>
 
     <style>

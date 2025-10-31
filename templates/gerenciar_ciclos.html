@@ -1,4 +1,5 @@
 {% load static %}
+{% load user_tags %}
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -221,47 +222,51 @@
       {% if not editing %}
 
       <!-- Filtros e Busca -->
-        <div class="filters-section" id="filtersSection">
+        <form method="get" class="filters-section" id="filter-form">
           <h3 class="filters-title">Filtros e Busca</h3>
           <div class="filter-row">
             <div class="filter-group">
-              <label for="searchCicloNome">Buscar por Nome:</label>
+              <label for="busca">Buscar por Nome:</label>
               <div class="search-box">
-                <input type="text" id="searchCicloNome" class="form-control" placeholder="Digite o nome do ciclo..."
-                  autocomplete="off">
+                <input type="text" id="busca" name="busca" class="form-control" placeholder="Digite o nome do ciclo..."
+                  autocomplete="off" value="{{ filtro_busca }}">
               </div>
             </div>
             <div class="filter-group">
-              <label for="filterPeriodo">Filtrar por Período:</label>
-              <select id="filterPeriodo" class="form-control">
+              <label for="periodo">Filtrar por Período:</label>
+              <select id="periodo" name="periodo" class="form-control">
                 <option value="">Todos os períodos</option>
-                {% for ciclo in ciclos %}
-                <option value="{{ ciclo.periodo_letivo.nome }}">{{ ciclo.periodo_letivo.nome }}</option>
+                {% for periodo in periodos %}
+                <option value="{{ periodo.id }}" {% if filtro_periodo == periodo.id|stringformat:"s" %}selected{% endif %}>{{ periodo.nome }}</option>
                 {% endfor %}
               </select>
             </div>
             <div class="filter-group">
-              <label for="filterStatus">Filtrar por Status:</label>
-              <select id="filterStatus" class="form-control">
+              <label for="status">Filtrar por Status:</label>
+              <select id="status" name="status" class="form-control">
                 <option value="">Todos os status</option>
-                <option value="agendado">Agendado</option>
-                <option value="ativo">Ativo</option>
-                <option value="encerrado">Encerrado</option>
+                <option value="agendado" {% if filtro_status == "agendado" %}selected{% endif %}>Agendado</option>
+                <option value="ativo" {% if filtro_status == "ativo" %}selected{% endif %}>Ativo</option>
+                <option value="encerrado" {% if filtro_status == "encerrado" %}selected{% endif %}>Encerrado</option>
               </select>
             </div>
             <div class="filter-group">
-              <label for="filterAtivo">Filtrar por Ativo:</label>
-              <select id="filterAtivo" class="form-control">
+              <label for="ativo">Filtrar por Ativo:</label>
+              <select id="ativo" name="ativo" class="form-control">
                 <option value="">Todos</option>
-                <option value="sim">Sim</option>
-                <option value="não">Não</option>
+                <option value="sim" {% if filtro_ativo == "sim" %}selected{% endif %}>Sim</option>
+                <option value="nao" {% if filtro_ativo == "nao" %}selected{% endif %}>Não</option>
               </select>
-            </div>
-            <div class="filter-group">
-              <button type="button" class="btn-filter" onclick="clearFilters()">Limpar Filtros</button>
             </div>
           </div>
-        </div>
+          
+          <div class="filter-row">
+            <div class="filter-group filter-actions">
+              <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+              <button type="button" onclick="window.location.href='?'" class="btn btn-clear">✖ Limpar Filtros</button>
+            </div>
+          </div>
+        </form>
 
       <div class="form-section">
         <div class="section-header">
@@ -458,60 +463,6 @@
           if (noMessage) {
             noMessage.style.display = visibleCount === 0 ? 'block' : 'none';
           }
-        }
-
-        // ============================================
-        // FUNÇÕES PARA FILTRAR A TABELA DE CICLOS
-        // ============================================
-        
-        function filterTable() {
-          const nomeFilter = document.getElementById('searchCicloNome').value.toLowerCase();
-          const periodoFilter = document.getElementById('filterPeriodo').value.toLowerCase();
-          const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
-          const ativoFilter = document.getElementById('filterAtivo').value.toLowerCase();
-
-          const tableRows = document.querySelectorAll('.data-table tbody tr');
-          let visibleCount = 0;
-
-          tableRows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-
-            if (cells.length > 1) {
-              const cicloNome = cells[0].textContent.toLowerCase().trim();
-              const cicloPeriodo = cells[1].textContent.toLowerCase().trim();
-              const cicloStatus = cells[5].textContent.toLowerCase().trim();
-              const cicloAtivo = cells[6].textContent.toLowerCase().trim();
-
-              const nomeMatch = !nomeFilter || cicloNome.includes(nomeFilter);
-              const periodoMatch = !periodoFilter || cicloPeriodo.includes(periodoFilter);
-              const statusMatch = !statusFilter || cicloStatus.includes(statusFilter);
-              const ativoMatch = !ativoFilter ||
-                (ativoFilter === 'sim' && cicloAtivo.includes('ativo')) ||
-                (ativoFilter === 'não' && cicloAtivo.includes('inativo'));
-
-              if (nomeMatch && periodoMatch && statusMatch && ativoMatch) {
-                row.style.display = '';
-                visibleCount++;
-              } else {
-                row.style.display = 'none';
-              }
-            }
-          });
-
-          // Atualiza o contador
-          const sectionHeader = document.querySelector('.section-header h2');
-          if (sectionHeader) {
-            sectionHeader.textContent = `📋 Ciclos de Avaliação Cadastrados (${visibleCount})`;
-          }
-        }
-
-        // Função para limpar filtros
-        function clearFilters() {
-          document.getElementById('searchCicloNome').value = '';
-          document.getElementById('filterPeriodo').value = '';
-          document.getElementById('filterStatus').value = '';
-          document.getElementById('filterAtivo').value = '';
-          filterTable();
         }
 
         // Script específico para ciclos - confirmação de exclusão
