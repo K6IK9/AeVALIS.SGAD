@@ -64,7 +64,7 @@
                             {% for curso in cursos %}
                             <option value="{{ curso.id }}" 
                                     {% if curso_selecionado and curso.id == curso_selecionado.id %}selected{% endif %}>
-                                {{ curso.nome_curso }}
+                                {{ curso.curso_nome }}
                             </option>
                             {% endfor %}
                         </select>
@@ -107,7 +107,7 @@
             {% endif %}
             {% if curso_selecionado %}
             <div class="stat-card">
-                <div class="stat-value">{{ curso_selecionado.nome_curso }}</div>
+                <div class="stat-value">{{ curso_selecionado.curso_nome }}</div>
                 <div class="stat-label">Curso Selecionado</div>
             </div>
             {% endif %}

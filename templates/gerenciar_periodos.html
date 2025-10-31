@@ -95,47 +95,53 @@
 
       {% if not editing %}
       <!-- Seção de Filtros -->
-      <div class="filters-section" id="filtersSection">
+      <form method="get" class="filters-section" id="filter-form">
         <div class="filter-row">
           <div class="filter-group">
-            <label for="searchPeriodoNome">Buscar por Nome:</label>
-            <input type="text" id="searchPeriodoNome" class="form-control" placeholder="Digite o nome do período">
+            <label for="busca">Buscar por Nome:</label>
+            <input type="text" id="busca" name="busca" class="form-control" placeholder="Digite o nome do período" value="{{ filtro_busca }}">
           </div>
           
           <div class="filter-group">
-            <label for="filterAno">Ano:</label>
-            <select id="filterAno" class="form-control">
+            <label for="ano">Ano:</label>
+            <select id="ano" name="ano" class="form-control">
               <option value="">Todos os anos</option>
-              {% regroup periodos by ano as anos_grupo %}
-              {% for ano in anos_grupo %}
-                <option value="{{ ano.grouper }}">{{ ano.grouper }}</option>
+              {% for ano in anos_disponiveis %}
+                <option value="{{ ano }}" {% if filtro_ano == ano|stringformat:"s" %}selected{% endif %}>{{ ano }}</option>
               {% endfor %}
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="semestre">Semestre:</label>
+            <select id="semestre" name="semestre" class="form-control">
+              <option value="">Todos os semestres</option>
+              <option value="1" {% if filtro_semestre == "1" %}selected{% endif %}>1º Semestre</option>
+              <option value="2" {% if filtro_semestre == "2" %}selected{% endif %}>2º Semestre</option>
+              <option value="3" {% if filtro_semestre == "3" %}selected{% endif %}>3º Semestre</option>
+              <option value="4" {% if filtro_semestre == "4" %}selected{% endif %}>4º Semestre</option>
+              <option value="5" {% if filtro_semestre == "5" %}selected{% endif %}>5º Semestre</option>
+              <option value="6" {% if filtro_semestre == "6" %}selected{% endif %}>6º Semestre</option>
+              <option value="7" {% if filtro_semestre == "7" %}selected{% endif %}>7º Semestre</option>
+              <option value="8" {% if filtro_semestre == "8" %}selected{% endif %}>8º Semestre</option>
+              <option value="9" {% if filtro_semestre == "9" %}selected{% endif %}>9º Semestre</option>
+              <option value="10" {% if filtro_semestre == "10" %}selected{% endif %}>10º Semestre</option>
             </select>
           </div>
         </div>
 
         <div class="filter-row">
-          <div class="filter-group">
-            <label for="filterSemestre">Semestre:</label>
-            <select id="filterSemestre" class="form-control">
-              <option value="">Todos os semestres</option>
-              {% regroup periodos by semestre as semestres_grupo %}
-              {% for semestre in semestres_grupo %}
-                <option value="{{ semestre.grouper }}">{{ semestre.grouper }}º Semestre</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <button type="button" onclick="clearFilters()" class="btn-filter">Limpar Filtros</button>
+          <div class="filter-group filter-actions">
+            <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+            <button type="button" onclick="window.location.href='?'" class="btn btn-clear">✖ Limpar Filtros</button>
           </div>
         </div>
-      </div>
+      </form>
 
       <!-- Lista de Períodos Letivos -->
       <div class="form-section">
         <div class="section-header">
-          <h2>📅 Períodos Letivos Cadastrados ({{ periodos.count }})</h2>
+          <h2>📅 Períodos Letivos Cadastrados ({{ periodos.paginator.count }})</h2>
         </div>
         
         <div class="table-responsive">
@@ -182,118 +188,15 @@
           </tbody>
         </table>
         </div>
+
+        {% if periodos.has_other_pages %}
+          {% include 'partials/pagination.html' with page_obj=periodos %}
+        {% endif %}
       </div>
       {% endif %}
     </div>
 
     <!-- Script global para funcionalidades de gerenciamento -->
     <script src="{% static 'js/gerenciar-global.js' %}"></script>
-    
-    <script>
-      // Adiciona event listeners aos campos de filtro quando o DOM carregar
-      document.addEventListener('DOMContentLoaded', function() {
-        // Função para filtrar a tabela de períodos
-        function filterTablePeriodos() {
-          const searchFilter = document.getElementById('searchPeriodoNome')?.value.toLowerCase() || '';
-          const anoFilter = document.getElementById('filterAno')?.value || '';
-          const semestreFilter = document.getElementById('filterSemestre')?.value || '';
-          
-          const tableRows = document.querySelectorAll('.data-table tbody tr');
-          let visibleCount = 0;
-
-          tableRows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            
-            // Verifica se a linha tem células (não é a linha "Nenhum período encontrado")
-            if (cells.length > 1) {
-              const periodoNome = cells[1].textContent.toLowerCase(); // Nome
-              const periodoAno = cells[2].textContent.trim(); // Ano
-              const periodoSemestre = cells[3].textContent.trim(); // Semestre (ex: "1º Semestre")
-              
-              // Busca por nome
-              const searchMatch = !searchFilter || periodoNome.includes(searchFilter);
-              
-              // Filtro por ano
-              const anoMatch = !anoFilter || periodoAno === anoFilter;
-              
-              // Filtro por semestre - compara com o texto completo
-              let semestreMatch = true;
-              if (semestreFilter) {
-                // Cria o texto completo esperado (ex: "1º Semestre")
-                const expectedSemestre = semestreFilter + 'º Semestre';
-                semestreMatch = periodoSemestre === expectedSemestre;
-              }
-
-              if (searchMatch && anoMatch && semestreMatch) {
-                row.style.display = '';
-                visibleCount++;
-              } else {
-                row.style.display = 'none';
-              }
-            }
-          });
-
-          // Atualiza o contador no título
-          const sectionTitle = document.querySelector('.section-header h2');
-          if (sectionTitle) {
-            sectionTitle.textContent = `📅 Períodos Letivos Cadastrados (${visibleCount})`;
-          }
-
-          // Mostra/esconde mensagem de "nenhum período encontrado"
-          const emptyRow = document.querySelector('tr td[colspan]');
-          if (emptyRow) {
-            if (visibleCount === 0) {
-              emptyRow.parentElement.style.display = '';
-              emptyRow.textContent = 'Nenhum período letivo encontrado com os filtros aplicados.';
-            } else {
-              emptyRow.parentElement.style.display = 'none';
-            }
-          } else if (visibleCount === 0) {
-            // Se não existe uma mensagem de empty state, cria uma temporária
-            const tbody = document.querySelector('.data-table tbody');
-            let noResultsRow = tbody?.querySelector('.no-results-row');
-            
-            if (!noResultsRow && tbody) {
-              noResultsRow = document.createElement('tr');
-              noResultsRow.className = 'no-results-row';
-              noResultsRow.innerHTML = '<td colspan="5" style="text-align: center; padding: 20px; color: #666;">Nenhum período letivo encontrado com os filtros aplicados.</td>';
-              tbody.appendChild(noResultsRow);
-            }
-            if (noResultsRow) noResultsRow.style.display = '';
-          } else {
-            // Remove mensagem temporária se existir
-            const noResultsRow = document.querySelector('.no-results-row');
-            if (noResultsRow) {
-              noResultsRow.style.display = 'none';
-            }
-          }
-        }
-
-        // Função para limpar filtros
-        function clearFilters() {
-          const searchInput = document.getElementById('searchPeriodoNome');
-          const anoSelect = document.getElementById('filterAno');
-          const semestreSelect = document.getElementById('filterSemestre');
-          
-          if (searchInput) searchInput.value = '';
-          if (anoSelect) anoSelect.value = '';
-          if (semestreSelect) semestreSelect.value = '';
-          
-          filterTablePeriodos();
-        }
-
-        // Torna clearFilters disponível globalmente para o onclick
-        window.clearFilters = clearFilters;
-
-        // Configura event listeners nos campos de filtro
-        const searchPeriodoNome = document.getElementById('searchPeriodoNome');
-        const filterAno = document.getElementById('filterAno');
-        const filterSemestre = document.getElementById('filterSemestre');
-
-        if (searchPeriodoNome) searchPeriodoNome.addEventListener('input', filterTablePeriodos);
-        if (filterAno) filterAno.addEventListener('change', filterTablePeriodos);
-        if (filterSemestre) filterSemestre.addEventListener('change', filterTablePeriodos);
-      });
-    </script>
   </body>
 </html>

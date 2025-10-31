@@ -1068,20 +1068,63 @@ textarea.error {
     border-color: var(--cor02);
 }
 
-.filter-group .btn-clear {
-    background: var(--cor03);
-    color: white;
+/* Container para botões de ação de filtro (horizontal) */
+.filter-group.filter-actions {
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Padronização de botões: <button> e <a> com mesma aparência */
+.filter-group.filter-actions .btn,
+.filter-group.filter-actions button.btn,
+.filter-group.filter-actions a.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    vertical-align: middle;
+    text-decoration: none;
     border: none;
+    cursor: pointer;
+    font-family: var(--font01);
+    font-weight: 600;
+    transition: all var(--transition-fast);
+    /* Padronizar tamanho usando os valores do btn-clear (antigo <a>) */
     padding: 12px 24px;
     border-radius: 8px;
     font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    font-family: var(--font01);
 }
 
-.filter-group .btn-clear:hover {
+/* Garante que links se comportem como botões */
+.filter-group.filter-actions a.btn {
+    line-height: normal;
+}
+
+/* Remove sublinhado e garante cor consistente no hover */
+.filter-group.filter-actions a.btn:hover {
+    text-decoration: none;
+}
+
+/* Estilos específicos para btn-primary nos filtros */
+.filter-group.filter-actions .btn-primary {
+    background: var(--cor03);
+    color: white;
+}
+
+.filter-group.filter-actions .btn-primary:hover {
+    background: var(--cor04);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Estilos específicos para btn-clear nos filtros */
+.filter-group.filter-actions .btn-clear {
+    background: var(--cor03);
+    color: white;
+}
+
+.filter-group.filter-actions .btn-clear:hover {
     background: var(--cor04);
     color: white;
     transform: translateY(-2px);
@@ -2865,4 +2908,69 @@ textarea.form-control {
         padding: 0 6px;
         font-size: 12px;
     }
+}
+
+/* ========================================
+   FEEDBACK DE FILTROS ATIVOS
+   ======================================== */
+
+.filter-info {
+    background: #e8f4fd;
+    border-left: 4px solid var(--cor03);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border-radius: var(--border-radius-small);
+    color: var(--cor02);
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filter-info a {
+    color: var(--cor03);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.filter-info a:hover {
+    color: var(--cor04);
+    text-decoration: underline;
+}
+
+.btn-primary {
+    background: var(--cor03);
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: var(--cor04);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#filter-form {
+    width: 100%;
+}
+
+#filter-form .filter-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+#filter-form .filter-group {
+    flex: 1;
+}
+
+#filter-form button[type="submit"] {
+    margin-right: 8px;
 }

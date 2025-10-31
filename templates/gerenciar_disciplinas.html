@@ -1,4 +1,5 @@
 {% load static %}
+{% load user_tags %}
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -113,51 +114,52 @@
 
       <!-- Seção de Filtros -->
       {% if not editing %}
-      <div class="filters-section" id="filtersSection">
+      <form method="get" class="filters-section" id="filter-form">
         <div class="filter-row">
           <div class="filter-group">
-            <label for="searchDisciplinaNome">Buscar por Nome ou Sigla:</label>
-            <input type="text" id="searchDisciplinaNome" placeholder="Digite o nome ou sigla da disciplina">
+            <label for="busca">Buscar por Nome ou Sigla:</label>
+            <input type="text" id="busca" name="busca" class="form-control" placeholder="Digite o nome ou sigla da disciplina" value="{{ filtro_busca }}">
           </div>
         </div>
 
         <div class="filter-row">
           <div class="filter-group">
-            <label for="filterCurso">Curso:</label>
-            <select id="filterCurso">
+            <label for="curso">Curso:</label>
+            <select id="curso" name="curso" class="form-control">
               <option value="">Todos os cursos</option>
               {% for curso in cursos %}
-                <option value="{{ curso.curso_nome }}">{{ curso.curso_nome }}</option>
+                <option value="{{ curso.id }}" {% if filtro_curso == curso.id|stringformat:"s" %}selected{% endif %}>{{ curso.curso_nome }}</option>
               {% endfor %}
             </select>
           </div>
 
           <div class="filter-group">
-            <label for="filterTipo">Tipo:</label>
-            <select id="filterTipo">
+            <label for="tipo">Tipo:</label>
+            <select id="tipo" name="tipo" class="form-control">
               <option value="">Todos os tipos</option>
-              <option value="Obrigatória">Obrigatória</option>
-              <option value="Optativa">Optativa</option>
+              <option value="obrigatoria" {% if filtro_tipo == "obrigatoria" %}selected{% endif %}>Obrigatória</option>
+              <option value="optativa" {% if filtro_tipo == "optativa" %}selected{% endif %}>Optativa</option>
             </select>
           </div>
         </div>
 
         <div class="filter-row">
           <div class="filter-group">
-            <label for="filterPeriodo">Período Letivo:</label>
-            <select id="filterPeriodo">
+            <label for="periodo">Período Letivo:</label>
+            <select id="periodo" name="periodo" class="form-control">
               <option value="">Todos os períodos</option>
               {% for periodo in periodos %}
-                <option value="{{ periodo.nome }}">{{ periodo.nome }}</option>
+                <option value="{{ periodo.id }}" {% if filtro_periodo == periodo.id|stringformat:"s" %}selected{% endif %}>{{ periodo.nome }}</option>
               {% endfor %}
             </select>
           </div>
 
-          <div class="filter-group">
-            <button type="button" onclick="clearFiltersDisciplinas()" class="btn btn-clear">Limpar Filtros</button>
+          <div class="filter-group filter-actions">
+            <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+            <button type="button" onclick="window.location.href='?'" class="btn btn-clear">✖ Limpar Filtros</button>
           </div>
         </div>
-      </div>
+      </form>
 
       <!-- Lista de Disciplinas -->
       <div class="form-section">
@@ -226,104 +228,6 @@
 
       <!-- Script global para funcionalidades de gerenciamento -->
       <script src="{% static 'js/gerenciar-global.js' %}"></script>
-
-      <script>
-        // Função para filtrar a tabela de disciplinas (seguindo padrão dos usuários)
-        function filterTableDisciplinas() {
-          const searchFilter = document.getElementById('searchDisciplinaNome').value.toLowerCase();
-          const cursoFilter = document.getElementById('filterCurso').value.toLowerCase();
-          const tipoFilter = document.getElementById('filterTipo').value.toLowerCase();
-          const periodoFilter = document.getElementById('filterPeriodo').value.toLowerCase();
-          
-          const tableRows = document.querySelectorAll('.data-table tbody tr');
-          let visibleCount = 0;
-
-          tableRows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            
-            // Verifica se a linha tem células (não é a linha "Nenhuma disciplina encontrada")
-            if (cells.length > 1) {
-              const disciplinaNome = cells[0].textContent.toLowerCase(); // Nome da disciplina
-              const disciplinaSigla = cells[1].textContent.toLowerCase(); // Sigla
-              const disciplinaTipo = cells[2].textContent.toLowerCase(); // Tipo
-              const disciplinaCurso = cells[3].textContent.toLowerCase(); // Curso
-              const disciplinaProfessor = cells[4].textContent.toLowerCase(); // Professor
-              const disciplinaPeriodo = cells[5].textContent.toLowerCase(); // Período Letivo
-
-              // A busca procura em nome e sigla da disciplina
-              const searchMatch = !searchFilter || 
-                disciplinaNome.includes(searchFilter) || 
-                disciplinaSigla.includes(searchFilter);
-              
-              const cursoMatch = !cursoFilter || disciplinaCurso.includes(cursoFilter);
-              const tipoMatch = !tipoFilter || disciplinaTipo.includes(tipoFilter);
-              const periodoMatch = !periodoFilter || disciplinaPeriodo.includes(periodoFilter);
-
-              if (searchMatch && cursoMatch && tipoMatch && periodoMatch) {
-                row.style.display = '';
-                visibleCount++;
-              } else {
-                row.style.display = 'none';
-              }
-            }
-          });
-
-          // Atualiza o contador no título
-          const sectionTitle = document.getElementById('contador-disciplinas');
-          if (sectionTitle) {
-            sectionTitle.textContent = `📚 Disciplinas Cadastradas (${visibleCount})`;
-          }
-
-          // Mostra mensagem se nenhum resultado for encontrado
-          const emptyState = document.querySelector('.empty-state');
-          if (emptyState) {
-            emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
-          }
-          
-          // Se não há resultados, mostra mensagem
-          if (visibleCount === 0 && !emptyState) {
-            // Se não existe uma mensagem de empty state, cria uma temporária
-            const tbody = document.querySelector('.data-table tbody');
-            let noResultsRow = tbody.querySelector('.no-results-row');
-            
-            if (!noResultsRow) {
-              noResultsRow = document.createElement('tr');
-              noResultsRow.className = 'no-results-row';
-              noResultsRow.innerHTML = '<td colspan="7" style="text-align: center; padding: 20px; color: #666;">Nenhuma disciplina encontrada com os filtros aplicados.</td>';
-              tbody.appendChild(noResultsRow);
-            }
-            noResultsRow.style.display = '';
-          } else {
-            // Remove mensagem de "não encontrado" se houver resultados
-            const noResultsRow = document.querySelector('.no-results-row');
-            if (noResultsRow) {
-              noResultsRow.style.display = 'none';
-            }
-          }
-        }
-
-        // Função para limpar filtros
-        function clearFiltersDisciplinas() {
-          document.getElementById('searchDisciplinaNome').value = '';
-          document.getElementById('filterCurso').value = '';
-          document.getElementById('filterTipo').value = '';
-          document.getElementById('filterPeriodo').value = '';
-          filterTableDisciplinas();
-        }
-
-        // Adiciona event listeners aos campos de filtro
-        document.addEventListener('DOMContentLoaded', function() {
-          const searchDisciplinaNome = document.getElementById('searchDisciplinaNome');
-          const filterCurso = document.getElementById('filterCurso');
-          const filterTipo = document.getElementById('filterTipo');
-          const filterPeriodo = document.getElementById('filterPeriodo');
-
-          if (searchDisciplinaNome) searchDisciplinaNome.addEventListener('input', filterTableDisciplinas);
-          if (filterCurso) filterCurso.addEventListener('change', filterTableDisciplinas);
-          if (filterTipo) filterTipo.addEventListener('change', filterTableDisciplinas);
-          if (filterPeriodo) filterPeriodo.addEventListener('change', filterTableDisciplinas);
-        });
-      </script>
     </div>
   </body>
 </html>
