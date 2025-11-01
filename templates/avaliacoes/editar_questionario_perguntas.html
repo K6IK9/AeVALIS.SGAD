@@ -145,9 +145,10 @@
 
         <!-- Filtros e Busca -->
         {% if not editando %}
+        <!-- Filtros -->
         <div class="filters-section">
-            <h3 class="filters-title">Filtros e Busca</h3>
-            <div class="filter-row">
+            <h3 class="filters-title">🔍 Filtros</h3>
+            <div class="filters-container">
                 <div class="filter-group">
                     <label for="searchPerguntaTexto">Buscar por Texto:</label>
                     <div class="search-box">
@@ -189,6 +190,10 @@
             </div>
 
             {% if perguntas_existentes %}
+            <div class="table-scroll-hint">
+                <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
+            </div>
+            <div class="table-responsive">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -202,6 +207,7 @@
                 </thead>
                 <tbody>
                     {% for qp in perguntas_existentes %}
+                    <tr>
                         <td style="text-align: center;">
                             <span class="category-order-number">{{ qp.ordem_no_questionario }}</span>
                         </td>
@@ -269,6 +275,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
             {% else %}
             <div class="empty-state">
                 <h3>📝 Nenhuma pergunta cadastrada</h3>
@@ -370,6 +377,42 @@
             document.getElementById('searchPerguntaTexto').addEventListener('input', filterTable);
             document.getElementById('filterTipo').addEventListener('change', filterTable);
             document.getElementById('filterObrigatoria').addEventListener('change', filterTable);
+        });
+
+        // Funcionalidade de arrastar para rolar a tabela
+        document.addEventListener('DOMContentLoaded', function () {
+            const tableResponsive = document.querySelector('.table-responsive');
+            
+            if (tableResponsive) {
+                let isDown = false;
+                let startX;
+                let scrollLeft;
+
+                tableResponsive.addEventListener('mousedown', (e) => {
+                    isDown = true;
+                    tableResponsive.classList.add('grabbing');
+                    startX = e.pageX - tableResponsive.offsetLeft;
+                    scrollLeft = tableResponsive.scrollLeft;
+                });
+
+                tableResponsive.addEventListener('mouseleave', () => {
+                    isDown = false;
+                    tableResponsive.classList.remove('grabbing');
+                });
+
+                tableResponsive.addEventListener('mouseup', () => {
+                    isDown = false;
+                    tableResponsive.classList.remove('grabbing');
+                });
+
+                tableResponsive.addEventListener('mousemove', (e) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - tableResponsive.offsetLeft;
+                    const walk = (x - startX) * 2;
+                    tableResponsive.scrollLeft = scrollLeft - walk;
+                });
+            }
         });
     </script>
 </body>

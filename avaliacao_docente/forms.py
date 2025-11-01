@@ -687,11 +687,11 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
             attrs={
                 "class": "form-control",
                 "rows": 3,
-                "placeholder": 'Para múltipla escolha, insira uma opção por linha. Também aceitamos CSV (separado por vírgula) ou JSON (ex.: ["A", "B"]).',
+                "placeholder": 'Para múltipla escolha, insira uma opção por linha (máx. 200 caracteres cada). Também aceitamos CSV (separado por vírgula) ou JSON (ex.: ["A", "B"]).',
             }
         ),
         label="Opções de Múltipla Escolha",
-        help_text='Insira uma opção por linha. Também aceitamos CSV (vírgulas) ou JSON (ex.: ["A", "B"]). Itens duplicados e vazios serão ignorados.',
+        help_text='Insira uma opção por linha (máximo 200 caracteres por opção). Também aceitamos CSV (vírgulas) ou JSON (ex.: ["A", "B"]). Itens duplicados e vazios serão ignorados.',
     )
 
     class Meta:
@@ -788,6 +788,18 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
         if len(normalized) < 2:
             raise forms.ValidationError(
                 "É necessário pelo menos 2 opções para múltipla escolha."
+            )
+
+        # Validar limite de caracteres para cada opção (máximo 60 caracteres)
+        MAX_CARACTERES_OPCAO = 60
+        opcoes_longas = [
+            opcao for opcao in normalized if len(opcao) > MAX_CARACTERES_OPCAO
+        ]
+
+        if opcoes_longas:
+            raise forms.ValidationError(
+                f"As seguintes opções excedem o limite de {MAX_CARACTERES_OPCAO} caracteres: "
+                f"{', '.join([f'"{opcao[:50]}..." ({len(opcao)} caracteres)' for opcao in opcoes_longas])}"
             )
 
         return normalized

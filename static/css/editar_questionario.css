@@ -515,6 +515,15 @@
     margin-top: 4px;
     font-size: 0.8rem;
     color: #666;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+.question-options-preview small {
+    display: block;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 /* ============ Numeração das perguntas por categoria ============ */
@@ -530,4 +539,85 @@
     min-width: 35px;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ============ Ajustes para evitar quebra de layout com texto extenso ============ */
+
+/* ============ Ajustes para evitar quebra de layout com texto extenso ============ */
+
+/* Garante que a tabela tenha rolagem horizontal quando necessário */
+.form-section .data-table {
+    width: 100%;
+    min-width: 900px;
+    /* Largura mínima para forçar scroll horizontal */
+}
+
+/* Ajusta as colunas da tabela de perguntas */
+.form-section .data-table th:nth-child(1),
+.form-section .data-table td:nth-child(1) {
+    width: 80px;
+    min-width: 80px;
+    text-align: center;
+}
+
+.form-section .data-table th:nth-child(2),
+.form-section .data-table td:nth-child(2) {
+    width: 40%;
+    min-width: 250px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+.form-section .data-table th:nth-child(3),
+.form-section .data-table td:nth-child(3) {
+    width: 150px;
+    min-width: 150px;
+}
+
+.form-section .data-table th:nth-child(4),
+.form-section .data-table td:nth-child(4) {
+    width: 120px;
+    min-width: 120px;
+}
+
+.form-section .data-table th:nth-child(5),
+.form-section .data-table td:nth-child(5) {
+    width: 110px;
+    min-width: 110px;
+}
+
+.form-section .data-table th:nth-child(6),
+.form-section .data-table td:nth-child(6) {
+    width: 150px;
+    min-width: 150px;
+}
+
+/* Garante que badges e botões não quebrem */
+.form-section .data-table .badge,
+.form-section .data-table .status-badge {
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.form-section .data-table .btn-group {
+    white-space: nowrap;
+    display: flex;
+    gap: 5px;
+}
+
+/* ============ Dica de rolagem lateral da tabela ============ */
+.table-scroll-hint {
+    background: rgba(0, 123, 255, 0.1);
+    border-left: 3px solid var(--cor02);
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.table-scroll-hint small {
+    color: var(--cor03);
+    font-weight: 500;
 }
