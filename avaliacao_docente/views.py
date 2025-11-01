@@ -1934,7 +1934,7 @@ def editar_questionario_perguntas(request, questionario_id):
                 )
                 if form.is_valid():
                     pergunta = form.save()
-                    messages.success(request, "✅ Pergunta atualizada com sucesso!")
+                    messages.success(request, "Pergunta atualizada com sucesso!")
                     return redirect(
                         "editar_questionario_perguntas", questionario_id=questionario.id
                     )

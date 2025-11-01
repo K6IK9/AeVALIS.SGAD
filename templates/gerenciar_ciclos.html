@@ -221,52 +221,54 @@
       </div>
       {% if not editing %}
 
-      <!-- Filtros e Busca -->
-        <form method="get" class="filters-section" id="filter-form">
-          <h3 class="filters-title">Filtros e Busca</h3>
-          <div class="filter-row">
-            <div class="filter-group">
-              <label for="busca">Buscar por Nome:</label>
-              <div class="search-box">
-                <input type="text" id="busca" name="busca" class="form-control" placeholder="Digite o nome do ciclo..."
-                  autocomplete="off" value="{{ filtro_busca }}">
+      <!-- Filtros -->
+      <div class="filters-section">
+          <h3 class="filters-title">🔍 Filtros</h3>
+          <form method="get" id="filter-form">
+            <div class="filter-row">
+              <div class="filter-group">
+                <label for="busca">Buscar por Nome:</label>
+                <div class="search-box">
+                  <input type="text" id="busca" name="busca" class="form-control" placeholder="Digite o nome do ciclo..."
+                    autocomplete="off" value="{{ filtro_busca }}">
+                </div>
+              </div>
+              <div class="filter-group">
+                <label for="periodo">Filtrar por Período:</label>
+                <select id="periodo" name="periodo" class="form-control">
+                  <option value="">Todos os períodos</option>
+                  {% for periodo in periodos %}
+                  <option value="{{ periodo.id }}" {% if filtro_periodo == periodo.id|stringformat:"s" %}selected{% endif %}>{{ periodo.nome }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="filter-group">
+                <label for="status">Filtrar por Status:</label>
+                <select id="status" name="status" class="form-control">
+                  <option value="">Todos os status</option>
+                  <option value="agendado" {% if filtro_status == "agendado" %}selected{% endif %}>Agendado</option>
+                  <option value="ativo" {% if filtro_status == "ativo" %}selected{% endif %}>Ativo</option>
+                  <option value="encerrado" {% if filtro_status == "encerrado" %}selected{% endif %}>Encerrado</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label for="ativo">Filtrar por Ativo:</label>
+                <select id="ativo" name="ativo" class="form-control">
+                  <option value="">Todos</option>
+                  <option value="sim" {% if filtro_ativo == "sim" %}selected{% endif %}>Sim</option>
+                  <option value="nao" {% if filtro_ativo == "nao" %}selected{% endif %}>Não</option>
+                </select>
               </div>
             </div>
-            <div class="filter-group">
-              <label for="periodo">Filtrar por Período:</label>
-              <select id="periodo" name="periodo" class="form-control">
-                <option value="">Todos os períodos</option>
-                {% for periodo in periodos %}
-                <option value="{{ periodo.id }}" {% if filtro_periodo == periodo.id|stringformat:"s" %}selected{% endif %}>{{ periodo.nome }}</option>
-                {% endfor %}
-              </select>
+            
+            <div class="filter-row">
+              <div class="filter-group filter-actions">
+                <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+                <button type="button" onclick="window.location.href='?'" class="btn btn-clear">✖ Limpar Filtros</button>
+              </div>
             </div>
-            <div class="filter-group">
-              <label for="status">Filtrar por Status:</label>
-              <select id="status" name="status" class="form-control">
-                <option value="">Todos os status</option>
-                <option value="agendado" {% if filtro_status == "agendado" %}selected{% endif %}>Agendado</option>
-                <option value="ativo" {% if filtro_status == "ativo" %}selected{% endif %}>Ativo</option>
-                <option value="encerrado" {% if filtro_status == "encerrado" %}selected{% endif %}>Encerrado</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label for="ativo">Filtrar por Ativo:</label>
-              <select id="ativo" name="ativo" class="form-control">
-                <option value="">Todos</option>
-                <option value="sim" {% if filtro_ativo == "sim" %}selected{% endif %}>Sim</option>
-                <option value="nao" {% if filtro_ativo == "nao" %}selected{% endif %}>Não</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="filter-row">
-            <div class="filter-group filter-actions">
-              <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
-              <button type="button" onclick="window.location.href='?'" class="btn btn-clear">✖ Limpar Filtros</button>
-            </div>
-          </div>
-        </form>
+          </form>
+      </div>
 
       <div class="form-section">
         <div class="section-header">

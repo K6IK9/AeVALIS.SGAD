@@ -106,7 +106,7 @@
                             <option value="">Todos os cursos</option>
                             {% for curso in cursos %}
                             <option value="{{ curso.id }}" {% if filtros.curso == curso.id|stringformat:"s" %}selected{% endif %}>
-                                {{ curso.nome_curso }}
+                                {{ curso.curso_nome }}
                             </option>
                             {% endfor %}
                         </select>
@@ -148,9 +148,6 @@
             <h2>📋 Ciclos e Indicadores</h2>
             
             {% if page_obj %}
-            <div class="alert alert-info mb-3">
-                <i class="bi bi-info-circle"></i> <strong>Dica:</strong> Arraste a tabela lateralmente para ver todas as colunas
-            </div>
 
             <div class="table-responsive">
                 <table class="data-table">

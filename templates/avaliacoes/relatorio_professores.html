@@ -43,6 +43,13 @@
         <div class="form-section">
             <h2>🔍 Filtros</h2>
             <form method="get" id="form-filtros">
+                
+                <div class="form-group">
+                    <label for="busca">Buscar Professor</label>
+                    <input type="text" name="busca" id="busca" class="form-control" 
+                           placeholder="Nome ou matrícula" value="{{ busca }}">
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="ciclo">Ciclo de Avaliação</label>
@@ -70,11 +77,6 @@
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label for="busca">Buscar Professor</label>
-                        <input type="text" name="busca" id="busca" class="form-control" 
-                               placeholder="Nome ou matrícula" value="{{ busca }}">
-                    </div>
                 </div>
                 
                 <div class="form-row">
