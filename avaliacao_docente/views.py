@@ -2255,10 +2255,8 @@ def relatorio_avaliacoes(request):
     View para gerar relatórios de avaliações
     Apenas coordenadores e admins podem acessar
     """
-    from django.db.models import (
-        Avg,
-        Count,
-    )  # Import no início para evitar UnboundLocalError
+    from django.db.models import Avg, Count
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
     import json
 
     if not (check_user_permission(request.user, ["coordenador", "admin"])):
@@ -2274,9 +2272,24 @@ def relatorio_avaliacoes(request):
     # Filtros
     ciclo_selecionado = request.GET.get("ciclo")
     professor_selecionado = request.GET.get("professor")
+    search_query = request.GET.get("search", "").strip()
 
-    # Buscar avaliações que têm respostas
-    avaliacoes = AvaliacaoDocente.objects.filter(respostas__isnull=False).distinct()
+    # Buscar avaliações que têm respostas com otimização de queries
+    avaliacoes = (
+        AvaliacaoDocente.objects.filter(respostas__isnull=False)
+        .select_related(
+            "turma__disciplina__periodo_letivo",
+            "turma__disciplina__professor__user",
+            "professor__user",
+            "ciclo__questionario",
+        )
+        .prefetch_related(
+            "respostas",
+            "turma__matriculas",
+            "ciclo__questionario__perguntas__pergunta",
+        )
+        .distinct()
+    )
 
     if ciclo_selecionado:
         avaliacoes = avaliacoes.filter(ciclo_id=ciclo_selecionado)
@@ -2284,7 +2297,18 @@ def relatorio_avaliacoes(request):
     if professor_selecionado:
         avaliacoes = avaliacoes.filter(professor_id=professor_selecionado)
 
-    # Se for solicitação de exportação CSV, gerar e retornar o arquivo
+    # Busca por texto (professor, disciplina, turma)
+    if search_query:
+        from django.db.models import Q
+
+        avaliacoes = avaliacoes.filter(
+            Q(professor__user__first_name__icontains=search_query)
+            | Q(professor__user__last_name__icontains=search_query)
+            | Q(turma__disciplina__disciplina_nome__icontains=search_query)
+            | Q(turma__codigo_turma__icontains=search_query)
+        )
+
+    # Se for solicitação de exportação CSV, gerar e retornar o arquivo (sem paginação)
     if formato == "csv":
         return gerar_csv_avaliacoes(
             avaliacoes, ciclo_selecionado, professor_selecionado
@@ -2293,9 +2317,28 @@ def relatorio_avaliacoes(request):
     # Estatísticas
     total_avaliacoes = avaliacoes.count()
 
-    # Calcular dados adicionais para cada avaliação
+    # Configurar paginação
+    per_page = request.GET.get("per_page", "10")
+    try:
+        per_page = int(per_page)
+        if per_page not in [10, 25, 50, 100]:
+            per_page = 10
+    except (ValueError, TypeError):
+        per_page = 10
+
+    paginator = Paginator(avaliacoes, per_page)
+    page = request.GET.get("page", 1)
+
+    try:
+        avaliacoes_paginadas = paginator.page(page)
+    except PageNotAnInteger:
+        avaliacoes_paginadas = paginator.page(1)
+    except EmptyPage:
+        avaliacoes_paginadas = paginator.page(paginator.num_pages)
+
+    # Calcular dados adicionais para cada avaliação (apenas da página atual)
     avaliacoes_com_stats = []
-    for avaliacao in avaliacoes:
+    for avaliacao in avaliacoes_paginadas:
         # Contar respondentes únicos
         respondentes = (
             RespostaAvaliacao.objects.filter(avaliacao=avaliacao)
@@ -2324,6 +2367,7 @@ def relatorio_avaliacoes(request):
                             "pergunta": pergunta,
                             "tipo": "multipla_escolha",
                             "media": resultado["media"],
+                            "moda": resultado.get("moda", "N/A"),
                             "contagens": resultado["contagens"],
                             "respostas_count": resultado["total_respondentes"],
                             "classificacao": avaliacao.get_classificacao_media(
@@ -2552,10 +2596,14 @@ def relatorio_avaliacoes(request):
         "ciclos": ciclos,
         "professores": professores,
         "avaliacoes": avaliacoes_com_stats,
+        "page_obj": avaliacoes_paginadas,
+        "paginator": paginator,
         "total_avaliacoes": total_avaliacoes,
         "media_geral": round(media_geral, 2),
         "ciclo_selecionado": ciclo_selecionado,
         "professor_selecionado": professor_selecionado,
+        "search_query": search_query,
+        "per_page": per_page,
         "titulo": "Relatórios de Avaliação",
         "ciclos_graficos_json": json.dumps(ciclos_para_graficos),
     }
@@ -2610,6 +2658,7 @@ def gerar_csv_avaliacoes(
             "Pergunta",
             "Tipo Pergunta",
             "Média Pergunta",
+            "Moda",
             "Classificação",
             "Não atende",
             "Insuficiente",
@@ -2719,6 +2768,7 @@ def gerar_csv_avaliacoes(
                                 sanitize_csv_value(pergunta.enunciado),
                                 "Múltipla Escolha",
                                 resultado["media"],
+                                sanitize_csv_value(resultado.get("moda", "N/A")),
                                 avaliacao.get_classificacao_media(resultado["media"]),
                                 contagens.get("Não atende", 0),
                                 contagens.get("Insuficiente", 0),
@@ -2758,6 +2808,7 @@ def gerar_csv_avaliacoes(
                                 sanitize_csv_value(pergunta.enunciado),
                                 pergunta.get_tipo_display(),
                                 round(stats["media"], 1),
+                                stats.get("moda", "N/A"),
                                 "N/A",
                                 "N/A",
                                 "N/A",

@@ -704,7 +704,7 @@ class AvaliacaoDocente(BaseModel, TimestampMixin, SoftDeleteMixin):
         =(N0*0 + N1*0.25 + N2*0.5 + N3*0.75 + N4*1) / Total_Respondentes
 
         Retorna:
-            dict com 'media', 'total_respondentes' e 'contagens'
+            dict com 'media', 'total_respondentes', 'contagens' e 'moda'
             None se não houver respostas
         """
         contagens = self.get_contagem_opcoes_por_pergunta(pergunta)
@@ -720,10 +720,14 @@ class AvaliacaoDocente(BaseModel, TimestampMixin, SoftDeleteMixin):
 
         media = soma_ponderada / total_respondentes
 
+        # Calcular moda (opção mais frequente)
+        moda = max(contagens, key=contagens.get) if contagens else "N/A"
+
         return {
             "media": round(media, 4),
             "total_respondentes": total_respondentes,
             "contagens": contagens,
+            "moda": moda,
         }
 
     def calcular_media_geral_questionario_padrao(self):
