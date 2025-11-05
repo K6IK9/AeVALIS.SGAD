@@ -20,6 +20,9 @@
 
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- JavaScript Global de Gerenciamento -->
+    <script src="{% static 'js/gerenciar-global.js' %}" defer></script>
 </head>
 
 <body>
@@ -377,42 +380,6 @@
             document.getElementById('searchPerguntaTexto').addEventListener('input', filterTable);
             document.getElementById('filterTipo').addEventListener('change', filterTable);
             document.getElementById('filterObrigatoria').addEventListener('change', filterTable);
-        });
-
-        // Funcionalidade de arrastar para rolar a tabela
-        document.addEventListener('DOMContentLoaded', function () {
-            const tableResponsive = document.querySelector('.table-responsive');
-            
-            if (tableResponsive) {
-                let isDown = false;
-                let startX;
-                let scrollLeft;
-
-                tableResponsive.addEventListener('mousedown', (e) => {
-                    isDown = true;
-                    tableResponsive.classList.add('grabbing');
-                    startX = e.pageX - tableResponsive.offsetLeft;
-                    scrollLeft = tableResponsive.scrollLeft;
-                });
-
-                tableResponsive.addEventListener('mouseleave', () => {
-                    isDown = false;
-                    tableResponsive.classList.remove('grabbing');
-                });
-
-                tableResponsive.addEventListener('mouseup', () => {
-                    isDown = false;
-                    tableResponsive.classList.remove('grabbing');
-                });
-
-                tableResponsive.addEventListener('mousemove', (e) => {
-                    if (!isDown) return;
-                    e.preventDefault();
-                    const x = e.pageX - tableResponsive.offsetLeft;
-                    const walk = (x - startX) * 2;
-                    tableResponsive.scrollLeft = scrollLeft - walk;
-                });
-            }
         });
     </script>
 </body>

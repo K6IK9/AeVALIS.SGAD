@@ -11,15 +11,19 @@
     <!-- Favicons -->
     {% include 'partials/favicon_meta.html' %}
 
-    <!-- CSS Global -->
+    <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
-    <!-- CSS de Gerenciamento -->
     <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}">
-    <!-- CSS específico do relatório -->
     <link rel="stylesheet" href="{% static 'css/relatorio_avaliacoes.css' %}">
 </head>
 
 <body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Carregando dados...</div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -68,132 +72,220 @@
                         </select>
                     </div>
                 </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <button type="submit" class="btn">
-                            🔍 Filtrar Relatório
-                        </button>
-                        <a href="javascript:void(0);" onclick="exportarCSV()" class="btn btn-secondary">
-                            📥 Exportar CSV
-                        </a>
-                        <a href="{% url 'relatorio_professores' %}" class="btn btn-secondary">
-                            👥 Relatório de Professores
-                        </a>
+
+                <!-- Filtros Avançados -->
+                <div class="filtros-avancados">
+                    <div class="form-group search-box">
+                        <label for="search-avaliacoes">🔍 Buscar</label>
+                        <input type="text" 
+                               id="search-avaliacoes" 
+                               name="search"
+                               value="{{ search_query }}"
+                               class="form-control" 
+                               placeholder="Professor, disciplina ou turma...">
                     </div>
+                </div>
+                
+                <div class="filter-group filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        🔍 Filtrar Relatório
+                    </button>
+                    <button type="button" onclick="limparFiltros()" class="btn btn-clear">
+                        🔄 Limpar Filtros
+                    </button>
+                    <button type="button" onclick="exportarCSV()" class="btn btn-secondary">
+                        📥 Exportar CSV
+                    </button>
+                    <a href="{% url 'relatorio_professores' %}" class="btn btn-secondary">
+                        👥 Relatório de Professores
+                    </a>
                 </div>
             </form>
         </div>
 
-        <!-- Conteúdo principal -->
+        <!-- Conteúdo Principal -->
         {% if avaliacoes %}
         <div class="form-section">
-            <h2>📈 Relatórios de Avaliação</h2>
-            <div class="item-count">
-                Total de avaliações encontradas: {{ avaliacoes|length }}
-            </div>
+            <h2>📈 Resultados</h2>
             
-            <div class="avaliacoes-grid">
-                    {% for avaliacao in avaliacoes %}
-                    <div class="avaliacao-card">
-                        <div class="card-header">
-                            <h4 class="card-title">{{ avaliacao.turma.disciplina.disciplina_nome }}</h4>
-                            <div class="card-subtitle">
-                                <i class="bi bi-person-fill"></i>
-                                {{ avaliacao.professor.user.get_full_name }}
-                            </div>
-                        </div>
-                        
-                        <div class="card-info">
-                            <div class="info-item">
-                                <span>Turma:</span>
-                                <strong>{{ avaliacao.turma.codigo_turma }}</strong>
-                            </div>
-                            <div class="info-item">
-                                <span>Período:</span>
-                                <strong>{{ avaliacao.turma.periodo_letivo.nome }}</strong>
-                            </div>
-                            <div class="info-item">
-                                <span>Alunos:</span>
-                                <strong>{{ avaliacao.total_alunos }}</strong>
-                            </div>
-                            <div class="info-item">
-                                <span>Respondentes:</span>
-                                <strong>{{ avaliacao.respondentes }}</strong>
-                            </div>
-                            <div class="info-item">
-                                <span>Taxa de Resposta:</span>
-                                <strong>{{ avaliacao.taxa_resposta }}%</strong>
-                            </div>
-                        </div>
-
-                        <!-- Estatísticas por pergunta -->
-                        {% for pergunta_stat in avaliacao.pergunta_stats %}
-                        <div class="pergunta-stats">
-                            <div class="pergunta-title">{{ pergunta_stat.pergunta.enunciado }}</div>
-                            <div class="stats-row">
-                                <div class="stat-item">
-                                    <div class="stat-value">{{ pergunta_stat.media|floatformat:1 }}</div>
-                                    <div class="stat-label">Média</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">{{ pergunta_stat.moda }}</div>
-                                    <div class="stat-label">Moda</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">{{ pergunta_stat.respostas_count }}</div>
-                                    <div class="stat-label">Respostas</div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-
-                        <!-- Comentários -->
-                        {% if avaliacao.comentarios %}
-                        <div class="comentarios-section">
-                            <div class="comentarios-title">
-                                <i class="bi bi-chat-dots"></i> Comentários ({{ avaliacao.comentarios|length }})
-                            </div>
-                            {% for comentario in avaliacao.comentarios %}
-                            <div class="comentario-card">
-                                <div class="comentario-header">
-                                    <span class="comentario-aluno">Avaliação Anônima</span>
-                                    <span class="comentario-data">{{ comentario.data_resposta|date:"d/m/Y H:i" }}</span>
-                                </div>
-                                <div class="comentario-texto">{{ comentario.valor_texto }}</div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-
-                <!-- Métricas Gerais -->
-                {% if metricas_gerais %}
-                <div class="metricas-container">
-                    <h3 class="metricas-title">
-                        <i class="bi bi-bar-chart"></i> Métricas Gerais
-                    </h3>
-                    <div class="metricas-grid">
-                        {% for media in metricas_gerais %}
-                        <div class="metric-card">
-                            <div class="metric-value {% if media.media >= 4 %}success{% elif media.media >= 3 %}warning{% else %}danger{% endif %}">
-                                {{ media.media|floatformat:1 }}
-                            </div>
-                            <small class="metric-label">Média</small>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
+            <!-- Informações de Paginação -->
+            <div class="pagination-info">
+                {% if page_obj.has_other_pages %}
+                    Mostrando <strong>{{ page_obj.start_index }}</strong> - <strong>{{ page_obj.end_index }}</strong> 
+                    de <strong>{{ paginator.count }}</strong> avaliação(ões)
+                {% else %}
+                    Total: <strong id="result-count">{{ avaliacoes|length }}</strong> avaliação(ões) encontrada(s)
                 {% endif %}
             </div>
+
+            <!-- Controles de Itens por Página -->
+            {% if page_obj.has_other_pages %}
+            <div class="items-per-page">
+                <label for="items-per-page">Exibir:</label>
+                <select id="items-per-page" class="form-control">
+                    <option value="10" {% if per_page == '10' %}selected{% endif %}>10 por página</option>
+                    <option value="25" {% if per_page == '25' %}selected{% endif %}>25 por página</option>
+                    <option value="50" {% if per_page == '50' %}selected{% endif %}>50 por página</option>
+                    <option value="100" {% if per_page == '100' %}selected{% endif %}>100 por página</option>
+                </select>
+            </div>
+            {% endif %}
+
+            <!-- Grid de Avaliações -->
+            <div class="avaliacoes-grid">
+                {% for avaliacao in avaliacoes %}
+                <div class="avaliacao-card">
+                    <!-- Cabeçalho do Card -->
+                    <div class="card-header">
+                        <h4 class="card-title">{{ avaliacao.turma.disciplina.disciplina_nome }}</h4>
+                        <div class="card-subtitle">
+                            <i class="bi bi-person-fill"></i>
+                            {{ avaliacao.professor.user.get_full_name }}
+                        </div>
+                    </div>
+                    
+                    <!-- Informações do Card -->
+                    <div class="card-info">
+                        <div class="info-item">
+                            <span>Turma:</span>
+                            <strong>{{ avaliacao.turma.codigo_turma }}</strong>
+                        </div>
+                        <div class="info-item">
+                            <span>Período:</span>
+                            <strong>{{ avaliacao.turma.periodo_letivo.nome }}</strong>
+                        </div>
+                        <div class="info-item">
+                            <span>Alunos:</span>
+                            <strong>{{ avaliacao.total_alunos }}</strong>
+                        </div>
+                        <div class="info-item">
+                            <span>Respondentes:</span>
+                            <strong>{{ avaliacao.respondentes }}</strong>
+                        </div>
+                        <div class="info-item">
+                            <span>Taxa de Resposta:</span>
+                            <strong>{{ avaliacao.taxa_resposta }}%</strong>
+                        </div>
+                    </div>
+
+                    <!-- Estatísticas por Pergunta -->
+                    {% for pergunta_stat in avaliacao.pergunta_stats %}
+                    <div class="pergunta-stats">
+                        <div class="pergunta-title">{{ pergunta_stat.pergunta.enunciado }}</div>
+                        <div class="stats-row">
+                            <div class="stat-item">
+                                <div class="stat-value">{{ pergunta_stat.media|floatformat:1 }}</div>
+                                <div class="stat-label">Média</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ pergunta_stat.moda }}</div>
+                                <div class="stat-label">Moda</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ pergunta_stat.respostas_count }}</div>
+                                <div class="stat-label">Respostas</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- Comentários -->
+                    {% if avaliacao.comentarios %}
+                    <div class="comentarios-section">
+                        <div class="comentarios-title">
+                            <i class="bi bi-chat-dots"></i> Comentários ({{ avaliacao.comentarios|length }})
+                        </div>
+                        {% for comentario in avaliacao.comentarios %}
+                        <div class="comentario-card">
+                            <div class="comentario-header">
+                                <span class="comentario-aluno">Avaliação Anônima</span>
+                                <span class="comentario-data">{{ comentario.data_resposta|date:"d/m/Y H:i" }}</span>
+                            </div>
+                            <div class="comentario-texto">{{ comentario.valor_texto }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Controles de Paginação -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination-container">
+                <ul class="pagination">
+                    <!-- Primeira Página -->
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if ciclo_selecionado %}&ciclo={{ ciclo_selecionado }}{% endif %}{% if professor_selecionado %}&professor={{ professor_selecionado }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}&per_page={{ per_page }}">
+                            « Primeira
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if ciclo_selecionado %}&ciclo={{ ciclo_selecionado }}{% endif %}{% if professor_selecionado %}&professor={{ professor_selecionado }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}&per_page={{ per_page }}">
+                            ‹ Anterior
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Números de Página -->
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if ciclo_selecionado %}&ciclo={{ ciclo_selecionado }}{% endif %}{% if professor_selecionado %}&professor={{ professor_selecionado }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}&per_page={{ per_page }}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- Última Página -->
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if ciclo_selecionado %}&ciclo={{ ciclo_selecionado }}{% endif %}{% if professor_selecionado %}&professor={{ professor_selecionado }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}&per_page={{ per_page }}">
+                            Próxima ›
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if ciclo_selecionado %}&ciclo={{ ciclo_selecionado }}{% endif %}{% if professor_selecionado %}&professor={{ professor_selecionado }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}&per_page={{ per_page }}">
+                            Última »
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
         {% else %}
+        <!-- Estado Vazio -->
         <div class="form-section">
             <div class="empty-state">
                 <h3>📊 Nenhuma avaliação encontrada</h3>
                 <p>Não há dados de avaliação para os filtros selecionados.</p>
                 <p>Tente ajustar os filtros ou aguarde a conclusão de avaliações pelos alunos.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Métricas Gerais -->
+        {% if metricas_gerais %}
+        <div class="metricas-container">
+            <h3 class="metricas-title">
+                <i class="bi bi-bar-chart"></i> Métricas Gerais
+            </h3>
+            <div class="metricas-grid">
+                {% for media in metricas_gerais %}
+                <div class="metric-card">
+                    <div class="metric-value {% if media.media >= 4 %}success{% elif media.media >= 3 %}warning{% else %}danger{% endif %}">
+                        {{ media.media|floatformat:1 }}
+                    </div>
+                    <small class="metric-label">Média</small>
+                </div>
+                {% endfor %}
             </div>
         </div>
         {% endif %}
@@ -363,25 +455,10 @@
     }
 
     document.addEventListener('DOMContentLoaded', montarContainerGraficos);
-
-    function exportarCSV() {
-        // Criar URL com parâmetros atuais
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.set('formato', 'csv');
-        
-        // Redirecionar para download
-        window.location.href = '{% url "relatorio_avaliacoes" %}?' + urlParams.toString();
-    }
-
-    // Auto-submit do formulário quando filtros mudarem
-    document.getElementById('ciclo').addEventListener('change', function() {
-        document.getElementById('form-filtros').submit();
-    });
-
-    document.getElementById('professor').addEventListener('change', function() {
-        document.getElementById('form-filtros').submit();
-    });
     </script>
+
+    <!-- JavaScript Dedicado para Relatórios -->
+    <script src="{% static 'js/relatorio-avaliacoes.js' %}" defer></script>
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
