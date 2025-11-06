@@ -191,3 +191,48 @@ class NotificacaoLembrete(BaseModel, TimestampMixin):
 
     def __str__(self):
         return f"Lembrete: {self.aluno.user.get_full_name()} - Rodada {self.rodada}"
+
+
+class LembreteAvaliacao(BaseModel, TimestampMixin):
+    """
+    Controla envios de lembretes por ciclo para evitar duplicação.
+
+    Registra quando um lembrete foi enviado para um ciclo específico,
+    garantindo que cada tipo de lembrete seja enviado apenas uma vez.
+    """
+
+    TIPO_CHOICES = [
+        ("criacao", "Notificação de Criação"),
+        ("dois_dias", "Lembrete - 2 Dias Antes"),
+    ]
+
+    ciclo = models.ForeignKey(
+        "CicloAvaliacao",
+        on_delete=models.CASCADE,
+        related_name="lembretes_enviados",
+        verbose_name="Ciclo de Avaliação",
+    )
+
+    tipo = models.CharField("Tipo de Lembrete", max_length=20, choices=TIPO_CHOICES)
+
+    data_envio = models.DateTimeField("Data de Envio", auto_now_add=True)
+
+    total_enviados = models.PositiveIntegerField(
+        "Total de E-mails Enviados",
+        default=0,
+        help_text="Quantidade de e-mails enviados com sucesso",
+    )
+
+    class Meta:
+        db_table = "avaliacao_docente_lembrete_avaliacao"
+        verbose_name = "Lembrete de Avaliação"
+        verbose_name_plural = "Lembretes de Avaliação"
+        unique_together = [["ciclo", "tipo"]]
+        ordering = ["-data_envio"]
+        indexes = [
+            models.Index(fields=["ciclo", "tipo"]),
+            models.Index(fields=["data_envio"]),
+        ]
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} - {self.ciclo.nome} ({self.data_envio.strftime('%d/%m/%Y %H:%M')})"

@@ -1976,7 +1976,7 @@ def editar_questionario_perguntas(request, questionario_id):
             for i, qp in enumerate(perguntas_restantes, 1):
                 qp.ordem_no_questionario = i
                 qp.save()
-            messages.success(request, "✅ Pergunta removida com sucesso!")
+            messages.success(request, "Pergunta removida com sucesso!")
             return redirect(
                 "editar_questionario_perguntas", questionario_id=questionario.id
             )

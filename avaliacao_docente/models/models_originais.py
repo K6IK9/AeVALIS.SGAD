@@ -108,6 +108,14 @@ class PerfilProfessor(models.Model):
     def __str__(self):
         return f"{self.user.get_full_name()} ({self.registro_academico})"
 
+    @property
+    def matricula(self):
+        """
+        Retorna o registro acadêmico do professor.
+        Propriedade criada para manter consistência com PerfilAluno.
+        """
+        return self.registro_academico
+
 
 class Curso(BaseModel, TimestampMixin, SoftDeleteMixin):
     curso_nome = models.CharField(max_length=45)

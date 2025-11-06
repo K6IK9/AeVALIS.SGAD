@@ -44,7 +44,7 @@ from .models_originais import (
     PeriodoLetivo,
 )
 
-from .lembretes import JobLembreteCicloTurma, NotificacaoLembrete
+from .lembretes import JobLembreteCicloTurma, NotificacaoLembrete, LembreteAvaliacao
 
 __all__ = [
     # Base classes
@@ -75,4 +75,5 @@ __all__ = [
     # Lembretes
     "JobLembreteCicloTurma",
     "NotificacaoLembrete",
+    "LembreteAvaliacao",
 ]
