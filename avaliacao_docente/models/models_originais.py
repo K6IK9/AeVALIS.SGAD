@@ -467,6 +467,20 @@ class CicloAvaliacao(BaseModel, TimestampMixin, SoftDeleteMixin):
     permite_multiplas_respostas = models.BooleanField(default=False)
     enviar_lembrete_email = models.BooleanField(default=True)
 
+    # Controle de encerramento manual
+    encerrado = models.BooleanField(
+        "Encerrado",
+        default=False,
+        db_index=True,
+        help_text="Indica se o ciclo foi encerrado manualmente (não aceita mais respostas)",
+    )
+    data_encerramento = models.DateTimeField(
+        "Data de Encerramento",
+        null=True,
+        blank=True,
+        help_text="Data e hora em que o ciclo foi encerrado manualmente",
+    )
+
     # Turmas que devem responder a avaliação
     turmas = models.ManyToManyField(
         Turma,
@@ -526,6 +540,10 @@ class CicloAvaliacao(BaseModel, TimestampMixin, SoftDeleteMixin):
         from django.utils import timezone
 
         now = timezone.now()
+
+        # Verifica primeiro se foi encerrado manualmente
+        if self.encerrado:
+            return "encerrado"
 
         if now < self.data_inicio:
             return "agendado"

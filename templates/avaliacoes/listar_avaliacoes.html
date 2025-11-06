@@ -250,7 +250,7 @@
                                     </div>
                                 </div>
                                 
-                                {% if avaliacao.ciclo.ativo and avaliacao.status != 'finalizada' %}
+                                {% if not avaliacao.ciclo.encerrado and avaliacao.status != 'finalizada' %}
                                     <a href="{% url 'responder_avaliacao' avaliacao.id %}" class="btn btn-primary w-100">
                                         <i class="bi bi-pencil-square"></i> Responder Avaliação
                                     </a>

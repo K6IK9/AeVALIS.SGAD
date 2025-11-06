@@ -85,6 +85,14 @@ def criar_avaliacoes_pos_save(sender, instance, created, **kwargs):
         # Se o ciclo foi recém-criado, aguardar o save_m2m
         return
 
+    # Não criar avaliações se o ciclo está sendo deletado (soft delete)
+    if not instance.ativo:
+        return
+
+    # Não criar avaliações se o ciclo está encerrado
+    if hasattr(instance, "encerrado") and instance.encerrado:
+        return
+
     # Verificar se existem turmas sem avaliações
     from django.db import transaction
 

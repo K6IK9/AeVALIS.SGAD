@@ -168,10 +168,10 @@
                     <tbody>
                         {% for item in page_obj %}
                         {% with ciclo=item.ciclo kpis=item.kpis %}
-                        <tr style="{% if kpis.status_saude == 'erro' %}background: #fee;{% elif kpis.status_saude == 'alerta' %}background: #fff3cd;{% elif ciclo.ativo %}background: #f0fff4;{% else %}background: #f8f9fa;{% endif %}">
+                        <tr style="{% if kpis.status_saude == 'erro' %}background: #fee;{% elif kpis.status_saude == 'alerta' %}background: #fff3cd;{% elif not ciclo.encerrado %}background: #f0fff4;{% else %}background: #f8f9fa;{% endif %}">
                             <td>
                                 <strong style="color: var(--cor03);">{{ ciclo.nome }}</strong>
-                                {% if not ciclo.ativo %}
+                                {% if ciclo.encerrado %}
                                 <span class="badge bg-secondary" style="margin-left: 5px;">Encerrado</span>
                                 {% endif %}
                             </td>
@@ -242,7 +242,7 @@
                                        title="Editar">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    {% if ciclo.ativo %}
+                                    {% if not ciclo.encerrado %}
                                     <form method="post" 
                                           action="{% url 'encerrar_ciclo' ciclo.id %}" 
                                           onsubmit="return confirm('Encerrar o ciclo {{ ciclo.nome }}?');" 
