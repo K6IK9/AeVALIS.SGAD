@@ -59,10 +59,10 @@
             <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; overflow: hidden;">
                 <div class="info-item" style="overflow: hidden;">
                     <strong>Status:</strong>
-                    {% if ciclo.ativo %}
-                        <span class="status-badge status-active">✅ Ativo</span>
+                    {% if ciclo.encerrado %}
+                        <span class="status-badge status-inactive">🔒 Encerrado</span>
                     {% else %}
-                        <span class="status-badge status-inactive">❌ Inativo</span>
+                        <span class="status-badge status-active">✅ Ativo</span>
                     {% endif %}
                 </div>
                 
@@ -102,7 +102,7 @@
                 </div>
             </div>
             
-            {% if ciclo.ativo %}
+            {% if not ciclo.encerrado %}
                 {% if user|has_role:"coordenador" or user|has_role:"admin" %}
                 <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" style="margin-top: 20px;" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"? Alunos não poderão mais responder.');">
                     {% csrf_token %}
@@ -217,7 +217,7 @@
                                                     👁️ Ver
                                                 </a>
                                             {% else %}
-                                                {% if user.perfil_aluno and avaliacao.status != 'finalizada' and ciclo.ativo %}
+                                                {% if user.perfil_aluno and avaliacao.status != 'finalizada' and not ciclo.encerrado %}
                                                     <a href="{% url 'responder_avaliacao' avaliacao.id %}" 
                                                        class="btn btn-sm" title="Responder">
                                                         ✏️ Responder

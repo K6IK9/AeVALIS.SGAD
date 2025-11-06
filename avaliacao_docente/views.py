@@ -1569,13 +1569,14 @@ def listar_avaliacoes(request):
             "-data_criacao"
         )
         titulo = "Avaliações Docentes"
-        # Ciclos ativos separados por status para facilitar exibição
+        # Ciclos separados por status para facilitar exibição
         now = timezone.now()
-        ciclos_queryset = CicloAvaliacao.objects.filter(ativo=True)
+        ciclos_queryset = CicloAvaliacao.objects.all().order_by("-data_inicio")
         ciclos_em_andamento = []
         ciclos_finalizados = []
         for c in ciclos_queryset:
-            if c.data_fim < now:
+            # Ciclo está finalizado se foi encerrado manualmente OU passou da data_fim
+            if c.encerrado or c.data_fim < now:
                 ciclos_finalizados.append(c)
             else:
                 ciclos_em_andamento.append(c)
@@ -1686,8 +1687,8 @@ def dashboard_gestao_ciclos(request):
     page_obj = paginator.get_page(page_number)
 
     # Estatísticas gerais (cards do topo)
-    total_ativos = CicloAvaliacao.objects.filter(ativo=True).count()
-    total_finalizados = CicloAvaliacao.objects.filter(ativo=False).count()
+    total_ativos = CicloAvaliacao.objects.filter(encerrado=False).count()
+    total_finalizados = CicloAvaliacao.objects.filter(encerrado=True).count()
     ciclos_alerta = obter_ciclos_em_alerta()
     total_em_alerta = ciclos_alerta.count()
 
@@ -2067,7 +2068,7 @@ def detalhe_ciclo_avaliacao(request, ciclo_id):
     """
     View para visualizar detalhes de um ciclo de avaliação
     """
-    # Usar all_objects para incluir ciclos inativos (soft deleted)
+    # Pode visualizar ciclos encerrados ou deletados para consulta histórica
     ciclo = get_object_or_404(CicloAvaliacao.all_objects, id=ciclo_id)
     avaliacoes_docentes = AvaliacaoDocente.objects.filter(ciclo=ciclo)
 
@@ -2125,7 +2126,7 @@ def responder_avaliacao(request, avaliacao_id):
     now = timezone.now()
     # Verificar se o ciclo está ativo e dentro do período
     if (
-        not avaliacao.ciclo.ativo
+        avaliacao.ciclo.encerrado
         or avaliacao.ciclo.data_fim < now
         or avaliacao.status not in ["pendente", "em_andamento"]
     ):
@@ -3385,7 +3386,6 @@ def gerenciar_ciclos(request):
     filtro_busca = request.GET.get("busca", "")
     filtro_periodo = request.GET.get("periodo", "")
     filtro_status = request.GET.get("status", "")
-    filtro_ativo = request.GET.get("ativo", "")
 
     if request.method == "POST":
         form = CicloAvaliacaoForm(request.POST)
@@ -3414,7 +3414,7 @@ def gerenciar_ciclos(request):
     else:
         form = CicloAvaliacaoForm()
 
-    # Lista todos os ciclos com filtros
+    # Lista todos os ciclos ativos (não deletados) com filtros
     ciclos_list = CicloAvaliacao.objects.all()
 
     # Aplicar filtros
@@ -3424,14 +3424,22 @@ def gerenciar_ciclos(request):
     if filtro_periodo:
         ciclos_list = ciclos_list.filter(periodo_letivo_id=filtro_periodo)
 
-    # Nota: O filtro de status foi removido porque 'status' é uma propriedade calculada,
-    # não um campo do modelo. O status é determinado dinamicamente pelas datas.
+    # Filtrar por status (aplicado após a query, pois 'status' é uma propriedade calculada)
+    if filtro_status:
+        from django.utils import timezone
 
-    if filtro_ativo:
-        if filtro_ativo == "sim":
-            ciclos_list = ciclos_list.filter(ativo=True)
-        elif filtro_ativo == "nao":
-            ciclos_list = ciclos_list.filter(ativo=False)
+        now = timezone.now()
+
+        if filtro_status == "agendado":
+            ciclos_list = ciclos_list.filter(data_inicio__gt=now, encerrado=False)
+        elif filtro_status == "em_andamento":
+            ciclos_list = ciclos_list.filter(
+                data_inicio__lte=now, data_fim__gte=now, encerrado=False
+            )
+        elif filtro_status == "finalizado":
+            ciclos_list = ciclos_list.filter(data_fim__lt=now, encerrado=False)
+        elif filtro_status == "encerrado":
+            ciclos_list = ciclos_list.filter(encerrado=True)
 
     ciclos_list = ciclos_list.order_by("-data_inicio")
 
@@ -3458,7 +3466,6 @@ def gerenciar_ciclos(request):
         "filtro_busca": filtro_busca,
         "filtro_periodo": filtro_periodo,
         "filtro_status": filtro_status,
-        "filtro_ativo": filtro_ativo,
     }
 
     return render(request, "gerenciar_ciclos.html", context)
@@ -3475,7 +3482,7 @@ def editar_ciclo_simples(request, ciclo_id):
         )
         return redirect("inicio")
 
-    # Usar all_objects para incluir ciclos inativos (soft deleted)
+    # Permite editar ciclos mesmo que encerrados ou deletados (para recuperação)
     ciclo = get_object_or_404(CicloAvaliacao.all_objects, id=ciclo_id)
 
     if request.method == "POST":
@@ -3501,7 +3508,7 @@ def editar_ciclo_simples(request, ciclo_id):
 @login_required
 def excluir_ciclo(request, ciclo_id):
     """
-    View para excluir um ciclo de avaliação
+    View para excluir um ciclo de avaliação (soft delete)
     """
     if not check_user_permission(request.user, ["coordenador", "admin"]):
         messages.error(
@@ -3509,56 +3516,22 @@ def excluir_ciclo(request, ciclo_id):
         )
         return redirect("inicio")
 
-    # Usar all_objects para incluir ciclos inativos (soft deleted)
-    ciclo = get_object_or_404(CicloAvaliacao.all_objects, id=ciclo_id)
+    # Buscar apenas ciclos ativos (não deletados)
+    ciclo = get_object_or_404(CicloAvaliacao.objects, id=ciclo_id)
 
     if request.method == "POST":
-        avaliacoes = ciclo.avaliacoes.all()
-        total_avaliacoes = avaliacoes.count()
-        total_respostas = 0
-        for a in avaliacoes:
-            total_respostas += a.respostas.count()
-
-        confirm_cascade = request.POST.get("confirm_cascade") == "1"
-
-        # Se há respostas e ainda não foi confirmada a exclusão em cascata, pedir confirmação extra
-        if total_respostas > 0 and not confirm_cascade:
-            messages.warning(
-                request,
-                (
-                    f"Confirma a exclusão em cascata? O ciclo '{ciclo.nome}' possui "
-                    f"{total_avaliacoes} avaliação(ões) e {total_respostas} resposta(s) que serão apagadas. "
-                    "Envie novamente confirmando para prosseguir."
-                ),
-            )
-            # Armazenar flag de confirmação solicitada
-            request.session["confirm_delete_ciclo_id"] = ciclo.id
-            return redirect("gerenciar_ciclos")
-
-        # Verifica se a confirmação corresponde ao ciclo atual quando há respostas
-        if total_respostas > 0:
-            session_id = request.session.get("confirm_delete_ciclo_id")
-            if session_id != ciclo.id:
-                messages.error(
-                    request,
-                    "Confirmação inválida ou expirada para exclusão em cascata. Tente novamente.",
-                )
-                return redirect("gerenciar_ciclos")
-
         nome_ciclo = ciclo.nome
-        ciclo.delete()  # on_delete CASCADE já remove avaliações e respostas
-        if total_respostas > 0:
-            messages.success(
-                request,
-                f"Ciclo '{nome_ciclo}' e todos os seus dados associados ("
-                f"{total_avaliacoes} avaliação(ões), {total_respostas} resposta(s)) foram excluídos.",
-            )
-        else:
-            messages.success(
-                request,
-                f"Ciclo '{nome_ciclo}' excluído (continha {total_avaliacoes} avaliação(ões) sem respostas).",
-            )
-        # Limpa a sessão de confirmação
+
+        # Usar soft delete (marca ativo=False)
+        # O signal ignorará ciclos inativos, evitando duplicações
+        ciclo.soft_delete()
+
+        messages.success(
+            request,
+            f"Ciclo '{nome_ciclo}' movido para a lixeira. "
+            f"Os dados permanecem no sistema e podem ser recuperados se necessário.",
+        )
+        # Limpa a sessão de confirmação (se houver)
         request.session.pop("confirm_delete_ciclo_id", None)
         return redirect("gerenciar_ciclos")
 
@@ -3567,20 +3540,26 @@ def excluir_ciclo(request, ciclo_id):
 
 @login_required
 def encerrar_ciclo(request, ciclo_id):
-    """Encerra manualmente um ciclo (torna inativo) impedindo novas respostas."""
+    """Encerra manualmente um ciclo impedindo novas respostas."""
     if not check_user_permission(request.user, ["coordenador", "admin"]):
         messages.error(request, "Você não tem permissão para encerrar ciclos.")
         return redirect("inicio")
-    # Usar all_objects para incluir ciclos inativos (soft deleted)
-    ciclo = get_object_or_404(CicloAvaliacao.all_objects, id=ciclo_id)
+
+    # Buscar ciclo (apenas ativos, não deletados)
+    ciclo = get_object_or_404(CicloAvaliacao.objects, id=ciclo_id)
+
     if request.method == "POST":
-        if not ciclo.ativo:
+        if ciclo.encerrado:
             messages.info(request, f"Ciclo '{ciclo.nome}' já está encerrado.")
         else:
-            ciclo.ativo = False
-            ciclo.save(update_fields=["ativo"])
+            from django.utils import timezone
+
+            ciclo.encerrado = True
+            ciclo.data_encerramento = timezone.now()
+            ciclo.save(update_fields=["encerrado", "data_encerramento"])
             messages.success(request, f"Ciclo '{ciclo.nome}' encerrado com sucesso.")
         return redirect("detalhe_ciclo_avaliacao", ciclo_id=ciclo.id)
+
     messages.error(request, "Método inválido.")
     return redirect("detalhe_ciclo_avaliacao", ciclo_id=ciclo.id)
 

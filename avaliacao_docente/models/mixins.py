@@ -95,7 +95,8 @@ class SoftDeleteMixin(models.Model):
         """
         self.ativo = False
         self.data_exclusao = timezone.now()
-        self.save(skip_validation=True)  # Não validar ao deletar
+        # Usar update_fields para evitar validações e minimizar signals
+        self.save(update_fields=["ativo", "data_exclusao"])
 
     def restore(self):
         """
@@ -110,7 +111,8 @@ class SoftDeleteMixin(models.Model):
         """
         self.ativo = True
         self.data_exclusao = None
-        self.save(skip_validation=True)
+        # Usar update_fields para evitar validações
+        self.save(update_fields=["ativo", "data_exclusao"])
 
     @property
     def is_deleted(self):

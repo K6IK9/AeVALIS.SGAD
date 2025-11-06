@@ -246,17 +246,10 @@
                 <label for="status">Filtrar por Status:</label>
                 <select id="status" name="status" class="form-control">
                   <option value="">Todos os status</option>
-                  <option value="agendado" {% if filtro_status == "agendado" %}selected{% endif %}>Agendado</option>
-                  <option value="ativo" {% if filtro_status == "ativo" %}selected{% endif %}>Ativo</option>
-                  <option value="encerrado" {% if filtro_status == "encerrado" %}selected{% endif %}>Encerrado</option>
-                </select>
-              </div>
-              <div class="filter-group">
-                <label for="ativo">Filtrar por Ativo:</label>
-                <select id="ativo" name="ativo" class="form-control">
-                  <option value="">Todos</option>
-                  <option value="sim" {% if filtro_ativo == "sim" %}selected{% endif %}>Sim</option>
-                  <option value="nao" {% if filtro_ativo == "nao" %}selected{% endif %}>Não</option>
+                  <option value="agendado" {% if filtro_status == "agendado" %}selected{% endif %}>📅 Agendado</option>
+                  <option value="em_andamento" {% if filtro_status == "em_andamento" %}selected{% endif %}>⏳ Em Andamento</option>
+                  <option value="finalizado" {% if filtro_status == "finalizado" %}selected{% endif %}>✅ Finalizado</option>
+                  <option value="encerrado" {% if filtro_status == "encerrado" %}selected{% endif %}>🔒 Encerrado</option>
                 </select>
               </div>
             </div>
@@ -289,7 +282,6 @@
                 <th>Início</th>
                 <th>Fim</th>
                 <th>Status</th>
-                <th>Ativo</th>
                 <th>Ações</th>
               </tr>
             </thead>
@@ -306,15 +298,10 @@
                   <span class="status-badge status-warning">📅 Agendado</span>
                   {% elif ciclo.status == 'em_andamento' %}
                   <span class="status-badge status-info">⏳ Em Andamento</span>
+                  {% elif ciclo.status == 'encerrado' %}
+                  <span class="status-badge status-inactive">🔒 Encerrado</span>
                   {% elif ciclo.status == 'finalizado' %}
-                  <span class="status-badge status-active">✅ Finalizado</span>
-                  {% endif %}
-                </td>
-                <td class="status-column">
-                  {% if ciclo.ativo %}
-                  <span class="status-badge status-active">✅ Ativo</span>
-                  {% else %}
-                  <span class="status-badge status-inactive">❌ Inativo</span>
+                  <span class="status-badge status-success">✅ Finalizado</span>
                   {% endif %}
                 </td>
                 <td>
