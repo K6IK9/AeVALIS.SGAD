@@ -2,12 +2,15 @@ from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from django.apps import apps
 from django.utils import timezone
+from django.conf import settings
+from django.core.mail import send_mass_mail
 from datetime import timedelta
 from .models import (
     CicloAvaliacao,
     AvaliacaoDocente,
     JobLembreteCicloTurma,
     ConfiguracaoSite,
+    LembreteAvaliacao,
 )
 from .utils import enviar_email_notificacao_avaliacao
 
@@ -171,3 +174,87 @@ def criar_jobs_lembrete_para_turmas(sender, instance, action, pk_set, **kwargs):
                 print(f"⏸️ Job de lembrete pausado para turma ID {turma_id}")
             except Exception as e:
                 print(f"❌ Erro ao pausar job de lembrete da turma {turma_id}: {e}")
+
+
+@receiver(post_save, sender=CicloAvaliacao)
+def enviar_email_criacao_ciclo(sender, instance, created, **kwargs):
+    """
+    Envia e-mail para todos os alunos quando um ciclo é criado.
+    Dispara apenas na criação (created=True) e se o ciclo estiver ativo.
+    """
+    if not created:
+        return
+
+    if not instance.ativo or instance.encerrado:
+        return
+
+    # Verificar se já foi enviado (evitar duplicação)
+    if LembreteAvaliacao.objects.filter(ciclo=instance, tipo="criacao").exists():
+        print(f"ℹ️ E-mail de criação já foi enviado para o ciclo: {instance.nome}")
+        return
+
+    # Buscar todos os alunos das turmas do ciclo
+    from .models import MatriculaTurma
+
+    try:
+        turmas = instance.turmas.all()
+        if not turmas.exists():
+            print(f"⚠️ Ciclo {instance.nome} não possui turmas vinculadas")
+            return
+
+        matriculas = MatriculaTurma.objects.filter(
+            turma__in=turmas, ativo=True
+        ).select_related("aluno__user")
+
+        alunos = {m.aluno for m in matriculas}
+
+        if not alunos:
+            print(f"⚠️ Nenhum aluno ativo encontrado para o ciclo: {instance.nome}")
+            return
+
+        # Preparar e-mails em massa
+        mensagens = []
+        for aluno in alunos:
+            if not aluno.user.email:
+                continue
+
+            assunto = f"Nova Avaliação Docente Disponível: {instance.nome}"
+            mensagem = f"""Olá {aluno.user.get_full_name() or aluno.user.username},
+
+Uma nova avaliação docente foi criada e está disponível para sua participação.
+
+Ciclo: {instance.nome}
+Período: {instance.data_inicio.strftime('%d/%m/%Y')} até {instance.data_fim.strftime('%d/%m/%Y')}
+Prazo: {(instance.data_fim - instance.data_inicio).days} dias
+
+Sua opinião é muito importante para a melhoria contínua do ensino.
+Por favor, acesse o sistema e responda às avaliações disponíveis.
+
+Atenciosamente,
+Equipe de Avaliação Docente
+"""
+
+            mensagens.append(
+                (assunto, mensagem, settings.DEFAULT_FROM_EMAIL, [aluno.user.email])
+            )
+
+        # Enviar e-mails em massa
+        if mensagens:
+            try:
+                send_mass_mail(mensagens, fail_silently=True)
+
+                # Registrar envio
+                LembreteAvaliacao.objects.create(
+                    ciclo=instance, tipo="criacao", total_enviados=len(mensagens)
+                )
+
+                print(
+                    f"✅ {len(mensagens)} e-mails de criação enviados para o ciclo: {instance.nome}"
+                )
+            except Exception as e:
+                print(
+                    f"❌ Erro ao enviar e-mails de criação do ciclo {instance.nome}: {e}"
+                )
+
+    except Exception as e:
+        print(f"❌ Erro no signal de envio de e-mail de criação: {e}")
