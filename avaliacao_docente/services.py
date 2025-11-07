@@ -6,6 +6,9 @@ e dashboards, mantendo as views limpas e focadas em apresentação.
 """
 
 from django.db.models import Q, Prefetch, Count, Min, Max
+from django.core.cache import cache
+import hashlib
+
 from .models import (
     PerfilProfessor,
     AvaliacaoDocente,
@@ -13,6 +16,136 @@ from .models import (
     Curso,
     JobLembreteCicloTurma,
 )
+
+
+# ============================================================================
+# FUNÇÕES DE CACHE
+# ============================================================================
+
+
+def get_cache_key(prefix, *args):
+    """
+    Gera chave de cache única baseada nos argumentos.
+
+    Args:
+        prefix: Prefixo identificador do tipo de cache
+        *args: Argumentos variáveis para compor a chave
+
+    Returns:
+        str: Hash SHA256 da chave (evita chaves muito longas e é seguro)
+    """
+    key_parts = [str(arg) for arg in args if arg is not None]
+    key_string = f"{prefix}:{'_'.join(key_parts)}"
+    # Usar SHA256 ao invés de MD5 por questões de segurança
+    return hashlib.sha256(key_string.encode()).hexdigest()
+
+
+def calcular_metricas_professor_cached(professor, ciclo=None):
+    """
+    Versão com cache da função calcular_metricas_professor.
+
+    Cache de 15 minutos, invalidado automaticamente quando há novas respostas
+    através de signals (ver signals.py).
+
+    Args:
+        professor: Instância de PerfilProfessor
+        ciclo: Instância de CicloAvaliacao (opcional)
+
+    Returns:
+        dict: Métricas do professor (mesmo retorno de calcular_metricas_professor)
+    """
+    # Gerar chave de cache
+    cache_key = get_cache_key(
+        "metricas_prof", professor.id, ciclo.id if ciclo else "all"
+    )
+
+    # Tentar buscar do cache
+    metricas = cache.get(cache_key)
+
+    if metricas is None:
+        # Calcular métricas (função original)
+        metricas = calcular_metricas_professor(professor, ciclo)
+
+        # Cachear por 15 minutos
+        cache.set(cache_key, metricas, 60 * 15)
+
+    return metricas
+
+
+def obter_historico_professor_por_ciclo_cached(professor, ciclo):
+    """
+    Versão com cache que retorna histórico de um professor em um ciclo específico.
+
+    Args:
+        professor: Instância de PerfilProfessor
+        ciclo: Instância de CicloAvaliacao
+
+    Returns:
+        dict: Histórico do professor no ciclo (métricas + avaliações detalhadas)
+    """
+    cache_key = get_cache_key("historico_prof_ciclo", professor.id, ciclo.id)
+
+    historico = cache.get(cache_key)
+
+    if historico is None:
+        # Calcular métricas deste ciclo
+        metricas_ciclo = calcular_metricas_professor(professor, ciclo)
+
+        # Buscar avaliações deste ciclo
+        avaliacoes = (
+            AvaliacaoDocente.objects.filter(professor=professor, ciclo=ciclo)
+            .select_related("turma", "disciplina", "turma__disciplina__curso")
+            .prefetch_related(
+                Prefetch(
+                    "respostas",
+                    queryset=RespostaAvaliacao.objects.select_related("pergunta"),
+                )
+            )
+        )
+
+        avaliacoes_info = []
+        for avaliacao in avaliacoes:
+            resultado = avaliacao.calcular_media_geral_questionario_padrao()
+            total_respostas = avaliacao.respostas.count()
+            alunos_aptos = avaliacao.alunos_aptos()
+
+            avaliacoes_info.append(
+                {
+                    "avaliacao": avaliacao,
+                    "turma": avaliacao.turma,
+                    "disciplina": avaliacao.disciplina,
+                    "curso": (
+                        avaliacao.turma.disciplina.curso
+                        if avaliacao.turma.disciplina
+                        else None
+                    ),
+                    "total_respostas": total_respostas,
+                    "total_alunos": len(alunos_aptos),
+                    "media": resultado["media_geral"] if resultado else None,
+                    "classificacao": (
+                        AvaliacaoDocente.get_classificacao_media(
+                            None, resultado["media_geral"]
+                        )
+                        if resultado
+                        else "Sem dados"
+                    ),
+                }
+            )
+
+        historico = {
+            "ciclo": ciclo,
+            "metricas": metricas_ciclo,
+            "avaliacoes": avaliacoes_info,
+        }
+
+        cache.set(cache_key, historico, 60 * 15)
+
+    return historico
+
+
+# ============================================================================
+# FUNÇÕES DE CÁLCULO DE MÉTRICAS
+# ============================================================================
 
 
 def calcular_metricas_professor(professor, ciclo=None):
@@ -260,7 +393,8 @@ def listar_professores_com_metricas(ciclo=None, curso=None, busca=None):
     professores_com_metricas = []
 
     for professor in professores:
-        metricas_ciclo = calcular_metricas_professor(professor, ciclo)
+        # Usar versão com cache para melhor performance
+        metricas_ciclo = calcular_metricas_professor_cached(professor, ciclo)
         metricas_historico = calcular_media_historica_professor(
             professor, excluir_ciclo=ciclo
         )

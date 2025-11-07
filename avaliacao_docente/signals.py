@@ -1,16 +1,20 @@
-from django.db.models.signals import post_save, m2m_changed
+from django.db.models.signals import post_save, m2m_changed, post_delete
 from django.dispatch import receiver
 from django.apps import apps
 from django.utils import timezone
 from django.conf import settings
 from django.core.mail import send_mass_mail
+from django.core.cache import cache
 from datetime import timedelta
+import hashlib
+
 from .models import (
     CicloAvaliacao,
     AvaliacaoDocente,
     JobLembreteCicloTurma,
     ConfiguracaoSite,
     LembreteAvaliacao,
+    RespostaAvaliacao,
 )
 from .utils import enviar_email_notificacao_avaliacao
 
@@ -258,3 +262,66 @@ Equipe de Avaliação Docente
 
     except Exception as e:
         print(f"❌ Erro no signal de envio de e-mail de criação: {e}")
+
+
+# ============================================================================
+# SIGNALS DE INVALIDAÇÃO DE CACHE
+# ============================================================================
+
+
+def get_cache_key_local(prefix, *args):
+    """
+    Gera chave de cache (replica função de services.py para evitar import circular).
+
+    Args:
+        prefix: Prefixo identificador do tipo de cache
+        *args: Argumentos variáveis para compor a chave
+
+    Returns:
+        str: Hash SHA256 da chave (seguro e evita colisões)
+    """
+    key_parts = [str(arg) for arg in args if arg is not None]
+    key_string = f"{prefix}:{'_'.join(key_parts)}"
+    return hashlib.sha256(key_string.encode()).hexdigest()
+
+
+@receiver(post_save, sender=RespostaAvaliacao)
+def invalidar_cache_metricas_professor(sender, instance, **kwargs):
+    """
+    Invalida cache de métricas quando aluno responde avaliação.
+    Garante que dados exibidos nos relatórios estejam sempre atualizados.
+
+    Invalida:
+    - Métricas do professor no ciclo específico
+    - Métricas gerais do professor
+    - Histórico do professor no ciclo
+    """
+    try:
+        professor_id = instance.avaliacao.professor.id
+        ciclo_id = instance.avaliacao.ciclo.id
+
+        # Invalidar métricas do ciclo específico
+        cache_key_ciclo = get_cache_key_local("metricas_prof", professor_id, ciclo_id)
+        cache.delete(cache_key_ciclo)
+
+        # Invalidar métricas gerais
+        cache_key_all = get_cache_key_local("metricas_prof", professor_id, "all")
+        cache.delete(cache_key_all)
+
+        # Invalidar histórico do ciclo
+        cache_key_historico = get_cache_key_local(
+            "historico_prof_ciclo", professor_id, ciclo_id
+        )
+        cache.delete(cache_key_historico)
+
+    except Exception as e:
+        print(f"❌ Erro ao invalidar cache após resposta de avaliação: {e}")
+
+
+@receiver(post_delete, sender=RespostaAvaliacao)
+def invalidar_cache_ao_deletar_resposta(sender, instance, **kwargs):
+    """
+    Invalida cache quando resposta é deletada.
+    Usa a mesma lógica de invalidação do post_save.
+    """
+    invalidar_cache_metricas_professor(sender, instance, **kwargs)

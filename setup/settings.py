@@ -114,6 +114,19 @@ DATABASES = {
 #    }
 # }
 
+# Cache configuration for performance optimization
+# https://docs.djangoproject.com/en/5.2/topics/cache/
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "app_cache_table",
+        "TIMEOUT": 900,  # 15 minutos (900 segundos)
+        "OPTIONS": {
+            "MAX_ENTRIES": 1000,  # Máximo de 1000 entradas no cache
+        },
+    }
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 

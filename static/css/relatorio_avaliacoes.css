@@ -521,3 +521,159 @@
         text-align: left !important;
     }
 }
+
+/* ===== Estilos para Tabela de Relatório de Professores ===== */
+
+/* Link para professor */
+.professor-link {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.professor-link:hover {
+    color: #2980b9;
+}
+
+/* Hint de arrastar tabela */
+.table-scroll-hint {
+    background: #fff3cd;
+    color: #856404;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    border: 1px solid #ffeaa7;
+    font-size: 14px;
+}
+
+/* Badge secundário para fallback */
+.badge-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+/* Min-widths para colunas da tabela de professores */
+.col-professor {
+    min-width: 200px;
+}
+
+.col-cursos {
+    min-width: 150px;
+}
+
+.col-aval-respondidas {
+    min-width: 100px;
+}
+
+.col-respondentes {
+    min-width: 120px;
+}
+
+.col-taxa-resposta {
+    min-width: 100px;
+}
+
+.col-media-ciclo {
+    min-width: 100px;
+}
+
+.col-classificacao {
+    min-width: 130px;
+}
+
+.col-media-historica {
+    min-width: 120px;
+}
+
+.col-class-historica {
+    min-width: 150px;
+}
+
+/* Seção de exemplos de cálculo */
+.example-section {
+    margin-top: 50px;
+    padding: 30px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 5px solid #3498db;
+}
+
+.example-title {
+    color: #2c3e50;
+    margin-bottom: 25px;
+}
+
+.example-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.example-subtitle {
+    color: #34495e;
+    margin-bottom: 15px;
+}
+
+.example-text {
+    line-height: 1.8;
+    color: #555;
+}
+
+.example-text-spaced {
+    margin-top: 15px;
+}
+
+.example-list {
+    line-height: 1.8;
+    color: #555;
+}
+
+.formula-box {
+    background: #ecf0f1;
+    padding: 15px;
+    border-radius: 6px;
+    font-family: monospace;
+    margin: 10px 0;
+}
+
+.classification-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.classification-table thead tr {
+    background: #34495e;
+    color: white;
+}
+
+.classification-table th,
+.classification-table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.classification-table tbody tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+/* Caixa de aviso/observações */
+.example-warning {
+    background: #fff3cd;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+}
+
+.example-warning-title {
+    color: #856404;
+    margin-bottom: 10px;
+}
+
+.example-warning-list {
+    line-height: 1.8;
+    color: #856404;
+}
