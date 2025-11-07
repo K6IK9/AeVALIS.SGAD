@@ -1550,6 +1550,7 @@ def listar_avaliacoes(request):
         avaliacoes_disponiveis = (
             AvaliacaoDocente.objects.filter(
                 ciclo__ativo=True,
+                ciclo__encerrado=False,
                 ciclo__data_inicio__lte=now,
                 ciclo__data_fim__gte=now,
                 turma_id__in=turmas_aluno,
@@ -1588,7 +1589,7 @@ def listar_avaliacoes(request):
     # Remover a linha duplicada de ciclos que estava fora do if/else    # Paginação - 15 avaliações por página
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-    paginator = Paginator(avaliacoes, 15)
+    paginator = Paginator(avaliacoes, 10)
     page_number = request.GET.get("page", 1)
 
     try:

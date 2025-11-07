@@ -10,54 +10,7 @@
     --report-border: rgba(71, 168, 189, 0.2);
 }
 
-/* Botão voltar */
-.back-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--report-primary);
-    text-decoration: none;
-    font-weight: 600;
-    margin-bottom: 20px;
-    padding: 10px 15px;
-    border-radius: 15px;
-    background: var(--report-background);
-    border: 1px solid var(--report-border);
-    transition: all 0.3s ease;
-}
-
-.back-button:hover {
-    background: var(--report-primary);
-    color: var(--report-background);
-    transform: translateX(-5px);
-    text-decoration: none;
-}
-
-/* Header */
-.header {
-    background: var(--cor03) !important;
-    color: white !important;
-    padding: 20px;
-    border-radius: var(--border-radius-medium);
-    margin-bottom: 30px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.header h1 {
-    color: white !important;
-    font-size: 2.2em;
-    font-weight: 700;
-    margin: 0 0 10px 0;
-    font-family: var(--font02);
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.header p {
-    color: white !important;
-    opacity: 0.9;
-    margin: 0;
-}
+/* Nota: .back-button, .container e .header estão definidos em global.css */
 
 /* Grid de avaliações */
 .avaliacoes-grid {
@@ -171,14 +124,14 @@
 }
 
 .stat-value {
-    font-size: 1.3em;
+    font-size: 1em;
     font-weight: 700;
     color: var(--report-primary);
     margin-bottom: 4px;
 }
 
 .stat-label {
-    font-size: 0.75em;
+    font-size: 0.7em;
     color: #666;
     text-transform: uppercase;
     letter-spacing: 0.5px;
