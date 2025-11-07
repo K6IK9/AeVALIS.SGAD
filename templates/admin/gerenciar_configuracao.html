@@ -93,7 +93,7 @@ DEFAULT_FROM_EMAIL='email_verificado@sendgrid.com'</code></pre>
                         <div class="form-group">
                             <label for="{{ form.limiar_minimo_percentual.id_for_label }}">
                                 <strong>{{ form.limiar_minimo_percentual.label }}</strong>
-                                <span class="badge bg-success" style="float: right;">Padrão: 10%</span>
+
                             </label>
                             {{ form.limiar_minimo_percentual }}
                             {% if form.limiar_minimo_percentual.help_text %}
@@ -113,7 +113,6 @@ DEFAULT_FROM_EMAIL='email_verificado@sendgrid.com'</code></pre>
                         <div class="form-group">
                             <label for="{{ form.frequencia_lembrete_horas.id_for_label }}">
                                 <strong>{{ form.frequencia_lembrete_horas.label }}</strong>
-                                <span class="badge bg-success" style="float: right;">Padrão: 48h</span>
                             </label>
                             {{ form.frequencia_lembrete_horas }}
                             {% if form.frequencia_lembrete_horas.help_text %}
@@ -133,7 +132,6 @@ DEFAULT_FROM_EMAIL='email_verificado@sendgrid.com'</code></pre>
                         <div class="form-group">
                             <label for="{{ form.max_lembretes_por_aluno.id_for_label }}">
                                 <strong>{{ form.max_lembretes_por_aluno.label }}</strong>
-                                <span class="badge bg-success" style="float: right;">Padrão: 3</span>
                             </label>
                             {{ form.max_lembretes_por_aluno }}
                             {% if form.max_lembretes_por_aluno.help_text %}

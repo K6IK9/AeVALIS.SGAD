@@ -1,34 +1,6 @@
 /* Editar Questionário - Seguindo padrão do sistema usando cores globais */
 
-/* Container principal seguindo padrão */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-/* Header seguindo padrão das outras páginas - COR PRINCIPAL */
-.header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 30px 20px;
-    background-color: var(--cor03);
-    border-radius: 15px;
-    color: var(--cor07);
-}
-
-.header h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin: 0 0 10px 0;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.header p {
-    font-size: 1.1rem;
-    margin: 0;
-    opacity: 0.9;
-}
+/* Nota: .container e .header estão definidos em global.css */
 
 /* Navegação breadcrumb seguindo padrão */
 .nav-breadcrumb {
@@ -85,14 +57,7 @@
     margin-top: 20px;
 }
 
-/* Seção do formulário - AGORA ACIMA */
-.form-section {
-    background-color: var(--cor07);
-    border: 1px solid #e5e7eb;
-    border-radius: 15px;
-    padding: 25px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+/* Nota: .form-section está definido em global.css */
 
 .form-header h2 {
     font-size: 1.3rem;
