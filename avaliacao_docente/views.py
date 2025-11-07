@@ -2950,25 +2950,85 @@ def relatorio_professores(request):
 def detalhe_professor_relatorio(request, professor_id):
     """
     View para detalhes de um professor específico com histórico por ciclo.
+    Inclui paginação de ciclos (5 por página) e cache para melhor performance.
     Apenas coordenadores e admins podem acessar.
     """
-    from .services import obter_historico_professor_por_ciclo
+    from .services import obter_historico_professor_por_ciclo_cached
+    from .models import CicloAvaliacao, AvaliacaoDocente
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
     if not check_user_permission(request.user, ["coordenador", "admin"]):
         messages.error(request, "Você não tem permissão para acessar este relatório.")
         return redirect("listar_avaliacoes")
 
     # Buscar professor
-    professor = get_object_or_404(PerfilProfessor, id=professor_id)
+    professor = get_object_or_404(
+        PerfilProfessor.objects.select_related("user"), id=professor_id
+    )
 
-    # Obter histórico completo
-    historico = obter_historico_professor_por_ciclo(professor)
+    # Buscar ciclos do professor (ordenados do mais recente)
+    ciclos_queryset = (
+        CicloAvaliacao.objects.filter(avaliacoes__professor=professor, ativo=True)
+        .distinct()
+        .order_by("-data_inicio")
+    )
+
+    # Paginar: 5 ciclos por vez
+    paginator = Paginator(ciclos_queryset, 5)
+    page_number = request.GET.get("page", 1)
+
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        page_obj = paginator.get_page(paginator.num_pages)
+
+    # Processar apenas os ciclos da página atual (com cache)
+    ciclos = []
+    for ciclo in page_obj:
+        historico = obter_historico_professor_por_ciclo_cached(professor, ciclo)
+        if historico and historico.get("avaliacoes"):
+            ciclos.append(historico)
+
+    # Calcular estatísticas gerais (todos os ciclos)
+    todas_avaliacoes = AvaliacaoDocente.objects.filter(
+        professor=professor, ativo=True
+    ).select_related("disciplina", "turma", "ciclo")
+
+    total_avaliacoes = todas_avaliacoes.count()
+    avaliacoes_com_resposta = (
+        todas_avaliacoes.filter(respostas__isnull=False).distinct().count()
+    )
+
+    # Calcular média geral
+    medias = []
+    for avaliacao in todas_avaliacoes:
+        resultado = avaliacao.calcular_media_geral_questionario_padrao()
+        if resultado and resultado.get("media_geral") is not None:
+            medias.append(resultado["media_geral"])
+
+    media_geral = None
+    classificacao_geral = "Sem dados"
+    if medias:
+        media_geral = sum(medias) / len(medias)
+        classificacao_geral = AvaliacaoDocente.get_classificacao_media(
+            None, media_geral
+        )
+
+    estatisticas_gerais = {
+        "total_ciclos": ciclos_queryset.count(),
+        "total_avaliacoes": total_avaliacoes,
+        "avaliacoes_respondidas": avaliacoes_com_resposta,
+        "media_geral": media_geral,
+        "classificacao_geral": classificacao_geral,
+    }
 
     context = {
         "professor": professor,
-        "ciclos": historico["ciclos"],
-        "avaliacoes_detalhadas": historico["avaliacoes_detalhadas"],
-        "estatisticas_gerais": historico["estatisticas_gerais"],
+        "ciclos": ciclos,
+        "estatisticas_gerais": estatisticas_gerais,
+        "page_obj": page_obj,
     }
 
     return render(request, "avaliacoes/detalhe_professor_relatorio.html", context)

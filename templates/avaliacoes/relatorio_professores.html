@@ -24,6 +24,8 @@
 
 <body>
     <div class="container">
+        <a href="{% url 'relatorio_avaliacoes' %}" class="back-button">← Voltar para Relatórios</a>
+
         <!-- Header -->
         <div class="header">
             <h1>👥 Relatório de Professores</h1>
@@ -123,19 +125,20 @@
             <h2>📋 Métricas por Professor</h2>
             
             {% if page_obj %}
-            <div class="table-responsive">
+            <div class="table-scroll-hint">💡 Dica: Arraste a tabela horizontalmente para ver todas as colunas</div>
+            <div class="table-responsive" data-drag-scroll>
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Professor</th>
-                            <th>Curso(s)</th>
-                            <th>Avaliações Respondidas</th>
-                            <th>Respondentes</th>
-                            <th>Taxa de Resposta</th>
-                            <th>Média no Ciclo</th>
-                            <th>Classificação</th>
-                            <th>Média Histórica</th>
-                            <th style="min-width: 150px;">Class. Histórica</th>
+                            <th class="col-professor">Professor</th>
+                            <th class="col-cursos">Curso(s)</th>
+                            <th class="col-aval-respondidas text-center">Aval. Respondidas</th>
+                            <th class="col-respondentes text-center">Respondentes</th>
+                            <th class="col-taxa-resposta text-center">Taxa Resposta</th>
+                            <th class="col-media-ciclo text-center">Média Ciclo</th>
+                            <th class="col-classificacao text-center">Classificação</th>
+                            <th class="col-media-historica text-center">Média Histórica</th>
+                            <th class="col-class-historica text-center">Class. Histórica</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -143,11 +146,11 @@
                         <tr>
                             <td>
                                 <a href="{% url 'detalhe_professor_relatorio' item.professor.id %}" 
-                                   style="text-decoration: none; color: #3498db; font-weight: bold;">
+                                   class="professor-link">
                                     {{ item.professor.user.get_full_name }}
                                 </a>
                                 <br>
-                                <small class="text-muted">{{ item.professor.matricula }}</small>
+                                <small class="text-muted">Mat: {{ item.professor.matricula }}</small>
                             </td>
                             <td>{{ item.cursos }}</td>
                             <td class="text-center">{{ item.avaliacoes_respondidas }}</td>
@@ -159,28 +162,48 @@
                             </td>
                             <td class="text-center">
                                 {% if item.media_ciclo %}
-                                    <strong>{{ item.media_ciclo }}</strong>
+                                    <strong>{{ item.media_ciclo|floatformat:4 }}</strong>
                                 {% else %}
-                                    <span class="text-muted">Sem dados</span>
+                                    <span class="text-muted">N/A</span>
                                 {% endif %}
                             </td>
                             <td class="text-center">
-                                <span class="badge classificacao-{{ item.classificacao_ciclo|lower|cut:' ' }}">
-                                    {{ item.classificacao_ciclo }}
-                                </span>
+                                {% if item.classificacao_ciclo == "Excelente" %}
+                                    <span class="badge badge-excelente">{{ item.classificacao_ciclo }}</span>
+                                {% elif item.classificacao_ciclo == "Bom" %}
+                                    <span class="badge badge-bom">{{ item.classificacao_ciclo }}</span>
+                                {% elif item.classificacao_ciclo == "Regular" %}
+                                    <span class="badge badge-regular">{{ item.classificacao_ciclo }}</span>
+                                {% elif item.classificacao_ciclo == "Insuficiente" %}
+                                    <span class="badge badge-insuficiente">{{ item.classificacao_ciclo }}</span>
+                                {% elif item.classificacao_ciclo == "Não atende" %}
+                                    <span class="badge badge-naoatende">{{ item.classificacao_ciclo }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">{{ item.classificacao_ciclo }}</span>
+                                {% endif %}
                             </td>
                             <td class="text-center">
                                 {% if item.media_historica %}
-                                    <strong>{{ item.media_historica }}</strong><br>
-                                    <small class="text-muted">({{ item.total_ciclos }} ciclos)</small>
+                                    <strong>{{ item.media_historica|floatformat:4 }}</strong><br>
+                                    <small class="text-muted">({{ item.total_ciclos }} ciclo{{ item.total_ciclos|pluralize }})</small>
                                 {% else %}
-                                    <span class="text-muted">Sem dados</span>
+                                    <span class="text-muted">N/A</span>
                                 {% endif %}
                             </td>
                             <td class="text-center">
-                                <span class="badge classificacao-{{ item.classificacao_historica|lower|cut:' ' }}">
-                                    {{ item.classificacao_historica }}
-                                </span>
+                                {% if item.classificacao_historica == "Excelente" %}
+                                    <span class="badge badge-excelente">{{ item.classificacao_historica }}</span>
+                                {% elif item.classificacao_historica == "Bom" %}
+                                    <span class="badge badge-bom">{{ item.classificacao_historica }}</span>
+                                {% elif item.classificacao_historica == "Regular" %}
+                                    <span class="badge badge-regular">{{ item.classificacao_historica }}</span>
+                                {% elif item.classificacao_historica == "Insuficiente" %}
+                                    <span class="badge badge-insuficiente">{{ item.classificacao_historica }}</span>
+                                {% elif item.classificacao_historica == "Não atende" %}
+                                    <span class="badge badge-naoatende">{{ item.classificacao_historica }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">{{ item.classificacao_historica }}</span>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -216,159 +239,152 @@
         </div>
 
         <!-- Seção de Exemplo de Cálculos -->
-        <div style="margin-top: 50px; padding: 30px; background: #f8f9fa; border-radius: 12px; border-left: 5px solid #3498db;">
-            <h2 style="color: #2c3e50; margin-bottom: 25px;">📐 Exemplo de Cálculo dos Números Exibidos</h2>
+        <div class="example-section">
+            <h2 class="example-title">📐 Exemplo de Cálculo dos Números Exibidos</h2>
             
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="color: #34495e; margin-bottom: 15px;">⚙️ Considerações</h3>
-                <ul style="line-height: 1.8; color: #555;">
+            <div class="example-card">
+                <h3 class="example-subtitle">⚙️ Considerações</h3>
+                <ul class="example-list">
                     <li><strong>Pesos padrão das opções:</strong> Não atende = 0.00, Insuficiente = 0.25, Regular = 0.50, Bom = 0.75, Excelente = 1.00</li>
                     <li><strong>Respondentes</strong> = alunos distintos que enviaram respostas para a avaliação</li>
                     <li><strong>Alunos aptos</strong> = total de matriculados ativos na turma</li>
                 </ul>
             </div>
 
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="color: #34495e; margin-bottom: 15px;">1️⃣ Média de uma pergunta (no ciclo/avaliação)</h3>
-                <p style="line-height: 1.8; color: #555;"><strong>Fórmula:</strong></p>
-                <div style="background: #ecf0f1; padding: 15px; border-radius: 6px; font-family: monospace; margin: 10px 0;">
+            <div class="example-card">
+                <h3 class="example-subtitle">1️⃣ Média de uma pergunta (no ciclo/avaliação)</h3>
+                <p class="example-text"><strong>Fórmula:</strong></p>
+                <div class="formula-box">
                     Média_pergunta = (N0×0.00 + N1×0.25 + N2×0.50 + N3×0.75 + N4×1.00) / Respondentes
                 </div>
-                <p style="margin-top: 15px; color: #555;"><strong>Exemplo:</strong></p>
-                <ul style="line-height: 1.8; color: #555;">
+                <p class="example-text example-text-spaced"><strong>Exemplo:</strong></p>
+                <ul class="example-list">
                     <li>N0=2, N1=6, N2=12, N3=15, N4=5; Respondentes=40</li>
                     <li>Soma ponderada = 2×0.00 + 6×0.25 + 12×0.50 + 15×0.75 + 5×1.00 = <strong>23.75</strong></li>
                     <li>Média_pergunta = 23.75 / 40 = <strong>0.5938</strong></li>
                 </ul>
             </div>
 
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="color: #34495e; margin-bottom: 15px;">2️⃣ Média da avaliação (questionário completo)</h3>
-                <p style="line-height: 1.8; color: #555;">
+            <div class="example-card">
+                <h3 class="example-subtitle">2️⃣ Média da avaliação (questionário completo)</h3>
+                <p class="example-text">
                     Calcular a média de cada pergunta respondida usando a fórmula acima.<br>
                     <strong>Média_avaliacao</strong> = média aritmética das médias das perguntas respondidas
                 </p>
-                <p style="margin-top: 15px; color: #555;"><strong>Exemplo:</strong></p>
-                <ul style="line-height: 1.8; color: #555;">
+                <p class="example-text example-text-spaced"><strong>Exemplo:</strong></p>
+                <ul class="example-list">
                     <li>10 perguntas com médias: [0.62, 0.58, 0.61, 0.59, 0.60, 0.64, 0.57, 0.60, 0.65, 0.63]</li>
                     <li>Média_avaliacao = (soma)/10 = <strong>0.6090</strong></li>
                 </ul>
             </div>
 
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="color: #34495e; margin-bottom: 15px;">3️⃣ Média no Ciclo (tabela: "Média no Ciclo")</h3>
-                <p style="line-height: 1.8; color: #555;">
+            <div class="example-card">
+                <h3 class="example-subtitle">3️⃣ Média no Ciclo (tabela: "Média no Ciclo")</h3>
+                <p class="example-text">
                     <strong>Média_ciclo</strong> = média aritmética das "Média_avaliacao" de todas as avaliações do professor no ciclo selecionado
                 </p>
-                <p style="margin-top: 15px; color: #555;"><strong>Exemplo:</strong></p>
-                <ul style="line-height: 1.8; color: #555;">
+                <p class="example-text example-text-spaced"><strong>Exemplo:</strong></p>
+                <ul class="example-list">
                     <li>3 avaliações no ciclo: 0.609, 0.710, 0.540</li>
                     <li>Média_ciclo = (0.609 + 0.710 + 0.540) / 3 = <strong>0.6197</strong></li>
                 </ul>
             </div>
 
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="color: #34495e; margin-bottom: 15px;">4️⃣ Média Histórica (tabela: "Média Histórica")</h3>
-                <p style="line-height: 1.8; color: #555;">
+            <div class="example-card">
+                <h3 class="example-subtitle">4️⃣ Média Histórica (tabela: "Média Histórica")</h3>
+                <p class="example-text">
                     <strong>Média_historica</strong> = média aritmética das "Média_avaliacao" de todas as avaliações do professor em todos os ciclos (exceto o atual se estiver em andamento)
                 </p>
-                <p style="margin-top: 15px; color: #555;"><strong>Exemplo:</strong></p>
-                <ul style="line-height: 1.8; color: #555;">
+                <p class="example-text example-text-spaced"><strong>Exemplo:</strong></p>
+                <ul class="example-list">
                     <li>Avaliações históricas em 3 ciclos: [0.68, 0.72, 0.61, 0.59, 0.65, 0.70]</li>
                     <li>Média_historica = (0.68 + 0.72 + 0.61 + 0.59 + 0.65 + 0.70) / 6 = <strong>0.6583</strong></li>
                     <li>Total de ciclos = 3 (exibido como "3 ciclos" na tabela)</li>
                 </ul>
             </div>
 
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="color: #34495e; margin-bottom: 15px;">5️⃣ Classificação (para qualquer média)</h3>
-                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+            <div class="example-card">
+                <h3 class="example-subtitle">5️⃣ Classificação (para qualquer média)</h3>
+                <table class="classification-table">
                     <thead>
-                        <tr style="background: #34495e; color: white;">
-                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Faixa</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Classificação</th>
+                        <tr>
+                            <th>Faixa</th>
+                            <th>Classificação</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td style="padding: 10px; border: 1px solid #ddd;">0.00 – 0.24</td>
-                            <td style="padding: 10px; border: 1px solid #ddd;"><span class="badge badge-naoatende">Não atende</span></td>
-                        </tr>
-                        <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #ddd;">0.25 – 0.49</td>
-                            <td style="padding: 10px; border: 1px solid #ddd;"><span class="badge badge-insuficiente">Insuficiente</span></td>
+                            <td>0.00 – 0.24</td>
+                            <td><span class="badge badge-naoatende">Não atende</span></td>
                         </tr>
                         <tr>
-                            <td style="padding: 10px; border: 1px solid #ddd;">0.50 – 0.74</td>
-                            <td style="padding: 10px; border: 1px solid #ddd;"><span class="badge badge-regular">Regular</span></td>
-                        </tr>
-                        <tr style="background: #f8f9fa;">
-                            <td style="padding: 10px; border: 1px solid #ddd;">0.75 – 0.99</td>
-                            <td style="padding: 10px; border: 1px solid #ddd;"><span class="badge badge-bom">Bom</span></td>
+                            <td>0.25 – 0.49</td>
+                            <td><span class="badge badge-insuficiente">Insuficiente</span></td>
                         </tr>
                         <tr>
-                            <td style="padding: 10px; border: 1px solid #ddd;">1.00</td>
-                            <td style="padding: 10px; border: 1px solid #ddd;"><span class="badge badge-excelente">Excelente</span></td>
+                            <td>0.50 – 0.74</td>
+                            <td><span class="badge badge-regular">Regular</span></td>
+                        </tr>
+                        <tr>
+                            <td>0.75 – 0.99</td>
+                            <td><span class="badge badge-bom">Bom</span></td>
+                        </tr>
+                        <tr>
+                            <td>1.00</td>
+                            <td><span class="badge badge-excelente">Excelente</span></td>
                         </tr>
                     </tbody>
                 </table>
-                <p style="margin-top: 15px; color: #555;"><strong>Exemplo:</strong></p>
-                <ul style="line-height: 1.8; color: #555;">
+                <p class="example-text example-text-spaced"><strong>Exemplo:</strong></p>
+                <ul class="example-list">
                     <li>Média_ciclo = 0.6197 → Classificação: <span class="badge badge-regular">Regular</span></li>
                     <li>Média_historica = 0.6583 → Classificação: <span class="badge badge-regular">Regular</span></li>
                 </ul>
             </div>
 
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="color: #34495e; margin-bottom: 15px;">6️⃣ Respondentes, aptos e taxa de resposta</h3>
-                <p style="line-height: 1.8; color: #555;"><strong>Fórmula:</strong></p>
-                <div style="background: #ecf0f1; padding: 15px; border-radius: 6px; font-family: monospace; margin: 10px 0;">
+            <div class="example-card">
+                <h3 class="example-subtitle">6️⃣ Respondentes, aptos e taxa de resposta</h3>
+                <p class="example-text"><strong>Fórmula:</strong></p>
+                <div class="formula-box">
                     Taxa_resposta (%) = (Total_respondentes / Total_alunos_aptos) × 100
                 </div>
-                <p style="margin-top: 15px; color: #555;"><strong>Exemplo:</strong></p>
-                <ul style="line-height: 1.8; color: #555;">
+                <p class="example-text example-text-spaced"><strong>Exemplo:</strong></p>
+                <ul class="example-list">
                     <li>Total_respondentes = 48, Total_alunos_aptos = 80</li>
                     <li>Taxa = 48/80 × 100 = <strong>60%</strong></li>
                     <li>Exibição na tabela: "48 / 80" e badge com "60%"</li>
                 </ul>
-                <p style="margin-top: 15px; color: #555;"><strong>Cores do badge na tabela:</strong></p>
-                <ul style="line-height: 1.8; color: #555;">
+                <p class="example-text example-text-spaced"><strong>Cores do badge na tabela:</strong></p>
+                <ul class="example-list">
                     <li><span class="badge badge-success">≥ 70%</span> = Verde (boa participação)</li>
                     <li><span class="badge badge-warning">50% - 69%</span> = Amarelo (participação média)</li>
                     <li><span class="badge badge-danger">< 50%</span> = Vermelho (baixa participação)</li>
                 </ul>
             </div>
 
-            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="color: #34495e; margin-bottom: 15px;">7️⃣ Avaliações respondidas</h3>
-                <ul style="line-height: 1.8; color: #555;">
+            <div class="example-card">
+                <h3 class="example-subtitle">7️⃣ Avaliações respondidas</h3>
+                <ul class="example-list">
                     <li><strong>Avaliações_respondidas</strong> = quantidade de avaliações do professor (no ciclo selecionado ou todos) que receberam ao menos uma resposta</li>
                     <li>Exibido na coluna "Avaliações Respondidas" da tabela</li>
                 </ul>
-                <p style="margin-top: 15px; color: #555;"><strong>Exemplo:</strong></p>
-                <ul style="line-height: 1.8; color: #555;">
+                <p class="example-text example-text-spaced"><strong>Exemplo:</strong></p>
+                <ul class="example-list">
                     <li>Professor tem 5 avaliações no ciclo</li>
                     <li>3 avaliações têm respostas, 2 não têm</li>
                     <li>Avaliações_respondidas = <strong>3</strong></li>
                 </ul>
             </div>
 
-            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
-                <h4 style="color: #856404; margin-bottom: 10px;">⚠️ Observações Importantes</h4>
-                <ul style="line-height: 1.8; color: #856404;">
+            <div class="example-warning">
+                <h4 class="example-warning-title">⚠️ Observações Importantes</h4>
+                <ul class="example-warning-list">
                     <li>Sempre tratar divisões por zero (mostrar "Sem dados")</li>
                     <li>Arredondamentos: 4 casas decimais para médias; sem casas decimais para taxas de resposta (%)</li>
                     <li>Filtro por ciclo: quando selecionado, mostra apenas dados daquele ciclo específico</li>
                     <li>Filtro por curso: quando selecionado, inclui apenas professores que lecionam naquele curso</li>
                 </ul>
             </div>
-        </div>
-
-        <!-- Botões de Ação -->
-        <div class="form-actions">
-            <a href="{% url 'relatorio_avaliacoes' %}" class="btn btn-secondary">
-                ← Voltar para Relatórios
-            </a>
         </div>
     </div>
 
