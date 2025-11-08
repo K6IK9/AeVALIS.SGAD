@@ -38,6 +38,7 @@ from .utils import (
     reset_role_manual_flag,
     is_role_manually_changed,
     processar_mudanca_role,
+    gerenciar_perfil_usuario,
     display_form_errors,
     calcular_estatisticas_respostas,
     sanitize_csv_value,
@@ -1336,53 +1337,6 @@ def buscar_alunos_ajax(request):
         return JsonResponse({"resultados": resultados})
 
     return JsonResponse({"resultados": []})
-
-
-def gerenciar_perfil_usuario(usuario, nova_role):
-    """
-    Função utilitária para gerenciar perfis de usuário baseado na role
-    Remove perfis incompatíveis e cria os necessários
-    """
-    mensagens = []
-
-    if nova_role == "aluno":
-        # Se tinha perfil de professor, remover
-        if hasattr(usuario, "perfil_professor"):
-            usuario.perfil_professor.delete()
-            mensagens.append(f"Perfil de professor removido de {usuario.username}")
-
-        # Criar ou manter perfil de aluno
-        perfil_aluno, created = PerfilAluno.objects.get_or_create(user=usuario)
-        if created:
-            mensagens.append(f"Perfil de aluno criado para {usuario.username}")
-
-    elif nova_role in ["professor", "coordenador"]:
-        # Se tinha perfil de aluno, remover
-        if hasattr(usuario, "perfil_aluno"):
-            usuario.perfil_aluno.delete()
-            mensagens.append(f"Perfil de aluno removido de {usuario.username}")
-
-        # Criar ou manter perfil de professor
-        perfil_professor, created = PerfilProfessor.objects.get_or_create(
-            user=usuario, defaults={"registro_academico": usuario.username}
-        )
-        if created:
-            mensagens.append(f"Perfil de professor criado para {usuario.username}")
-
-    elif nova_role == "admin":
-        # Admin não deve ter nenhum perfil específico
-        # Remover qualquer perfil existente
-        if hasattr(usuario, "perfil_professor"):
-            usuario.perfil_professor.delete()
-            mensagens.append(
-                f"Perfil de professor removido de admin {usuario.username}"
-            )
-
-        if hasattr(usuario, "perfil_aluno"):
-            usuario.perfil_aluno.delete()
-            mensagens.append(f"Perfil de aluno removido de admin {usuario.username}")
-
-    return mensagens
 
 
 @login_required
@@ -3550,7 +3504,32 @@ def editar_ciclo_simples(request, ciclo_id):
         form = CicloAvaliacaoForm(request.POST, instance=ciclo)
         if form.is_valid():
             try:
-                form.save()
+                # Salvar o ciclo
+                ciclo_atualizado = form.save(commit=False)
+
+                # Se o ciclo estava encerrado e as datas foram alteradas,
+                # verificar se deve reativar automaticamente
+                from django.utils import timezone
+
+                now = timezone.now()
+
+                if ciclo.encerrado:
+                    # Verifica se as novas datas indicam que o ciclo deveria estar ativo
+                    data_inicio = ciclo_atualizado.data_inicio
+                    data_fim = ciclo_atualizado.data_fim
+
+                    # Se a nova data de fim é no futuro, reativar o ciclo
+                    if data_fim > now:
+                        ciclo_atualizado.encerrado = False
+                        ciclo_atualizado.data_encerramento = None
+                        messages.info(
+                            request,
+                            f"Ciclo '{ciclo.nome}' foi reativado automaticamente pois a data de fim foi alterada para o futuro.",
+                        )
+
+                ciclo_atualizado.save()
+                form.save_m2m()  # Salvar relações ManyToMany (turmas)
+
                 messages.success(
                     request, f"Ciclo '{ciclo.nome}' atualizado com sucesso!"
                 )
@@ -3619,6 +3598,46 @@ def encerrar_ciclo(request, ciclo_id):
             ciclo.data_encerramento = timezone.now()
             ciclo.save(update_fields=["encerrado", "data_encerramento"])
             messages.success(request, f"Ciclo '{ciclo.nome}' encerrado com sucesso.")
+        return redirect("detalhe_ciclo_avaliacao", ciclo_id=ciclo.id)
+
+    messages.error(request, "Método inválido.")
+    return redirect("detalhe_ciclo_avaliacao", ciclo_id=ciclo.id)
+
+
+@login_required
+def reativar_ciclo(request, ciclo_id):
+    """Reativa um ciclo que foi encerrado manualmente."""
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(request, "Você não tem permissão para reativar ciclos.")
+        return redirect("inicio")
+
+    # Buscar ciclo (apenas ativos, não deletados)
+    ciclo = get_object_or_404(CicloAvaliacao.objects, id=ciclo_id)
+
+    if request.method == "POST":
+        if not ciclo.encerrado:
+            messages.info(request, f"Ciclo '{ciclo.nome}' já está ativo.")
+        else:
+            from django.utils import timezone
+
+            now = timezone.now()
+
+            # Verificar se as datas permitem reativação
+            if ciclo.data_fim < now:
+                messages.warning(
+                    request,
+                    f"Atenção: A data de fim do ciclo '{ciclo.nome}' ({ciclo.data_fim.strftime('%d/%m/%Y %H:%M')}) "
+                    f"já passou. O ciclo será marcado como 'finalizado'. "
+                    f"Edite as datas se desejar torná-lo 'em andamento'.",
+                )
+
+            ciclo.encerrado = False
+            ciclo.data_encerramento = None
+            ciclo.save(update_fields=["encerrado", "data_encerramento"])
+            messages.success(
+                request,
+                f"Ciclo '{ciclo.nome}' reativado com sucesso! Status atual: {ciclo.status}.",
+            )
         return redirect("detalhe_ciclo_avaliacao", ciclo_id=ciclo.id)
 
     messages.error(request, "Método inválido.")
@@ -3969,6 +3988,7 @@ def exportar_periodos_csv(request):
             "Nome do Período",
             "Ano",
             "Semestre",
+            "Total de Disciplinas",
             "Total de Turmas",
             "Total de Ciclos",
             "Total de Avaliações",
@@ -3977,12 +3997,15 @@ def exportar_periodos_csv(request):
 
     # Buscar períodos com related data
     periodos = PeriodoLetivo.objects.prefetch_related(
-        "turmas", "ciclos_avaliacao"
+        "disciplinas", "disciplinas__turmas", "ciclos_avaliacao"
     ).order_by("-ano", "-semestre")
 
     for periodo in periodos:
-        # Contar turmas, ciclos e avaliações
-        total_turmas = periodo.turmas.count()
+        # Contar disciplinas, turmas, ciclos e avaliações
+        total_disciplinas = periodo.disciplinas.count()
+        total_turmas = sum(
+            disciplina.turmas.count() for disciplina in periodo.disciplinas.all()
+        )
         total_ciclos = periodo.ciclos_avaliacao.count()
         total_avaliacoes = sum(
             ciclo.avaliacoes.count() for ciclo in periodo.ciclos_avaliacao.all()
@@ -3994,6 +4017,7 @@ def exportar_periodos_csv(request):
                 sanitize_csv_value(periodo.nome),
                 periodo.ano,
                 periodo.semestre,
+                total_disciplinas,
                 total_turmas,
                 total_ciclos,
                 total_avaliacoes,

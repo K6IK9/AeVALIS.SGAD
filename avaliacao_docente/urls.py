@@ -205,6 +205,11 @@ urlpatterns = [
         name="encerrar_ciclo",
     ),
     path(
+        "reativar-ciclo/<int:ciclo_id>/",
+        views.reativar_ciclo,
+        name="reativar_ciclo",
+    ),
+    path(
         "encerrar-avaliacao/<int:avaliacao_id>/",
         views.encerrar_avaliacao,
         name="encerrar_avaliacao",
