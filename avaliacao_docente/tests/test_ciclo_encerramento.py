@@ -317,3 +317,279 @@ class CicloAvaliacaoSoftDeleteTest(TestCase):
 
         # Mas existe no banco
         self.assertEqual(CicloAvaliacao.all_objects.filter(id=ciclo.id).count(), 1)
+
+
+class CicloAvaliacaoReativacaoTest(TestCase):
+    """Testes de reativação de ciclos encerrados"""
+
+    def setUp(self):
+        """Configuração inicial"""
+        self.admin_user = User.objects.create_user(
+            username="adminreativ", password="testpass_not_real_789", is_staff=True
+        )
+        self.periodo = PeriodoLetivo.objects.create(nome="2024.2", ano=2024, semestre=2)
+
+        # Criar categoria de pergunta
+        self.categoria = CategoriaPergunta.objects.create(
+            nome="Categoria Reativação", descricao="Teste Reativação"
+        )
+
+        # Criar questionário
+        self.questionario = QuestionarioAvaliacao.objects.create(
+            titulo="Questionário Reativação", criado_por=self.admin_user
+        )
+
+        # Criar pergunta
+        self.pergunta = PerguntaAvaliacao.objects.create(
+            enunciado="Pergunta teste reativação?",
+            tipo="likert",
+            categoria=self.categoria,
+        )
+
+        # Vincular pergunta ao questionário
+        QuestionarioPergunta.objects.create(
+            questionario=self.questionario,
+            pergunta=self.pergunta,
+            ordem_no_questionario=1,
+        )
+
+        self.now = timezone.now()
+
+    def test_reativar_ciclo_encerrado_com_data_futura(self):
+        """Testa reativação de ciclo encerrado com data de fim no futuro"""
+        # Criar ciclo em andamento
+        ciclo = CicloAvaliacao.objects.create(
+            nome="Ciclo Para Reativar",
+            periodo_letivo=self.periodo,
+            data_inicio=self.now - timedelta(days=5),
+            data_fim=self.now + timedelta(days=25),
+            questionario=self.questionario,
+            criado_por=self.admin_user,
+        )
+
+        # Encerrar manualmente
+        ciclo.encerrado = True
+        ciclo.data_encerramento = timezone.now()
+        ciclo.save(update_fields=["encerrado", "data_encerramento"])
+        ciclo.refresh_from_db()
+
+        # Verificar que está encerrado
+        self.assertTrue(ciclo.encerrado)
+        self.assertIsNotNone(ciclo.data_encerramento)
+        self.assertEqual(ciclo.status, "encerrado")
+
+        # Reativar
+        ciclo.encerrado = False
+        ciclo.data_encerramento = None
+        ciclo.save(update_fields=["encerrado", "data_encerramento"])
+        ciclo.refresh_from_db()
+
+        # Verificar que foi reativado
+        self.assertFalse(ciclo.encerrado)
+        self.assertIsNone(ciclo.data_encerramento)
+        self.assertEqual(ciclo.status, "em_andamento")
+
+    def test_reativar_ciclo_com_data_passada_vira_finalizado(self):
+        """Testa que ciclo reativado com data_fim passada fica 'finalizado'"""
+        # Criar ciclo com data de fim no passado
+        ciclo = CicloAvaliacao.objects.create(
+            nome="Ciclo Passado",
+            periodo_letivo=self.periodo,
+            data_inicio=self.now - timedelta(days=35),
+            data_fim=self.now - timedelta(days=5),
+            questionario=self.questionario,
+            criado_por=self.admin_user,
+        )
+
+        # Encerrar manualmente
+        ciclo.encerrado = True
+        ciclo.data_encerramento = self.now - timedelta(days=3)
+        ciclo.save(update_fields=["encerrado", "data_encerramento"])
+        ciclo.refresh_from_db()
+
+        # Verificar status encerrado
+        self.assertEqual(ciclo.status, "encerrado")
+
+        # Reativar
+        ciclo.encerrado = False
+        ciclo.data_encerramento = None
+        ciclo.save(update_fields=["encerrado", "data_encerramento"])
+        ciclo.refresh_from_db()
+
+        # Verificar que status é finalizado (não em_andamento)
+        self.assertFalse(ciclo.encerrado)
+        self.assertEqual(ciclo.status, "finalizado")
+
+    def test_edicao_data_fim_futura_reativa_automaticamente(self):
+        """Testa que editar data_fim para futuro reativa ciclo encerrado"""
+        # Criar ciclo encerrado
+        ciclo = CicloAvaliacao.objects.create(
+            nome="Ciclo Encerrado Edit",
+            periodo_letivo=self.periodo,
+            data_inicio=self.now - timedelta(days=10),
+            data_fim=self.now + timedelta(days=5),
+            questionario=self.questionario,
+            criado_por=self.admin_user,
+            encerrado=True,
+            data_encerramento=self.now - timedelta(days=2),
+        )
+
+        # Verificar estado inicial
+        self.assertTrue(ciclo.encerrado)
+        self.assertEqual(ciclo.status, "encerrado")
+
+        # Simular edição de data_fim para o futuro
+        ciclo.data_fim = self.now + timedelta(days=30)
+
+        # Lógica de reativação automática (como em editar_ciclo_simples)
+        if ciclo.encerrado and ciclo.data_fim > self.now:
+            ciclo.encerrado = False
+            ciclo.data_encerramento = None
+
+        ciclo.save()
+        ciclo.refresh_from_db()
+
+        # Verificar que foi reativado automaticamente
+        self.assertFalse(ciclo.encerrado)
+        self.assertIsNone(ciclo.data_encerramento)
+        self.assertEqual(ciclo.status, "em_andamento")
+
+    def test_edicao_data_fim_passada_nao_reativa(self):
+        """Testa que editar data_fim para passado não reativa ciclo"""
+        # Criar ciclo encerrado
+        ciclo = CicloAvaliacao.objects.create(
+            nome="Ciclo Encerrado Passado",
+            periodo_letivo=self.periodo,
+            data_inicio=self.now - timedelta(days=20),
+            data_fim=self.now - timedelta(days=5),
+            questionario=self.questionario,
+            criado_por=self.admin_user,
+            encerrado=True,
+            data_encerramento=self.now - timedelta(days=7),
+        )
+
+        # Verificar estado inicial
+        self.assertTrue(ciclo.encerrado)
+
+        # Simular edição de data_fim para outra data no passado
+        ciclo.data_fim = self.now - timedelta(days=2)
+
+        # Lógica de reativação automática (não deve reativar)
+        if ciclo.encerrado and ciclo.data_fim > self.now:
+            ciclo.encerrado = False
+            ciclo.data_encerramento = None
+
+        ciclo.save()
+        ciclo.refresh_from_db()
+
+        # Verificar que permanece encerrado
+        self.assertTrue(ciclo.encerrado)
+        self.assertIsNotNone(ciclo.data_encerramento)
+        self.assertEqual(ciclo.status, "encerrado")
+
+    def test_ciclo_ativo_nao_encerrado_permanece_ativo(self):
+        """Testa que ciclo ativo (não encerrado) permanece com status correto"""
+        # Criar ciclo em andamento (não encerrado)
+        ciclo = CicloAvaliacao.objects.create(
+            nome="Ciclo Ativo Normal",
+            periodo_letivo=self.periodo,
+            data_inicio=self.now - timedelta(days=5),
+            data_fim=self.now + timedelta(days=25),
+            questionario=self.questionario,
+            criado_por=self.admin_user,
+        )
+
+        # Verificar status
+        self.assertFalse(ciclo.encerrado)
+        self.assertEqual(ciclo.status, "em_andamento")
+
+        # Editar nome (sem alterar datas nem encerramento)
+        ciclo.nome = "Ciclo Ativo Editado"
+        ciclo.save()
+        ciclo.refresh_from_db()
+
+        # Verificar que permanece ativo
+        self.assertFalse(ciclo.encerrado)
+        self.assertEqual(ciclo.status, "em_andamento")
+
+    def test_reativar_ciclo_agendado(self):
+        """Testa reativação de ciclo agendado que foi encerrado"""
+        # Criar ciclo agendado (futuro)
+        ciclo = CicloAvaliacao.objects.create(
+            nome="Ciclo Agendado",
+            periodo_letivo=self.periodo,
+            data_inicio=self.now + timedelta(days=10),
+            data_fim=self.now + timedelta(days=40),
+            questionario=self.questionario,
+            criado_por=self.admin_user,
+        )
+
+        # Verificar status inicial
+        self.assertEqual(ciclo.status, "agendado")
+
+        # Encerrar (cenário raro, mas possível)
+        ciclo.encerrado = True
+        ciclo.data_encerramento = timezone.now()
+        ciclo.save(update_fields=["encerrado", "data_encerramento"])
+        ciclo.refresh_from_db()
+
+        # Verificar que está encerrado
+        self.assertEqual(ciclo.status, "encerrado")
+
+        # Reativar
+        ciclo.encerrado = False
+        ciclo.data_encerramento = None
+        ciclo.save(update_fields=["encerrado", "data_encerramento"])
+        ciclo.refresh_from_db()
+
+        # Verificar que voltou a ser agendado
+        self.assertFalse(ciclo.encerrado)
+        self.assertEqual(ciclo.status, "agendado")
+
+    def test_independencia_soft_delete_e_reativacao(self):
+        """Testa que soft delete e reativação são independentes"""
+        # Criar ciclo
+        ciclo = CicloAvaliacao.objects.create(
+            nome="Ciclo Independente",
+            periodo_letivo=self.periodo,
+            data_inicio=self.now - timedelta(days=5),
+            data_fim=self.now + timedelta(days=25),
+            questionario=self.questionario,
+            criado_por=self.admin_user,
+        )
+
+        # Encerrar
+        ciclo.encerrado = True
+        ciclo.data_encerramento = timezone.now()
+        ciclo.save(update_fields=["encerrado", "data_encerramento"])
+
+        # Verificar estados
+        self.assertTrue(ciclo.ativo)  # Visível
+        self.assertTrue(ciclo.encerrado)  # Encerrado
+
+        # Soft delete (mover para lixeira)
+        ciclo.soft_delete()
+        ciclo.refresh_from_db()
+
+        # Verificar que soft delete não afeta encerramento
+        self.assertFalse(ciclo.ativo)  # Invisível
+        self.assertTrue(ciclo.encerrado)  # Ainda encerrado
+
+        # Restaurar (remover da lixeira)
+        ciclo.restore()
+        ciclo.refresh_from_db()
+
+        # Verificar que restauração não afeta encerramento
+        self.assertTrue(ciclo.ativo)  # Visível novamente
+        self.assertTrue(ciclo.encerrado)  # Ainda encerrado
+
+        # Reativar (remover encerramento)
+        ciclo.encerrado = False
+        ciclo.data_encerramento = None
+        ciclo.save(update_fields=["encerrado", "data_encerramento"])
+        ciclo.refresh_from_db()
+
+        # Verificar estado final
+        self.assertTrue(ciclo.ativo)  # Visível
+        self.assertFalse(ciclo.encerrado)  # Não encerrado
+        self.assertEqual(ciclo.status, "em_andamento")

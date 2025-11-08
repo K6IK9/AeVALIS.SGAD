@@ -77,6 +77,62 @@ def is_role_manually_changed(user):
     return False
 
 
+def gerenciar_perfil_usuario(usuario, nova_role):
+    """
+    Função utilitária para gerenciar perfis de usuário baseado na role
+    Remove perfis incompatíveis e cria os necessários
+
+    Args:
+        usuario: Instância do User
+        nova_role: String com a nova role ('admin', 'coordenador', 'professor', 'aluno')
+
+    Returns:
+        Lista de mensagens sobre as mudanças realizadas
+    """
+    from .models import PerfilAluno, PerfilProfessor
+
+    mensagens = []
+
+    if nova_role == "aluno":
+        # Se tinha perfil de professor, remover
+        if hasattr(usuario, "perfil_professor"):
+            usuario.perfil_professor.delete()
+            mensagens.append(f"Perfil de professor removido de {usuario.username}")
+
+        # Criar ou manter perfil de aluno
+        perfil_aluno, created = PerfilAluno.objects.get_or_create(user=usuario)
+        if created:
+            mensagens.append(f"Perfil de aluno criado para {usuario.username}")
+
+    elif nova_role in ["professor", "coordenador"]:
+        # Se tinha perfil de aluno, remover
+        if hasattr(usuario, "perfil_aluno"):
+            usuario.perfil_aluno.delete()
+            mensagens.append(f"Perfil de aluno removido de {usuario.username}")
+
+        # Criar ou manter perfil de professor
+        perfil_professor, created = PerfilProfessor.objects.get_or_create(
+            user=usuario, defaults={"registro_academico": usuario.username}
+        )
+        if created:
+            mensagens.append(f"Perfil de professor criado para {usuario.username}")
+
+    elif nova_role == "admin":
+        # Admin não deve ter nenhum perfil específico
+        # Remover qualquer perfil existente
+        if hasattr(usuario, "perfil_professor"):
+            usuario.perfil_professor.delete()
+            mensagens.append(
+                f"Perfil de professor removido de admin {usuario.username}"
+            )
+
+        if hasattr(usuario, "perfil_aluno"):
+            usuario.perfil_aluno.delete()
+            mensagens.append(f"Perfil de aluno removido de admin {usuario.username}")
+
+    return mensagens
+
+
 def processar_mudanca_role(usuario, nova_role):
     """
     Processa a mudança de role de um usuário.
@@ -93,7 +149,6 @@ def processar_mudanca_role(usuario, nova_role):
     """
     from rolepermissions.roles import assign_role, remove_role
     from rolepermissions.checkers import has_role
-    from .models import gerenciar_perfil_usuario
 
     # Remove todas as roles existentes
     for role in ["admin", "coordenador", "professor", "aluno"]:

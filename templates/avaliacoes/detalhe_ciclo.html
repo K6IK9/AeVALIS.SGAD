@@ -102,14 +102,26 @@
                 </div>
             </div>
             
-            {% if not ciclo.encerrado %}
-                {% if user|has_role:"coordenador" or user|has_role:"admin" %}
-                <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" style="margin-top: 20px;" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"? Alunos não poderão mais responder.');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">
-                        🔒 Encerrar Ciclo
-                    </button>
-                </form>
+            {% if user|has_role:"coordenador" or user|has_role:"admin" %}
+                {% if not ciclo.encerrado %}
+                    <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}" style="margin-top: 20px;" onsubmit="return confirm('Encerrar o ciclo \"{{ ciclo.nome }}\"? Alunos não poderão mais responder.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            🔒 Encerrar Ciclo Manualmente
+                        </button>
+                    </form>
+                {% else %}
+                    <div style="margin-top: 20px;">
+                        <p style="color: #856404; background: #fff3cd; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                            ⚠️ Este ciclo foi encerrado manualmente. Para reativá-lo, clique no botão abaixo.
+                        </p>
+                        <form method="post" action="{% url 'reativar_ciclo' ciclo.id %}" style="display: inline-block;" onsubmit="return confirm('Reativar o ciclo \"{{ ciclo.nome }}\"? Alunos poderão voltar a responder.');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">
+                                🔓 Reativar Ciclo
+                            </button>
+                        </form>
+                    </div>
                 {% endif %}
             {% endif %}
         </div>

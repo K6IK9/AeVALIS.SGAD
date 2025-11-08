@@ -19,7 +19,7 @@ from ..models import (
     AvaliacaoDocente,
     RespostaAvaliacao,
 )
-from ..views import gerenciar_perfil_usuario
+from ..utils import gerenciar_perfil_usuario
 import datetime
 
 
