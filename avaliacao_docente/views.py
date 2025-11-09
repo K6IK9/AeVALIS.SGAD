@@ -225,8 +225,13 @@ def gerenciar_usuarios(request):
         role_manual = is_role_manually_changed(user)
 
         # Filtrar por role (após obter a role do usuário)
-        if filtro_role and role_atual.lower() != filtro_role.lower():
-            continue
+        if filtro_role:
+            # Normalizar roles para comparação
+            role_filtro_normalizada = filtro_role.lower().replace("-", " ")
+            role_usuario_normalizada = role_atual.lower()
+
+            if role_filtro_normalizada != role_usuario_normalizada:
+                continue
 
         usuarios_list.append(
             {
@@ -1043,7 +1048,6 @@ def gerenciar_turmas(request):
     # Filtros da requisição
     filtro_turno = request.GET.get("turno", "")
     filtro_periodo = request.GET.get("periodo", "")
-    filtro_status = request.GET.get("status", "")
 
     if request.method == "POST":
         form = TurmaForm(request.POST)
@@ -1079,8 +1083,6 @@ def gerenciar_turmas(request):
         turmas_list = turmas_list.filter(turno=filtro_turno)
     if filtro_periodo:
         turmas_list = turmas_list.filter(disciplina__periodo_letivo_id=filtro_periodo)
-    if filtro_status:
-        turmas_list = turmas_list.filter(status=filtro_status)
 
     # Paginação - 15 turmas por página
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -1112,7 +1114,6 @@ def gerenciar_turmas(request):
         "professores": professores,
         "filtro_turno": filtro_turno,
         "filtro_periodo": filtro_periodo,
-        "filtro_status": filtro_status,
     }
 
     return render(request, "gerenciar_turmas.html", context)

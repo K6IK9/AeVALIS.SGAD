@@ -105,13 +105,14 @@
         </div>
       </div>
 
-      <div class="filter-row">
+            <div class="filter-row">
         <div class="filter-group">
-          <label for="status">Filtrar por Status:</label>
-          <select id="status" name="status" class="form-control">
-            <option value="">Todos os status</option>
-            <option value="aberta" {% if filtro_status == "aberta" %}selected{% endif %}>Aberta</option>
-            <option value="fechada" {% if filtro_status == "fechada" %}selected{% endif %}>Fechada</option>
+          <label for="turno">Filtrar por Turno:</label>
+          <select id="turno" name="turno" class="form-control">
+            <option value="">Todos os turnos</option>
+            <option value="matutino" {% if filtro_turno == "matutino" %}selected{% endif %}>Matutino</option>
+            <option value="vespertino" {% if filtro_turno == "vespertino" %}selected{% endif %}>Vespertino</option>
+            <option value="noturno" {% if filtro_turno == "noturno" %}selected{% endif %}>Noturno</option>
           </select>
         </div>
 
@@ -141,7 +142,6 @@
               <th>Professor</th>
               <th>Período</th>
               <th>Turno</th>
-              <th>Status</th>
               <th>Matrículas</th>
               <th>Data Criação</th>
               <th>Ações</th>
@@ -157,11 +157,6 @@
               <td>{{ turma.disciplina.periodo_letivo }}</td>
               <td>
                 <span class="turno-badge">{{ turma.get_turno_display }}</span>
-              </td>
-              <td>
-                <span class="status-badge status-{{ turma.status|lower }}">
-                  {{ turma.get_status_display }}
-                </span>
               </td>
               <td>
                 {{ turma.alunos.count }} aluno{{ turma.alunos.count|pluralize }}

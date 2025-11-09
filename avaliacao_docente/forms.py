@@ -648,33 +648,6 @@ class QuestionarioAvaliacaoForm(forms.ModelForm):
         return titulo
 
 
-class CategoriaPerguntaForm(forms.ModelForm):
-    """
-    Formulário para criar/editar categorias de perguntas
-    """
-
-    class Meta:
-        model = CategoriaPergunta
-        fields = ["nome", "descricao", "ordem", "ativo"]
-        widgets = {
-            "nome": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Ex: Didática, Relacionamento",
-                }
-            ),
-            "descricao": forms.Textarea(
-                attrs={
-                    "class": "form-control",
-                    "rows": 2,
-                    "placeholder": "Descrição da categoria",
-                }
-            ),
-            "ordem": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
-            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-        }
-
-
 class PerguntaAvaliacaoForm(forms.ModelForm):
     """
     Formulário para criar/editar perguntas de avaliação
@@ -983,7 +956,11 @@ class CategoriaPerguntaForm(forms.ModelForm):
 
     class Meta:
         model = CategoriaPergunta
-        fields = ["nome", "descricao", "ordem", "ativo"]
+        fields = [
+            "nome",
+            "descricao",
+            "ordem",
+        ]  # Removido 'ativo' - sempre True por padrão na criação
         widgets = {
             "nome": forms.TextInput(
                 attrs={
@@ -1007,19 +984,16 @@ class CategoriaPerguntaForm(forms.ModelForm):
                     "placeholder": "1",
                 }
             ),
-            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
         labels = {
             "nome": "Nome da Categoria",
             "descricao": "Descrição",
             "ordem": "Ordem de Exibição",
-            "ativo": "Categoria Ativa",
         }
         help_texts = {
             "nome": "Nome único para identificar a categoria",
             "descricao": "Descrição opcional para explicar o propósito da categoria",
             "ordem": "Ordem de exibição nas avaliações (número único, começando em 1)",
-            "ativo": "Marque para manter a categoria ativa no sistema",
         }
 
     def __init__(self, *args, **kwargs):
