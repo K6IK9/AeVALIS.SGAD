@@ -164,6 +164,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # Configuração do WhiteNoise para servir arquivos estáticos em produção
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True  # Apenas para desenvolvimento
+WHITENOISE_MANIFEST_STRICT = False  # Não falhar se arquivo não estiver no manifest
+
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
