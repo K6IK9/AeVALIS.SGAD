@@ -1,0 +1,632 @@
+/* ===== Relatório de Avaliações CSS ===== */
+
+/* Variáveis específicas do relatório */
+:root {
+    --report-primary: var(--cor03);
+    --report-background: var(--cor07);
+    --report-success: #28a745;
+    --report-warning: #ffc107;
+    --report-danger: var(--cor08);
+    --report-border: rgba(71, 168, 189, 0.2);
+}
+
+/* Nota: .back-button, .container e .header estão definidos em global.css */
+
+/* Grid de avaliações */
+.avaliacoes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.avaliacao-card {
+    background: var(--report-background);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid var(--report-border);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border-top: 4px solid var(--report-primary);
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.avaliacao-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--report-border);
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.card-title {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--report-primary);
+    margin-bottom: 8px;
+    line-height: 1.3;
+    word-wrap: break-word;
+}
+
+.card-subtitle {
+    color: #666;
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    word-wrap: break-word;
+}
+
+.card-info {
+    margin-bottom: 15px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dotted #e0e0e0;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item span {
+    flex-shrink: 0;
+    min-width: fit-content;
+    color: #666;
+    font-weight: 500;
+}
+
+.info-item strong {
+    color: var(--report-primary);
+    font-weight: 600;
+    text-align: right;
+}
+
+/* Estatísticas por pergunta */
+.pergunta-stats {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.pergunta-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9em;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-value {
+    font-size: 1em;
+    font-weight: 700;
+    color: var(--report-primary);
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 0.7em;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+/* Comentários */
+.comentarios-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid var(--report-border);
+}
+
+.comentarios-title {
+    font-weight: 600;
+    color: var(--report-primary);
+    font-size: 1em;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.comentario-card {
+    background: white;
+    padding: 12px;
+    border-radius: 10px;
+    border-left: 4px solid var(--report-primary);
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.comentario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.comentario-aluno {
+    font-weight: 600;
+    color: var(--report-primary);
+    font-size: 0.85em;
+}
+
+.comentario-data {
+    color: #999;
+    font-size: 0.75em;
+}
+
+.comentario-texto {
+    font-size: 0.9em;
+    line-height: 1.5;
+    color: #333;
+    word-wrap: break-word;
+}
+
+/* Paginação */
+.pagination-info {
+    text-align: center;
+    margin: 20px 0;
+    color: #666;
+    font-size: 0.95em;
+    font-weight: 500;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--report-border);
+    border-top: 4px solid var(--report-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-text {
+    margin-top: 15px;
+    color: var(--report-primary);
+    font-weight: 600;
+    font-size: 1.1em;
+}
+
+/* ===== Estilos para Detalhes do Professor ===== */
+
+/* Informações do Professor */
+.info-professor {
+    background: var(--report-background);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--report-border);
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.info-professor h2 {
+    color: var(--report-primary);
+    margin: 0 0 15px 0;
+    font-size: 1.5em;
+    font-weight: 700;
+}
+
+.info-professor p {
+    margin: 8px 0;
+    color: #555;
+    font-size: 1em;
+}
+
+/* Estatísticas Gerais */
+.estatisticas-gerais {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.stat-card-detalhe {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--report-border);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: all 0.3s ease;
+    border-top: 4px solid var(--report-primary);
+}
+
+.stat-card-detalhe:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.stat-numero {
+    font-size: 2em;
+    font-weight: 700;
+    color: var(--report-primary);
+    margin-bottom: 8px;
+}
+
+.stat-descricao {
+    font-size: 0.9em;
+    color: #666;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Card de Ciclo */
+.ciclo-card {
+    background: var(--report-background);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid var(--report-border);
+    margin-bottom: 30px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.ciclo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--report-border);
+}
+
+.ciclo-title {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: var(--report-primary);
+}
+
+/* Métricas do Ciclo */
+.metricas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.metrica-item {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.metrica-valor {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--report-primary);
+    margin-bottom: 8px;
+}
+
+.metrica-label {
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+/* Lista de Avaliações */
+.avaliacoes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.avaliacao-item {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 15px;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.avaliacao-item:hover {
+    border-color: var(--report-primary);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Sem Avaliações */
+.sem-avaliacoes {
+    background: #f8f9fa;
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
+    color: #666;
+    font-size: 1.1em;
+    border: 2px dashed #ddd;
+}
+
+/* Badges de Classificação */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-excelente {
+    background: #28a745;
+    color: white;
+}
+
+.badge-bom {
+    background: #17a2b8;
+    color: white;
+}
+
+.badge-regular {
+    background: #ffc107;
+    color: #333;
+}
+
+.badge-insuficiente {
+    background: #fd7e14;
+    color: white;
+}
+
+.badge-naoatende {
+    background: #dc3545;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .avaliacoes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .estatisticas-gerais {
+        grid-template-columns: 1fr;
+    }
+
+    .ciclo-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .metricas-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .avaliacao-item {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .avaliacao-item>div {
+        text-align: left !important;
+    }
+}
+
+/* ===== Estilos para Tabela de Relatório de Professores ===== */
+
+/* Link para professor */
+.professor-link {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.professor-link:hover {
+    color: #2980b9;
+}
+
+/* Hint de arrastar tabela */
+.table-scroll-hint {
+    background: #fff3cd;
+    color: #856404;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    border: 1px solid #ffeaa7;
+    font-size: 14px;
+}
+
+/* Badge secundário para fallback */
+.badge-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+/* Min-widths para colunas da tabela de professores */
+.col-professor {
+    min-width: 200px;
+}
+
+.col-cursos {
+    min-width: 150px;
+}
+
+.col-aval-respondidas {
+    min-width: 100px;
+}
+
+.col-respondentes {
+    min-width: 120px;
+}
+
+.col-taxa-resposta {
+    min-width: 100px;
+}
+
+.col-media-ciclo {
+    min-width: 100px;
+}
+
+.col-classificacao {
+    min-width: 130px;
+}
+
+.col-media-historica {
+    min-width: 120px;
+}
+
+.col-class-historica {
+    min-width: 150px;
+}
+
+/* Seção de exemplos de cálculo */
+.example-section {
+    margin-top: 50px;
+    padding: 30px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 5px solid #3498db;
+}
+
+.example-title {
+    color: #2c3e50;
+    margin-bottom: 25px;
+}
+
+.example-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.example-subtitle {
+    color: #34495e;
+    margin-bottom: 15px;
+}
+
+.example-text {
+    line-height: 1.8;
+    color: #555;
+}
+
+.example-text-spaced {
+    margin-top: 15px;
+}
+
+.example-list {
+    line-height: 1.8;
+    color: #555;
+}
+
+.formula-box {
+    background: #ecf0f1;
+    padding: 15px;
+    border-radius: 6px;
+    font-family: monospace;
+    margin: 10px 0;
+}
+
+.classification-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.classification-table thead tr {
+    background: #34495e;
+    color: white;
+}
+
+.classification-table th,
+.classification-table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.classification-table tbody tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+/* Caixa de aviso/observações */
+.example-warning {
+    background: #fff3cd;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+}
+
+.example-warning-title {
+    color: #856404;
+    margin-bottom: 10px;
+}
+
+.example-warning-list {
+    line-height: 1.8;
+    color: #856404;
+}

@@ -1,0 +1,588 @@
+/* Editar Questionário - Seguindo padrão do sistema usando cores globais */
+
+/* Nota: .container e .header estão definidos em global.css */
+
+/* Navegação breadcrumb seguindo padrão */
+.nav-breadcrumb {
+    background-color: var(--cor07);
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    border: 1px solid #e5e7eb;
+    font-weight: 500;
+}
+
+.nav-breadcrumb a {
+    color: var(--cor03);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.nav-breadcrumb a:hover {
+    color: var(--cor02);
+}
+
+.nav-breadcrumb span {
+    color: var(--cor05);
+    margin: 0 8px;
+}
+
+/* Mensagens seguindo padrão */
+.messages {
+    margin-bottom: 20px;
+}
+
+.message {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.message.success {
+    background-color: var(--cor02);
+    color: var(--cor07);
+}
+
+.message.error {
+    background-color: var(--cor08);
+    color: var(--cor07);
+}
+
+/* Container principal em layout vertical */
+.main-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+/* Nota: .form-section está definido em global.css */
+
+.form-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--cor05);
+    margin: 0 0 25px 0;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--cor03);
+}
+
+/* Formulário */
+.question-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--cor05);
+    font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 12px 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--cor05);
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--cor03);
+    box-shadow: 0 0 0 3px rgba(55, 111, 108, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-group small {
+    color: var(--cor05);
+    opacity: 0.7;
+    font-size: 0.8rem;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+/* Seção de perguntas - AGORA ABAIXO */
+.questions-section {
+    background-color: var(--cor07);
+    border: 1px solid #e5e7eb;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--cor03);
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--cor05);
+    margin: 0;
+}
+
+.questions-count {
+    background-color: var(--cor03);
+    color: var(--cor07);
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Lista de perguntas */
+.questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.question-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    background-color: var(--cor07);
+    transition: all 0.3s ease;
+}
+
+.question-card:hover {
+    border-color: var(--cor03);
+    box-shadow: 0 6px 20px rgba(55, 111, 108, 0.15);
+}
+
+.question-card.editing {
+    border-color: var(--cor03);
+    background-color: #f0fdf4;
+    box-shadow: 0 6px 20px rgba(55, 111, 108, 0.15);
+}
+
+.question-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.question-number {
+    background-color: var(--cor03);
+    color: var(--cor07);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.question-content {
+    flex-grow: 1;
+}
+
+.question-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--cor05);
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.question-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.question-type {
+    background-color: var(--cor03);
+    color: var(--cor07);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.question-required {
+    background-color: var(--cor08);
+    color: var(--cor07);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.question-options {
+    margin: 15px 0;
+    padding-left: 51px;
+}
+
+.options-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--cor05);
+    font-size: 0.9rem;
+}
+
+.option {
+    padding: 8px 15px;
+    margin: 6px 0;
+    background-color: var(--cor01);
+    border-radius: 8px;
+    color: var(--cor05);
+    font-size: 0.9rem;
+    border-left: 3px solid var(--cor03);
+}
+
+.question-actions {
+    display: flex;
+    gap: 12px;
+    padding-left: 51px;
+}
+
+/* Estado vazio */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--cor05);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--cor03);
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    opacity: 0.7;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Botões seguindo padrão do sistema */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.btn-primary {
+    background-color: var(--cor03);
+    color: var(--cor07);
+}
+
+.btn-primary:hover {
+    background-color: var(--cor02);
+    color: var(--cor05);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 253, 148, 0.3);
+}
+
+.btn-secondary {
+    background-color: var(--cor03);
+    color: var(--cor07);
+}
+
+.btn-secondary:hover {
+    background-color: var(--cor05);
+    transform: translateY(-2px);
+}
+
+.btn-edit {
+    background-color: var(--cor03);
+    color: var(--cor07);
+    padding: 8px 15px;
+    font-size: 0.8rem;
+}
+
+.btn-edit:hover {
+    background-color: var(--cor02);
+    color: var(--cor05);
+    text-decoration: none;
+}
+
+.btn-remove {
+    background-color: var(--cor05);
+    color: var(--cor07);
+    padding: 8px 15px;
+    font-size: 0.8rem;
+}
+
+.btn-remove:hover {
+    background-color: var(--cor08);
+}
+
+/* Erros */
+.error-message,
+.field-error {
+    color: var(--cor07);
+    background-color: var(--cor08);
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+/* Ações do formulário */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .main-container {
+        gap: 20px;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+    }
+
+    .question-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .question-actions,
+    .question-options {
+        padding-left: 0;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .section-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .question-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+
+    .header {
+        padding: 20px 15px;
+    }
+
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .questions-section,
+    .form-section {
+        padding: 20px;
+    }
+}
+
+/* ============ Estilos específicos para tipos de pergunta ============ */
+
+/* Extensões do badge base para tipos específicos */
+.type-multiple {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.type-text {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.type-scale {
+    background-color: #e8f5e8;
+    color: #388e3c;
+}
+
+.type-nps {
+    background-color: #fff3e0;
+    color: #f57c00;
+}
+
+.type-binary {
+    background-color: #e1f5fe;
+    color: #0277bd;
+}
+
+.type-other {
+    background-color: #f5f5f5;
+    color: #616161;
+}
+
+/* Preview de opções das perguntas */
+.question-options-preview {
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: #666;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+.question-options-preview small {
+    display: block;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+/* ============ Numeração das perguntas por categoria ============ */
+
+.category-order-number {
+    display: inline-block;
+    padding: 8px 12px;
+    background: var(--cor03);
+    color: var(--cor07);
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 35px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ============ Ajustes para evitar quebra de layout com texto extenso ============ */
+
+/* ============ Ajustes para evitar quebra de layout com texto extenso ============ */
+
+/* Garante que a tabela tenha rolagem horizontal quando necessário */
+.form-section .data-table {
+    width: 100%;
+    min-width: 900px;
+    /* Largura mínima para forçar scroll horizontal */
+}
+
+/* Ajusta as colunas da tabela de perguntas */
+.form-section .data-table th:nth-child(1),
+.form-section .data-table td:nth-child(1) {
+    width: 80px;
+    min-width: 80px;
+    text-align: center;
+}
+
+.form-section .data-table th:nth-child(2),
+.form-section .data-table td:nth-child(2) {
+    width: 40%;
+    min-width: 250px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+.form-section .data-table th:nth-child(3),
+.form-section .data-table td:nth-child(3) {
+    width: 150px;
+    min-width: 150px;
+}
+
+.form-section .data-table th:nth-child(4),
+.form-section .data-table td:nth-child(4) {
+    width: 120px;
+    min-width: 120px;
+}
+
+.form-section .data-table th:nth-child(5),
+.form-section .data-table td:nth-child(5) {
+    width: 110px;
+    min-width: 110px;
+}
+
+.form-section .data-table th:nth-child(6),
+.form-section .data-table td:nth-child(6) {
+    width: 150px;
+    min-width: 150px;
+}
+
+/* Garante que badges e botões não quebrem */
+.form-section .data-table .badge,
+.form-section .data-table .status-badge {
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.form-section .data-table .btn-group {
+    white-space: nowrap;
+    display: flex;
+    gap: 5px;
+}
+
+/* ============ Dica de rolagem lateral da tabela ============ */
+.table-scroll-hint {
+    background: rgba(0, 123, 255, 0.1);
+    border-left: 3px solid var(--cor02);
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.table-scroll-hint small {
+    color: var(--cor03);
+    font-weight: 500;
+}
