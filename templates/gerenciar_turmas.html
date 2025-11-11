@@ -106,15 +106,6 @@
       </div>
 
             <div class="filter-row">
-        <div class="filter-group">
-          <label for="turno">Filtrar por Turno:</label>
-          <select id="turno" name="turno" class="form-control">
-            <option value="">Todos os turnos</option>
-            <option value="matutino" {% if filtro_turno == "matutino" %}selected{% endif %}>Matutino</option>
-            <option value="vespertino" {% if filtro_turno == "vespertino" %}selected{% endif %}>Vespertino</option>
-            <option value="noturno" {% if filtro_turno == "noturno" %}selected{% endif %}>Noturno</option>
-          </select>
-        </div>
 
         <div class="filter-group filter-actions">
           <button type="submit" class="btn btn-primary">🔍 Filtrar</button>

@@ -138,7 +138,7 @@ def resetar_role_automatica(request, usuario_id):
         messages.error(
             request, "Apenas administradores podem resetar roles automáticas."
         )
-        return redirect("gerenciar_roles")
+        return redirect("gerenciar_usuarios")
 
     try:
         usuario = User.objects.get(id=usuario_id)
@@ -157,7 +157,7 @@ def resetar_role_automatica(request, usuario_id):
     except Exception as e:
         messages.error(request, f"Erro ao resetar flag manual: {str(e)}")
 
-    return redirect("gerenciar_roles")
+    return redirect("gerenciar_usuarios")
 
 
 @login_required
