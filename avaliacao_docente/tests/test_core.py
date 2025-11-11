@@ -575,7 +575,7 @@ class FormTestCase(TestCase):
         """Testa formulário válido de período letivo"""
         from ..forms import PeriodoLetivoForm
 
-        form_data = {"nome": "Período 2024.2", "ano": 2024, "semestre": 2}
+        form_data = {"nome": "2024.2", "ano": 2024, "semestre": 2}
         form = PeriodoLetivoForm(data=form_data)
         self.assertTrue(form.is_valid())
 

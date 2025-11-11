@@ -99,11 +99,18 @@ class TurmaRefatoracaoTests(TestCase):
         Teste 1: Valida que os campos 'professor' e 'periodo_letivo'
         NÃO existem mais na tabela Turma do banco de dados
         """
-        # Obter descrição da tabela Turma
+        # Obter descrição da tabela Turma (PostgreSQL)
         with connection.cursor() as cursor:
             table_name = Turma._meta.db_table
-            cursor.execute(f"PRAGMA table_info({table_name})")
-            columns = [row[1] for row in cursor.fetchall()]
+            cursor.execute(
+                """
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = %s
+                """,
+                [table_name],
+            )
+            columns = [row[0] for row in cursor.fetchall()]
 
         # Validar que campos redundantes foram removidos
         self.assertNotIn(

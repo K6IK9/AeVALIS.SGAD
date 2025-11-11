@@ -85,7 +85,7 @@ class LembreteEmailCriacaoCicloTest(TestCase):
             disciplina_nome="Disciplina Teste",
             disciplina_sigla="DT01",
             disciplina_tipo="Obrigatória",
-            # curso obtido via disciplina
+            curso=self.curso,
             periodo_letivo=self.periodo,
             professor=self.professor,
         )
@@ -262,7 +262,7 @@ class LembreteEmailDoisDiasTest(TestCase):
             disciplina_nome="Disciplina Teste",
             disciplina_sigla="DT01",
             disciplina_tipo="Obrigatória",
-            # curso obtido via disciplina
+            curso=self.curso,
             periodo_letivo=self.periodo,
             professor=self.professor,
         )

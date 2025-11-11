@@ -28,6 +28,7 @@ from django.urls import reverse
 from rolepermissions.roles import assign_role
 
 from avaliacao_docente.models import (
+    CategoriaPergunta,
     Curso,
     Disciplina,
     Turma,
@@ -129,14 +130,21 @@ class CSVExportTestCase(TestCase):
         )
 
         # Criar questionário e perguntas
+        cls.categoria = CategoriaPergunta.objects.create(
+            nome="Didática", descricao="Perguntas sobre didática do professor"
+        )
+
         cls.questionario = QuestionarioAvaliacao.objects.create(
-            nome="Questionário Padrão", descricao="Questionário de avaliação docente"
+            titulo="Questionário Padrão",
+            descricao="Questionário de avaliação docente",
+            criado_por=cls.admin,
         )
 
         cls.pergunta = PerguntaAvaliacao.objects.create(
             enunciado="Como você avalia a didática do professor?",
             tipo="multipla_escolha",
             obrigatoria=True,
+            categoria=cls.categoria,
         )
 
         QuestionarioPergunta.objects.create(
@@ -152,6 +160,7 @@ class CSVExportTestCase(TestCase):
             questionario=cls.questionario,
             data_inicio=datetime.now() - timedelta(days=10),
             data_fim=datetime.now() + timedelta(days=10),
+            criado_por=cls.admin,
         )
 
         # Criar avaliação docente
