@@ -1,0 +1,167 @@
+/* detalhe_ciclo.css - Estilos específicos para página de detalhe do ciclo */
+
+/* Info items com layout responsivo */
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 8px 0;
+    gap: 10px;
+    min-width: 0;
+}
+
+.info-item strong {
+    color: var(--cor05);
+    font-weight: 600;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.info-item span {
+    color: var(--cor06);
+    text-align: right;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    min-width: 0;
+    flex: 1;
+}
+
+/* Estilos para botão de status */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 5px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.status-badge.status-active {
+    background: var(--cor02);
+    color: var(--cor05);
+}
+
+.status-badge.status-inactive {
+    background: var(--cor04);
+    color: var(--cor06);
+}
+
+/* Stats grid com 3 colunas */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, var(--cor02) 0%, var(--cor03) 100%);
+    color: var(--cor07);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+/* Button group para filtros */
+.btn-group {
+    display: inline-flex;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.btn-group .btn {
+    border-radius: 0;
+    margin: 0;
+    border-right: 1px solid var(--cor04);
+}
+
+.btn-group .btn:last-child {
+    border-right: none;
+}
+
+.btn-group .btn:first-child {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.btn-group .btn:last-child {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.btn-group .btn.active {
+    background: var(--cor03);
+    color: var(--cor07);
+    font-weight: 600;
+}
+
+/* Botões pequenos para ações de tabela */
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85em;
+}
+
+/* Inline form para botões de ação */
+.inline-form {
+    display: inline;
+}
+
+/* Dica de scroll da tabela */
+.table-scroll-hint {
+    background: rgba(0, 253, 148, 0.1);
+    border: 1px solid var(--cor02);
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.table-scroll-hint small {
+    color: var(--cor03);
+    font-weight: 500;
+}
+
+/* Table responsive wrapper */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 5px;
+}
+
+/* Responsividade para botões de filtro */
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-group .btn {
+        border-radius: 5px !important;
+        border-right: none;
+        border-bottom: 1px solid var(--cor04);
+        margin-bottom: 5px;
+    }
+
+    .btn-group .btn:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
