@@ -280,7 +280,7 @@ class CursoForm(forms.ModelForm):
     """
 
     curso_nome = forms.CharField(
-        max_length=45,
+        max_length=80,
         required=True,
         label="Nome do Curso",
         widget=forms.TextInput(
@@ -328,7 +328,7 @@ class DisciplinaForm(forms.ModelForm):
     """
 
     disciplina_nome = forms.CharField(
-        max_length=50,
+        max_length=70,
         required=True,
         label="Nome da Disciplina",
         widget=forms.TextInput(
