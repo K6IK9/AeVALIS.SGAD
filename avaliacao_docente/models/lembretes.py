@@ -107,7 +107,7 @@ class JobLembreteCicloTurma(BaseModel, TimestampMixin):
         ]
 
     def __str__(self):
-        return f"Job Lembrete: {self.ciclo.nome} - {self.turma.codigo}"
+        return f"Job Lembrete: {self.ciclo.nome} - {self.turma.codigo_turma}"
 
     def atingiu_limiar(self, limiar_percentual=10.0):
         """Verifica se a turma atingiu o limiar mínimo de respostas."""
