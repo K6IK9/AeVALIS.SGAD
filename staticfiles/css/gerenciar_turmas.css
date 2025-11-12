@@ -453,3 +453,21 @@
         align-items: stretch;
     }
 }
+
+@media (max-width: 480px) {
+    /* Botões padronizados - touch targets 44px */
+    .btn,
+    button,
+    .btn-action,
+    .bulk-action-btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 14px 18px;
+        font-size: 0.9rem;
+    }
+
+    .alunos-management {
+        margin: 5px;
+        width: calc(100% - 10px);
+    }
+}
