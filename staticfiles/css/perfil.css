@@ -97,8 +97,15 @@
 }
 
 @keyframes shimmer {
-    0%, 100% { opacity: 0.8; }
-    50% { opacity: 1; }
+
+    0%,
+    100% {
+        opacity: 0.8;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 .profile-avatar {
@@ -152,12 +159,29 @@
     border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
-.role-admin { background: var(--cor08); }
-.role-coordenador { background: #6f42c1; }
-.role-professor { background: #fd7e14; }
-.role-aluno { background: #198754; }
-.role-servidor { background: #17a2b8; }
-.role-sem-role { background: #6c757d; }
+.role-admin {
+    background: var(--cor08);
+}
+
+.role-coordenador {
+    background: #6f42c1;
+}
+
+.role-professor {
+    background: #fd7e14;
+}
+
+.role-aluno {
+    background: #198754;
+}
+
+.role-servidor {
+    background: #17a2b8;
+}
+
+.role-sem-role {
+    background: #6c757d;
+}
 
 .profile-intro {
     text-align: center;
@@ -200,8 +224,15 @@
 }
 
 @keyframes pulse-status {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
 }
 
 /* ===== CONTEÚDO PRINCIPAL ===== */
@@ -348,14 +379,37 @@
     flex-shrink: 0;
 }
 
-.permission-icon.role-admin { background: var(--cor08); }
-.permission-icon.role-coordenador { background: #6f42c1; }
-.permission-icon.role-professor { background: #fd7e14; }
-.permission-icon.role-aluno { background: #198754; }
-.permission-icon.role-servidor { background: #17a2b8; }
-.permission-icon.admin { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
-.permission-icon.coordenador { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
-.permission-icon:not([class*="role-"]):not(.admin):not(.coordenador) { background: var(--cor03); }
+.permission-icon.role-admin {
+    background: var(--cor08);
+}
+
+.permission-icon.role-coordenador {
+    background: #6f42c1;
+}
+
+.permission-icon.role-professor {
+    background: #fd7e14;
+}
+
+.permission-icon.role-aluno {
+    background: #198754;
+}
+
+.permission-icon.role-servidor {
+    background: #17a2b8;
+}
+
+.permission-icon.admin {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+}
+
+.permission-icon.coordenador {
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+}
+
+.permission-icon:not([class*="role-"]):not(.admin):not(.coordenador) {
+    background: var(--cor03);
+}
 
 .permission-details {
     flex: 1;
@@ -475,6 +529,8 @@
     .nav-btn {
         padding: 10px 14px;
         font-size: 0.85rem;
+        min-width: 44px;
+        min-height: 44px;
     }
 
     .nav-btn span {
@@ -526,9 +582,10 @@
     }
 
     .nav-btn {
-        padding: 8px 12px;
-        font-size: 0.8rem;
+        padding: 14px 18px;
+        font-size: 0.9rem;
         min-width: 44px;
+        min-height: 44px;
     }
 
     .nav-logo img {
@@ -568,6 +625,8 @@
     .action-btn {
         padding: 14px 20px;
         font-size: 0.9rem;
+        min-width: 44px;
+        min-height: 44px;
     }
 }
 

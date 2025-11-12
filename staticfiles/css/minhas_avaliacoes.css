@@ -94,16 +94,16 @@
 /* ===== RESPONSIVIDADE ===== */
 @media (max-width: 768px) {
     .avaliacoes-grid {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 15px;
     }
 
     .header h1 {
         font-size: var(--font-size-xl);
     }
 
-    .back-button {
-        width: 100%;
-        text-align: center;
+    .avaliacao-card {
+        padding: 15px;
     }
 }
 
@@ -127,9 +127,8 @@
     }
 
     .btn {
-        padding: 8px 12px;
-        font-size: var(--font-size-xs);
-        width: 100%;
+        padding: 14px 18px;
+        font-size: 0.9rem;
     }
 
     .empty-state {

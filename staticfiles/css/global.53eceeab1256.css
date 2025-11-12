@@ -563,7 +563,24 @@ header a:hover img {
     background: rgba(0, 0, 0, 0.1);
 }
 
-/* Responsividade das mensagens - CONSOLIDADO NO BLOCO PRINCIPAL @768px */
+/* Responsividade das mensagens */
+@media (max-width: 768px) {
+    .messages li {
+        padding: 14px 16px;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    .messages li::before {
+        font-size: 18px;
+        margin-right: 10px;
+    }
+
+    .messages li::after {
+        right: 12px;
+        font-size: 20px;
+    }
+}
 
 /* Auto-dismiss para mensagens */
 @keyframes message-dismiss {
@@ -745,7 +762,6 @@ header a:hover img {
 
 /* ===== RESPONSIVIDADE GLOBAL ===== */
 @media (max-width: 768px) {
-    /* Layout e containers */
     .container {
         padding: 15px;
     }
@@ -754,7 +770,6 @@ header a:hover img {
         padding: 20px;
     }
 
-    /* Tabelas */
     .data-table {
         font-size: 0.9em;
     }
@@ -787,61 +802,6 @@ header a:hover img {
 
     .header-nav {
         padding: 0 15px;
-    }
-
-    /* Mensagens */
-    .messages li {
-        padding: 14px 16px;
-        font-size: 14px;
-        margin-bottom: 10px;
-    }
-
-    .messages li::before {
-        font-size: 18px;
-        margin-right: 10px;
-    }
-
-    .messages li::after {
-        right: 12px;
-        font-size: 20px;
-    }
-
-    /* Grid system */
-    .row {
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    .col-md-4,
-    .col-md-8 {
-        flex: 0 0 100%;
-        max-width: 100%;
-        padding-left: 0;
-        padding-right: 0;
-        margin-bottom: 1rem;
-    }
-
-    .col-6 {
-        padding-left: 0;
-        padding-right: 0;
-        margin-bottom: 1rem;
-    }
-
-    /* Grupos de botões */
-    .btn-group {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    /* Inputs - prevenção de zoom iOS */
-    input[type="text"],
-    input[type="email"],
-    input[type="number"],
-    input[type="tel"],
-    input[type="password"],
-    textarea,
-    select {
-        font-size: 16px;
     }
 }
 
@@ -1059,7 +1019,28 @@ header a:hover img {
     padding-right: 15px;
 }
 
-/* Grid responsivo - CONSOLIDADO NO BLOCO PRINCIPAL @768px */
+/* Grid responsivo */
+@media (max-width: 768px) {
+    .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .col-md-4,
+    .col-md-8 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+        margin-bottom: 1rem;
+    }
+
+    .col-6 {
+        padding-left: 0;
+        padding-right: 0;
+        margin-bottom: 1rem;
+    }
+}
 
 /* ===== GRUPOS DE BOTÕES ===== */
 .btn-group {
@@ -1071,7 +1052,13 @@ header a:hover img {
     border-radius: 4px;
 }
 
-/* Responsividade dos grupos de botões - CONSOLIDADO NO BLOCO PRINCIPAL @768px */
+/* Responsividade dos grupos de botões */
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+}
 
 /* Estilos para o Overlay de Inatividade */
 #inactivity-overlay {
@@ -1083,7 +1070,7 @@ header a:hover img {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.85);
-    background-image: url('../image.png');
+    background-image: url("../image.202f70ecb24b.png");
     /* Caminho para sua imagem */
     background-position: center;
     background-repeat: no-repeat;
@@ -1104,11 +1091,21 @@ header a:hover img {
     justify-content: center;
 }
 
-/* Prevenção zoom em inputs mobile (iOS) - CONSOLIDADO NO BLOCO PRINCIPAL @768px */
+/* Prevenir zoom em inputs mobile (iOS) mantendo acessibilidade */
+@media (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="password"],
+    textarea,
+    select {
+        font-size: 16px;
+    }
+}
 
 /* Suporte a reduced motion para acessibilidade */
 @media (prefers-reduced-motion: reduce) {
-
     *,
     *::before,
     *::after {

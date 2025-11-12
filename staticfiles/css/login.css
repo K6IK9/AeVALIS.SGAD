@@ -607,8 +607,12 @@ body {
     font-size: 2rem;
   }
 
+  /* Botões e inputs padronizados - touch targets 44px */
   .btn {
+    min-width: 44px;
     min-height: 44px;
+    padding: 14px 18px;
+    font-size: 0.9rem;
   }
 
   .form-input {

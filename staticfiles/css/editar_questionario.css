@@ -440,6 +440,15 @@
     .form-section {
         padding: 20px;
     }
+
+    /* Botões padronizados - touch targets 44px */
+    .btn,
+    button {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 14px 18px;
+        font-size: 0.9rem;
+    }
 }
 
 /* ============ Estilos específicos para tipos de pergunta ============ */
