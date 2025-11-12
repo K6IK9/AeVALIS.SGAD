@@ -2,7 +2,7 @@
    GLOBAL STYLES - Sistema de Avaliação Docente
    ================================================ */
 
-/* Importação das fontes */
+/* Importação das fontes com font-display: swap para melhor performance mobile */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Vidaloka&display=swap');
 
 /* ===== VARIÁVEIS CSS GLOBAIS ===== */
@@ -770,16 +770,6 @@ header a:hover img {
         padding: 20px;
     }
 
-    .btn {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-
-    .back-button {
-        width: 100%;
-        text-align: center;
-    }
-
     .data-table {
         font-size: 0.9em;
     }
@@ -825,8 +815,8 @@ header a:hover img {
     }
 
     .btn {
-        padding: 10px 16px;
-        font-size: 14px;
+        padding: 14px 18px;
+        font-size: 0.9rem;
     }
 
     .form-control {
@@ -843,7 +833,7 @@ header a:hover img {
     header a {
         min-width: 44px;
         min-height: 44px;
-        padding: 8px 10px;
+        padding: 14px 18px;
         border-radius: 8px;
     }
 
@@ -1089,4 +1079,39 @@ header a:hover img {
     z-index: 9999;
     /* Garante que fique por cima de tudo */
     cursor: pointer;
+}
+
+/* ===== UTILITÁRIOS MOBILE ===== */
+/* Touch targets mínimos para acessibilidade mobile */
+.touch-target {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Prevenir zoom em inputs mobile (iOS) mantendo acessibilidade */
+@media (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="password"],
+    textarea,
+    select {
+        font-size: 16px;
+    }
+}
+
+/* Suporte a reduced motion para acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

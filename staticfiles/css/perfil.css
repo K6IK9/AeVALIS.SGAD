@@ -475,6 +475,8 @@
     .nav-btn {
         padding: 10px 14px;
         font-size: 0.85rem;
+        min-width: 44px;
+        min-height: 44px;
     }
 
     .nav-btn span {
@@ -526,9 +528,10 @@
     }
 
     .nav-btn {
-        padding: 8px 12px;
-        font-size: 0.8rem;
+        padding: 14px 18px;
+        font-size: 0.9rem;
         min-width: 44px;
+        min-height: 44px;
     }
 
     .nav-logo img {
@@ -568,6 +571,8 @@
     .action-btn {
         padding: 14px 20px;
         font-size: 0.9rem;
+        min-width: 44px;
+        min-height: 44px;
     }
 }
 

@@ -1070,7 +1070,7 @@ header a:hover img {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.85);
-    background-image: url('../image.png');
+    background-image: url("../image.202f70ecb24b.png");
     /* Caminho para sua imagem */
     background-position: center;
     background-repeat: no-repeat;
