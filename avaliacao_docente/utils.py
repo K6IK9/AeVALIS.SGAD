@@ -244,7 +244,7 @@ def enviar_email_notificacao_avaliacao(aluno, avaliacao, request=None):
             reverse("responder_avaliacao", args=[avaliacao.id])
         )
     else:
-        domain = config("SITE_DOMAIN", default="localhost:8000")
+        domain = config("SITE_DOMAIN", default="aevalis-sgad.vercel.app")
         link_avaliacao = (
             f"http://{domain}{reverse('responder_avaliacao', args=[avaliacao.id])}"
         )

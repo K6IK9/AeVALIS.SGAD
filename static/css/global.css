@@ -745,6 +745,7 @@ header a:hover img {
 
 /* ===== RESPONSIVIDADE GLOBAL ===== */
 @media (max-width: 768px) {
+
     /* Layout e containers */
     .container {
         padding: 15px;
