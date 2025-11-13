@@ -159,6 +159,11 @@ urlpatterns = [
         views.detalhe_professor_relatorio,
         name="detalhe_professor_relatorio",
     ),
+    path(
+        "avaliacoes/detalhe-calculo/<int:avaliacao_id>/",
+        views.detalhe_calculo_avaliacao,
+        name="detalhe_calculo_avaliacao",
+    ),
     # URLs para CRUD de categorias
     path("categorias/", views.gerenciar_categorias, name="gerenciar_categorias"),
     path(

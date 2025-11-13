@@ -1,0 +1,281 @@
+  {% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if brand.enabled %}{{ brand.name_short }}{% else %}{{ brand.name_old }}{% endif %} - Detalhes do Cálculo</title>
+
+    <!-- Favicons -->
+    {% include 'partials/favicon_meta.html' %}
+
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    <link rel="stylesheet" href="{% static 'css/relatorio_avaliacoes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/detalhe_calculo.css' %}">
+</head>
+
+<body>
+    <div class="calculo-container">
+        <a href="javascript:history.back()" class="back-button">
+            ← Voltar
+        </a>
+
+        <!-- Cabeçalho -->
+        <div class="info-box">
+            <h2>🔍 Detalhes do Cálculo da Avaliação</h2>
+            
+            <div class="info-grid">
+                <div>
+                    <strong>Professor:</strong> {{ avaliacao.professor.user.get_full_name }}<br>
+                    <strong>Disciplina:</strong> {{ avaliacao.disciplina.disciplina_nome }}<br>
+                    <strong>Turma:</strong> {{ avaliacao.turma.codigo_turma }}
+                </div>
+                <div>
+                    <strong>Ciclo:</strong> {{ avaliacao.ciclo.nome }}<br>
+                    <strong>Período:</strong> {{ avaliacao.ciclo.data_inicio|date:"d/m/Y" }} - {{ avaliacao.ciclo.data_fim|date:"d/m/Y" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Estatísticas Principais -->
+        <div class="info-box">
+            <h2>📊 Resumo Geral</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-box success">
+                    <div class="stat-label">Respondentes</div>
+                    <div class="stat-value">{{ dados.total_respondentes }}</div>
+                    <div class="stat-label">alunos únicos</div>
+                </div>
+                
+                <div class="stat-box info">
+                    <div class="stat-label">Alunos Aptos</div>
+                    <div class="stat-value">{{ dados.total_alunos_aptos }}</div>
+                    <div class="stat-label">matriculados ativos</div>
+                </div>
+                
+                <div class="stat-box warning">
+                    <div class="stat-label">Taxa de Resposta</div>
+                    <div class="stat-value">{{ dados.taxa_resposta|floatformat:2 }}%</div>
+                    <div class="stat-label">({{ dados.total_respondentes }}/{{ dados.total_alunos_aptos }})</div>
+                </div>
+                
+                <div class="stat-box">
+                    <div class="stat-label">Média Geral</div>
+                    <div class="stat-value">{{ dados.media_geral|floatformat:4 }}</div>
+                    <div class="stat-label">{{ dados.classificacao }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Taxa de Resposta -->
+        <div class="info-box">
+            <h2>� Taxa de Resposta</h2>
+            
+            <div class="calculo-step">
+                <div class="calculo-step-title">📐 Cálculo da Taxa de Resposta:</div>
+                <div class="formula-box">
+                    <div class="formula">
+                        Taxa = (Respondentes / Alunos Aptos) × 100
+                    </div>
+                    <div class="formula">
+                        Taxa = ({{ dados.total_respondentes }} / {{ dados.total_alunos_aptos }}) × 100
+                    </div>
+                    <div class="result">
+                        Taxa = {{ dados.taxa_resposta|floatformat:2 }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalhes por Pergunta -->
+        <div class="info-box">
+            <h2>📋 Análise Detalhada por Pergunta</h2>
+            
+            <p class="info-descricao">
+                Cada linha mostra a distribuição de respostas para uma pergunta e como a média é calculada usando os pesos padrão.
+            </p>
+            
+            <div class="table-overflow">
+                <table class="pergunta-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">#</th>
+                            <th class="pergunta-enunciado">Pergunta</th>
+                            <th style="width: 90px;">Não atende<br>(0.00)</th>
+                            <th style="width: 90px;">Insuficiente<br>(0.25)</th>
+                            <th style="width: 90px;">Regular<br>(0.50)</th>
+                            <th style="width: 90px;">Bom<br>(0.75)</th>
+                            <th style="width: 90px;">Excelente<br>(1.00)</th>
+                            <th style="width: 80px;">Total</th>
+                            <th style="width: 100px;">Média</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pergunta in dados.detalhes_perguntas %}
+                        <tr>
+                            <td><strong>{{ forloop.counter }}</strong></td>
+                            <td class="pergunta-enunciado">
+                                {{ pergunta.enunciado|truncatewords:15 }}
+                            </td>
+                            <td>{{ pergunta.contagens.nao_atende }}</td>
+                            <td>{{ pergunta.contagens.insuficiente }}</td>
+                            <td>{{ pergunta.contagens.regular }}</td>
+                            <td>{{ pergunta.contagens.bom }}</td>
+                            <td>{{ pergunta.contagens.excelente }}</td>
+                            <td><strong>{{ pergunta.total_respondentes }}</strong></td>
+                            <td>
+                                <span class="media-destaque {% if pergunta.media >= 0.90 %}media-excelente{% elif pergunta.media >= 0.75 %}media-bom{% elif pergunta.media >= 0.50 %}media-regular{% else %}media-insuficiente{% endif %}">
+                                    {{ pergunta.media|floatformat:4 }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Exemplo de Cálculo Detalhado -->
+        <div class="info-box">
+            <h2>🧮 Exemplo de Cálculo: Primeira Pergunta</h2>
+            
+            {% if dados.detalhes_perguntas %}
+            {% with primeira=dados.detalhes_perguntas.0 %}
+            
+            <div class="calculo-step">
+                <div class="calculo-step-title">Pergunta:</div>
+                <p class="pergunta-box">
+                    "{{ primeira.enunciado }}"
+                </p>
+            </div>
+            
+            <div class="calculo-step">
+                <div class="calculo-step-title">Distribuição de Respostas:</div>
+                <ul>
+                    <li>• Não atende (peso 0.00): <strong>{{ primeira.contagens.nao_atende }}</strong> respostas</li>
+                    <li>• Insuficiente (peso 0.25): <strong>{{ primeira.contagens.insuficiente }}</strong> respostas</li>
+                    <li>• Regular (peso 0.50): <strong>{{ primeira.contagens.regular }}</strong> respostas</li>
+                    <li>• Bom (peso 0.75): <strong>{{ primeira.contagens.bom }}</strong> respostas</li>
+                    <li>• Excelente (peso 1.00): <strong>{{ primeira.contagens.excelente }}</strong> respostas</li>
+                    <li style="margin-top: 10px; font-weight: bold;">→ Total: <strong>{{ primeira.total_respondentes }}</strong> respondentes</li>
+                </ul>
+            </div>
+            
+            <div class="calculo-step">
+                <div class="calculo-step-title">Fórmula da Média Ponderada:</div>
+                <div class="formula-box">
+                    <div class="formula">
+                        Média = (N₀×0.00 + N₁×0.25 + N₂×0.50 + N₃×0.75 + N₄×1.00) / Total_Respondentes
+                    </div>
+                    <div class="formula">
+                        Média = ({{ primeira.contagens.nao_atende }}×0.00 + {{ primeira.contagens.insuficiente }}×0.25 + {{ primeira.contagens.regular }}×0.50 + {{ primeira.contagens.bom }}×0.75 + {{ primeira.contagens.excelente }}×1.00) / {{ primeira.total_respondentes }}
+                    </div>
+                    <div class="formula">
+                        Média = {{ primeira.soma_ponderada|floatformat:2 }} / {{ primeira.total_respondentes }}
+                    </div>
+                    <div class="result">
+                        Média = {{ primeira.media|floatformat:4 }}
+                    </div>
+                </div>
+            </div>
+            
+            {% endwith %}
+            {% endif %}
+        </div>
+
+        <!-- Cálculo da Média Geral -->
+        <div class="info-box">
+            <h2>🎯 Cálculo da Média Geral da Avaliação</h2>
+            
+            <div class="calculo-step">
+                <div class="calculo-step-title">Fórmula:</div>
+                <div class="formula-box">
+                    <div class="formula">
+                        Média_Geral = (Soma das médias de todas as perguntas) / Total de perguntas
+                    </div>
+                    <div class="formula">
+                        Média_Geral = ({% for p in dados.detalhes_perguntas %}{{ p.media|floatformat:4 }}{% if not forloop.last %} + {% endif %}{% endfor %}) / {{ dados.total_perguntas }}
+                    </div>
+                    <div class="formula">
+                        Média_Geral = {{ dados.soma_medias|floatformat:4 }} / {{ dados.total_perguntas }}
+                    </div>
+                    <div class="result">
+                        Média_Geral = {{ dados.media_geral|floatformat:4 }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classificação -->
+        <div class="info-box">
+            <h2>🏆 Classificação por Faixa</h2>
+            
+            <div class="classificacao-faixa">
+                <div class="faixa-item {% if dados.media_geral < 0.25 %}active{% endif %}">
+                    <div class="faixa-color" style="background: #e74c3c;"></div>
+                    <div style="flex: 1;">
+                        <strong>Não atende</strong><br>
+                        <small>0.00 – 0.24</small>
+                    </div>
+                </div>
+                
+                <div class="faixa-item {% if dados.media_geral >= 0.25 and dados.media_geral < 0.50 %}active{% endif %}">
+                    <div class="faixa-color" style="background: #e67e22;"></div>
+                    <div style="flex: 1;">
+                        <strong>Insuficiente</strong><br>
+                        <small>0.25 – 0.49</small>
+                    </div>
+                </div>
+                
+                <div class="faixa-item {% if dados.media_geral >= 0.50 and dados.media_geral < 0.75 %}active{% endif %}">
+                    <div class="faixa-color" style="background: #f39c12;"></div>
+                    <div style="flex: 1;">
+                        <strong>Regular</strong><br>
+                        <small>0.50 – 0.74</small>
+                    </div>
+                </div>
+                
+                <div class="faixa-item {% if dados.media_geral >= 0.75 and dados.media_geral < 1.00 %}active{% endif %}">
+                    <div class="faixa-color" style="background: #3498db;"></div>
+                    <div style="flex: 1;">
+                        <strong>Bom</strong><br>
+                        <small>0.75 – 0.99</small>
+                    </div>
+                </div>
+                
+                <div class="faixa-item {% if dados.media_geral == 1.00 %}active{% endif %}">
+                    <div class="faixa-color" style="background: #2ecc71;"></div>
+                    <div style="flex: 1;">
+                        <strong>Excelente</strong><br>
+                        <small>1.00</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="classificacao-resultado">
+                <div class="classificacao-resultado-label">A média <strong>{{ dados.media_geral|floatformat:4 }}</strong> resulta na classificação:</div>
+                <div class="classificacao-resultado-valor">
+                    {{ dados.classificacao }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Observações -->
+        <div class="info-box alert-warning">
+            <h3>⚠️ Observações Importantes</h3>
+            <ul>
+                <li>Os pesos são fixos conforme Resolução CONSUP/IFMT nº 87/2023</li>
+                <li>Apenas perguntas do tipo "múltipla escolha" são incluídas no cálculo da média</li>
+                <li>A média geral é a média aritmética simples das médias de todas as perguntas</li>
+                <li>Respostas anônimas são contadas, mas não identificam o aluno</li>
+                <li>Total de respostas = {{ dados.total_respostas }} ({{ dados.total_respondentes }} alunos × {{ dados.total_perguntas }} perguntas)</li>
+            </ul>
+        </div>
+    </div>
+</body>
+
+</html>

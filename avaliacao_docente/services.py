@@ -106,8 +106,32 @@ def obter_historico_professor_por_ciclo_cached(professor, ciclo):
         avaliacoes_info = []
         for avaliacao in avaliacoes:
             resultado = avaliacao.calcular_media_geral_questionario_padrao()
+
+            # Calcular respondentes únicos
+            # Estratégia: usar aluno se disponível, senão usar session_key
+            respostas_com_aluno = (
+                avaliacao.respostas.filter(aluno__isnull=False)
+                .values("aluno")
+                .distinct()
+            )
+
+            respostas_sem_aluno = (
+                avaliacao.respostas.filter(aluno__isnull=True)
+                .exclude(session_key="")
+                .values("session_key")
+                .distinct()
+            )
+
+            total_respondentes = (
+                respostas_com_aluno.count() + respostas_sem_aluno.count()
+            )
+
+            # Total de respostas individuais (para análise técnica)
             total_respostas = avaliacao.respostas.count()
+
+            # Alunos aptos (matriculados ativos)
             alunos_aptos = avaliacao.alunos_aptos()
+            total_alunos_aptos = len(alunos_aptos)
 
             avaliacoes_info.append(
                 {
@@ -119,8 +143,9 @@ def obter_historico_professor_por_ciclo_cached(professor, ciclo):
                         if avaliacao.turma.disciplina
                         else None
                     ),
-                    "total_respostas": total_respostas,
-                    "total_alunos": len(alunos_aptos),
+                    "total_respondentes": total_respondentes,  # ✅ Contagem correta
+                    "total_alunos_aptos": total_alunos_aptos,  # ✅ Nome claro
+                    "total_respostas": total_respostas,  # Para referência técnica
                     "media": resultado["media_geral"] if resultado else None,
                     "classificacao": (
                         AvaliacaoDocente.get_classificacao_media(

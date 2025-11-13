@@ -2275,13 +2275,13 @@ def relatorio_avaliacoes(request):
     total_avaliacoes = avaliacoes.count()
 
     # Configurar paginação
-    per_page = request.GET.get("per_page", "10")
+    per_page = request.GET.get("per_page", "6")
     try:
         per_page = int(per_page)
-        if per_page not in [10, 25, 50, 100]:
-            per_page = 10
+        if per_page not in [6, 12, 24, 50]:
+            per_page = 6
     except (ValueError, TypeError):
-        per_page = 10
+        per_page = 6
 
     paginator = Paginator(avaliacoes, per_page)
     page = request.GET.get("page", 1)
@@ -2348,16 +2348,21 @@ def relatorio_avaliacoes(request):
                         {
                             "pergunta": pergunta,
                             "tipo": "numerico",
-                            "media": round(stats["media"], 1),
+                            "media": round(stats["media"], 2),
                             "moda": stats["moda"],
                             "respostas_count": stats["count"],
                         }
                     )
 
         # Buscar comentários da avaliação (anônimos)
+        # Filtrar apenas perguntas do tipo "texto_livre" para evitar incluir
+        # respostas de múltipla escolha ou sim/não que também têm valor_texto
         comentarios = (
             RespostaAvaliacao.objects.filter(
-                avaliacao=avaliacao, valor_texto__isnull=False, valor_texto__gt=""
+                avaliacao=avaliacao,
+                pergunta__tipo="texto_livre",
+                valor_texto__isnull=False,
+                valor_texto__gt="",
             )
             .exclude(valor_texto="")
             .only("valor_texto", "data_resposta")
@@ -2369,7 +2374,7 @@ def relatorio_avaliacoes(request):
         # Adicionar dados calculados à avaliação
         avaliacao.respondentes = respondentes
         avaliacao.total_alunos = total_alunos
-        avaliacao.taxa_resposta = round(taxa_resposta, 1)
+        avaliacao.taxa_resposta = round(taxa_resposta, 2)
         avaliacao.pergunta_stats = pergunta_stats
         avaliacao.comentarios = comentarios
         avaliacao.media_geral_padrao = media_geral_padrao
@@ -2636,23 +2641,32 @@ def gerar_csv_avaliacoes(
         periodo = avaliacao.turma.disciplina.periodo_letivo.nome
         ciclo = avaliacao.ciclo.nome
 
-        # Contar respondentes únicos
-        respondentes = (
-            RespostaAvaliacao.objects.filter(avaliacao=avaliacao)
-            .values("aluno")
-            .distinct()
-            .count()
+        # Contar respondentes únicos (seguindo a mesma lógica do relatório)
+        respostas_com_aluno = (
+            avaliacao.respostas.filter(aluno__isnull=False).values("aluno").distinct()
         )
+        respostas_sem_aluno = (
+            avaliacao.respostas.filter(aluno__isnull=True)
+            .exclude(session_key="")
+            .values("session_key")
+            .distinct()
+        )
+        respondentes = respostas_com_aluno.count() + respostas_sem_aluno.count()
 
         # Calcular taxa de resposta
         total_alunos = avaliacao.turma.matriculas.filter(status="ativa").count()
         taxa_resposta = (
-            round((respondentes / total_alunos * 100), 1) if total_alunos > 0 else 0
+            round((respondentes / total_alunos * 100), 2) if total_alunos > 0 else 0
         )
 
         # Buscar comentários da avaliação
+        # Filtrar apenas perguntas do tipo "texto_livre" para evitar incluir
+        # respostas de múltipla escolha ou sim/não que também têm valor_texto
         comentarios = RespostaAvaliacao.objects.filter(
-            avaliacao=avaliacao, valor_texto__isnull=False, valor_texto__gt=""
+            avaliacao=avaliacao,
+            pergunta__tipo="texto_livre",
+            valor_texto__isnull=False,
+            valor_texto__gt="",
         ).exclude(valor_texto="")
 
         comentarios_texto = " | ".join(
@@ -2764,7 +2778,7 @@ def gerar_csv_avaliacoes(
                                 classificacao_geral,
                                 sanitize_csv_value(pergunta.enunciado),
                                 pergunta.get_tipo_display(),
-                                round(stats["media"], 1),
+                                round(stats["media"], 2),
                                 stats.get("moda", "N/A"),
                                 "N/A",
                                 "N/A",
@@ -2988,6 +3002,110 @@ def detalhe_professor_relatorio(request, professor_id):
     }
 
     return render(request, "avaliacoes/detalhe_professor_relatorio.html", context)
+
+
+@login_required
+def detalhe_calculo_avaliacao(request, avaliacao_id):
+    """
+    View para mostrar detalhes completos do cálculo de uma avaliação específica.
+    Mostra passo a passo como a média é calculada, respondentes, taxa de resposta, etc.
+    Ideal para auditoria e transparência dos cálculos.
+    """
+    if not check_user_permission(request.user, ["coordenador", "admin"]):
+        messages.error(
+            request, "Você não tem permissão para acessar esta funcionalidade."
+        )
+        return redirect("listar_avaliacoes")
+
+    # Buscar avaliação
+    avaliacao = get_object_or_404(
+        AvaliacaoDocente.objects.select_related(
+            "professor__user", "disciplina", "turma", "ciclo"
+        ).prefetch_related("respostas__aluno__user", "respostas__pergunta"),
+        id=avaliacao_id,
+    )
+
+    # Calcular respondentes
+    respostas_com_aluno = (
+        avaliacao.respostas.filter(aluno__isnull=False).values("aluno").distinct()
+    )
+
+    respostas_sem_aluno = (
+        avaliacao.respostas.filter(aluno__isnull=True)
+        .exclude(session_key="")
+        .values("session_key")
+        .distinct()
+    )
+
+    total_respondentes = respostas_com_aluno.count() + respostas_sem_aluno.count()
+
+    # Alunos aptos
+    alunos_aptos = avaliacao.alunos_aptos()
+    total_alunos_aptos = len(alunos_aptos)
+
+    # Taxa de resposta
+    taxa_resposta = (
+        (total_respondentes / total_alunos_aptos * 100) if total_alunos_aptos > 0 else 0
+    )
+
+    # Calcular média geral
+    resultado = avaliacao.calcular_media_geral_questionario_padrao()
+
+    if not resultado:
+        messages.warning(
+            request,
+            "Esta avaliação não possui respostas de múltipla escolha para calcular a média.",
+        )
+        return redirect("relatorio_avaliacoes")
+
+    # Processar detalhes das perguntas
+    detalhes_perguntas = []
+    for pergunta_id, dados in resultado["detalhes_por_pergunta"].items():
+        # Calcular soma ponderada para mostrar no exemplo
+        soma_ponderada = sum(
+            dados["contagens"][k] * v for k, v in avaliacao.OPCOES_PESOS.items()
+        )
+
+        detalhes_perguntas.append(
+            {
+                "id": pergunta_id,
+                "enunciado": dados["enunciado"],
+                "media": dados["media"],
+                "total_respondentes": dados["total_respondentes"],
+                "moda": dados["moda"],
+                "contagens": {
+                    "nao_atende": dados["contagens"]["Não atende"],
+                    "insuficiente": dados["contagens"]["Insuficiente"],
+                    "regular": dados["contagens"]["Regular"],
+                    "bom": dados["contagens"]["Bom"],
+                    "excelente": dados["contagens"]["Excelente"],
+                },
+                "soma_ponderada": soma_ponderada,
+            }
+        )
+
+    # Classificação
+    classificacao = avaliacao.get_classificacao_media(resultado["media_geral"])
+
+    # Preparar dados para o template
+    dados = {
+        "total_respondentes": total_respondentes,
+        "total_alunos_aptos": total_alunos_aptos,
+        "taxa_resposta": taxa_resposta,
+        "media_geral": resultado["media_geral"],
+        "classificacao": classificacao,
+        "total_perguntas": resultado["total_perguntas"],
+        "detalhes_perguntas": detalhes_perguntas,
+        "total_respostas": avaliacao.respostas.count(),
+        "soma_medias": sum(p["media"] for p in detalhes_perguntas),
+    }
+
+    context = {
+        "avaliacao": avaliacao,
+        "dados": dados,
+    }
+
+    return render(request, "avaliacoes/detalhe_calculo_avaliacao.html", context)
 
 
 # ============ CRUD CATEGORIAS DE PERGUNTA ============

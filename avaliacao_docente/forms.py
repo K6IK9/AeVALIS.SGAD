@@ -770,9 +770,14 @@ class PerguntaAvaliacaoForm(forms.ModelForm):
         ]
 
         if opcoes_longas:
+            opcoes_formatadas = ", ".join(
+                [
+                    f'"{opcao[:50]}..." ({len(opcao)} caracteres)'
+                    for opcao in opcoes_longas
+                ]
+            )
             raise forms.ValidationError(
-                f"As seguintes opções excedem o limite de {MAX_CARACTERES_OPCAO} caracteres: "
-                f"{', '.join([f'"{opcao[:50]}..." ({len(opcao)} caracteres)' for opcao in opcoes_longas])}"
+                f"As seguintes opções excedem o limite de {MAX_CARACTERES_OPCAO} caracteres: {opcoes_formatadas}"
             )
 
         return normalized
