@@ -1,0 +1,329 @@
+/* ================================================
+   DETALHE PROFESSOR - Sistema de Avaliação Docente
+   ================================================ */
+
+/* Seção de avaliações detalhadas */
+.avaliacoes-detalhadas-title {
+  margin-top: 20px;
+  margin-bottom: 15px;
+  color: var(--cor04);
+}
+
+/* Grid de itens de avaliação */
+.avaliacao-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 15px;
+  padding: 15px;
+  background: var(--cor07);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+  box-shadow: var(--shadow);
+}
+
+.avaliacao-item-disciplina small {
+  color: var(--cor05);
+  opacity: 0.6;
+}
+
+.avaliacao-item-center {
+  text-align: center;
+}
+
+.avaliacao-item-center small {
+  color: var(--cor05);
+  opacity: 0.6;
+}
+
+.avaliacao-item-sem-dados {
+  color: var(--cor05);
+  opacity: 0.4;
+}
+
+.avaliacao-item-link {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  text-decoration: none;
+  background: var(--cor03);
+  color: var(--cor07);
+  border-radius: 4px;
+  display: inline-block;
+  transition: var(--transition-fast);
+}
+
+.avaliacao-item-link:hover {
+  background: var(--cor04);
+  color: var(--cor07);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* Paginação */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin: 30px 0;
+  padding: 20px;
+  background: var(--cor07);
+  border-radius: 8px;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  background: var(--cor03);
+  color: var(--cor07);
+  text-decoration: none;
+  border-radius: 5px;
+  transition: var(--transition-fast);
+}
+
+.pagination-btn:hover {
+  background: var(--cor04);
+  color: var(--cor07);
+}
+
+.pagination-current {
+  padding: 8px 16px;
+  background: var(--cor01);
+  border-radius: 5px;
+  font-weight: bold;
+  color: var(--cor04);
+}
+
+/* Seção de exemplo de cálculo */
+.calculo-exemplo-section {
+  margin-top: 50px;
+  padding: 30px;
+  background: var(--cor01-alt);
+  border-radius: 12px;
+  border-left: 5px solid var(--cor03);
+}
+
+.calculo-exemplo-section h2 {
+  color: var(--cor04);
+  margin-bottom: 25px;
+}
+
+.calculo-exemplo-card {
+  background: var(--cor07);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+
+.calculo-exemplo-card h3 {
+  color: var(--cor03);
+  margin-bottom: 15px;
+}
+
+.calculo-exemplo-card ul {
+  line-height: 1.8;
+  color: var(--cor05);
+  opacity: 0.8;
+}
+
+.calculo-exemplo-card p {
+  line-height: 1.8;
+  color: var(--cor05);
+  opacity: 0.8;
+}
+
+.calculo-formula {
+  background: var(--cor01);
+  padding: 15px;
+  border-radius: 6px;
+  font-family: monospace;
+  margin: 10px 0;
+  color: var(--cor05);
+}
+
+.calculo-exemplo-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.calculo-exemplo-table thead tr {
+  background: var(--cor04);
+  color: var(--cor07);
+}
+
+.calculo-exemplo-table th,
+.calculo-exemplo-table td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid var(--cor01);
+}
+
+.calculo-exemplo-table tbody tr:nth-child(even) {
+  background: var(--cor01-alt);
+}
+
+/* Alerta de observações importantes - cores específicas mantidas para contraste */
+.calculo-exemplo-alert {
+  background: #fff3cd;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+}
+
+.calculo-exemplo-alert h4 {
+  color: #856404;
+  margin-bottom: 10px;
+}
+
+.calculo-exemplo-alert ul {
+  line-height: 1.8;
+  color: #856404;
+}
+
+/* Dados em tempo real - sem identificação de alunos */
+.dados-tempo-real-section {
+  margin-top: 30px;
+  padding: 25px;
+  background: var(--cor07);
+  border-radius: 12px;
+  border-left: 5px solid var(--cor02);
+  box-shadow: var(--shadow-card);
+}
+
+.dados-tempo-real-section h3 {
+  color: var(--cor04);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dados-validacao-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.dados-validacao-item {
+  padding: 15px;
+  background: var(--cor01-alt);
+  border-radius: 8px;
+  border-left: 3px solid var(--cor03);
+}
+
+.dados-validacao-item h4 {
+  color: var(--cor03);
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.dados-validacao-valor {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--cor04);
+  margin-bottom: 5px;
+}
+
+.dados-validacao-descricao {
+  font-size: 0.85rem;
+  color: var(--cor05);
+  opacity: 0.7;
+}
+
+.dados-validacao-formula {
+  background: var(--cor01);
+  padding: 10px;
+  border-radius: 5px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--cor05);
+  margin-top: 8px;
+}
+
+/* Tabela de perguntas */
+.tabela-perguntas {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
+
+.tabela-perguntas thead {
+  background: var(--cor03);
+  color: var(--cor07);
+}
+
+.tabela-perguntas th {
+  padding: 12px 10px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.tabela-perguntas td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid var(--cor01);
+}
+
+.tabela-perguntas tbody tr:nth-child(even) {
+  background: var(--cor01-alt);
+}
+
+.tabela-perguntas tbody tr:hover {
+  background: var(--cor02);
+  transition: var(--transition-fast);
+}
+
+.tabela-perguntas-media {
+  font-weight: bold;
+  color: var(--cor03);
+}
+
+/* Alert de anonimato - cores específicas mantidas para contraste e significado */
+.anonimato-alert {
+  background: #e7f3ff;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid var(--cor06);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.anonimato-alert-icon {
+  font-size: 1.5rem;
+}
+
+.anonimato-alert-texto {
+  color: #004085;
+  font-size: 0.9rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .avaliacao-item {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .dados-validacao-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tabela-perguntas {
+    font-size: 0.75rem;
+  }
+
+  .tabela-perguntas th,
+  .tabela-perguntas td {
+    padding: 8px 5px;
+  }
+
+  .calculo-exemplo-section {
+    padding: 15px;
+  }
+}

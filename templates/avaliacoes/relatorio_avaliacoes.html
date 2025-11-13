@@ -126,10 +126,10 @@
             <div class="items-per-page">
                 <label for="items-per-page">Exibir:</label>
                 <select id="items-per-page" class="form-control">
-                    <option value="10" {% if per_page == '10' %}selected{% endif %}>10 por página</option>
-                    <option value="25" {% if per_page == '25' %}selected{% endif %}>25 por página</option>
+                    <option value="6" {% if per_page == '6' %}selected{% endif %}>6 por página</option>
+                    <option value="12" {% if per_page == '12' %}selected{% endif %}>12 por página</option>
+                    <option value="24" {% if per_page == '24' %}selected{% endif %}>24 por página</option>
                     <option value="50" {% if per_page == '50' %}selected{% endif %}>50 por página</option>
-                    <option value="100" {% if per_page == '100' %}selected{% endif %}>100 por página</option>
                 </select>
             </div>
             {% endif %}
@@ -171,13 +171,22 @@
                         </div>
                     </div>
 
+                    <!-- Ações do Card -->
+                    <div class="card-actions">
+                        <a href="{% url 'detalhe_calculo_avaliacao' avaliacao.id %}" 
+                           class="btn btn-primary btn-sm" 
+                           title="Ver detalhes do cálculo">
+                            🔍 Detalhes do Cálculo
+                        </a>
+                    </div>
+
                     <!-- Estatísticas por Pergunta -->
                     {% for pergunta_stat in avaliacao.pergunta_stats %}
                     <div class="pergunta-stats">
                         <div class="pergunta-title">{{ pergunta_stat.pergunta.enunciado }}</div>
                         <div class="stats-row">
                             <div class="stat-item">
-                                <div class="stat-value">{{ pergunta_stat.media|floatformat:1 }}</div>
+                                <div class="stat-value">{{ pergunta_stat.media|floatformat:2 }}</div>
                                 <div class="stat-label">Média</div>
                             </div>
                             <div class="stat-item">
@@ -284,7 +293,7 @@
                 {% for media in metricas_gerais %}
                 <div class="metric-card">
                     <div class="metric-value {% if media.media >= 4 %}success{% elif media.media >= 3 %}warning{% else %}danger{% endif %}">
-                        {{ media.media|floatformat:1 }}
+                        {{ media.media|floatformat:2 }}
                     </div>
                     <small class="metric-label">Média</small>
                 </div>

@@ -93,6 +93,45 @@
     text-align: right;
 }
 
+/* Ações do card */
+.card-actions {
+    margin: 15px 0 10px 0;
+    padding: 15px 0;
+    border-top: 1px solid var(--report-border);
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.card-actions .btn {
+    flex: 1;
+    max-width: 250px;
+    text-align: center;
+    padding: 10px 15px;
+    font-size: 0.9em;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+}
+
+.card-actions .btn-primary {
+    background: var(--cor03);
+    color: var(--cor07);
+    border: none;
+}
+
+.card-actions .btn-primary:hover {
+    background: var(--cor04);
+    color: var(--cor07);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 /* Estatísticas por pergunta */
 .pergunta-stats {
     margin-bottom: 20px;
