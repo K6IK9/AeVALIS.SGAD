@@ -800,8 +800,8 @@ class AvaliacaoDocente(BaseModel, TimestampMixin, SoftDeleteMixin):
         - 0.00 - 0.24: Não atende
         - 0.25 - 0.49: Insuficiente
         - 0.50 - 0.74: Regular
-        - 0.75 - 0.99: Bom
-        - 1.00: Excelente
+        - 0.75 - 0.89: Bom
+        - 0.90 - 1.00: Excelente
         """
         if media is None:
             return "Sem dados"
@@ -811,7 +811,7 @@ class AvaliacaoDocente(BaseModel, TimestampMixin, SoftDeleteMixin):
             return "Insuficiente"
         elif media < 0.75:
             return "Regular"
-        elif media < 1.00:
+        elif media < 0.90:
             return "Bom"
         else:
             return "Excelente"

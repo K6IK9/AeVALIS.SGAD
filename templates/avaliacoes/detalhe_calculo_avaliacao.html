@@ -239,19 +239,19 @@
                     </div>
                 </div>
                 
-                <div class="faixa-item {% if dados.media_geral >= 0.75 and dados.media_geral < 1.00 %}active{% endif %}">
+                <div class="faixa-item {% if dados.media_geral >= 0.75 and dados.media_geral < 0.90 %}active{% endif %}">
                     <div class="faixa-color" style="background: #3498db;"></div>
                     <div style="flex: 1;">
                         <strong>Bom</strong><br>
-                        <small>0.75 – 0.99</small>
+                        <small>0.75 – 0.89</small>
                     </div>
                 </div>
                 
-                <div class="faixa-item {% if dados.media_geral == 1.00 %}active{% endif %}">
+                <div class="faixa-item {% if dados.media_geral >= 0.90 %}active{% endif %}">
                     <div class="faixa-color" style="background: #2ecc71;"></div>
                     <div style="flex: 1;">
                         <strong>Excelente</strong><br>
-                        <small>1.00</small>
+                        <small>0.90 – 1.00</small>
                     </div>
                 </div>
             </div>
