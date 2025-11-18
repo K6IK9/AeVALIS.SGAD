@@ -1,4 +1,65 @@
 from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def auto_login_existing_user(strategy, backend, uid, user=None, *args, **kwargs):
+    """
+    Pipeline customizado para fazer login automático de usuários existentes.
+
+    Esta função é chamada ANTES de social_user e previne o erro AuthAlreadyAssociated
+    fazendo login automático quando encontra uma conta SUAP já vinculada.
+
+    Args:
+        strategy: Estratégia do social auth
+        backend: Backend de autenticação (suap)
+        uid: UID do usuário (matrícula SUAP)
+        user: Usuário atual (se autenticado)
+
+    Returns:
+        dict com 'user' e 'is_new' ou None para continuar pipeline normal
+    """
+    from social_django.models import UserSocialAuth
+    from django.contrib.auth import login
+
+    logger.info(
+        f"auto_login_existing_user - Backend: {backend.name}, UID: {uid}, User atual: {user}"
+    )
+
+    # Se já tem um usuário autenticado, deixar o fluxo normal continuar
+    if user and user.is_authenticated:
+        logger.info(f"Usuário {user.username} já autenticado, continuando fluxo normal")
+        return
+
+    # Buscar se existe uma conta SUAP com este UID
+    try:
+        social_user = UserSocialAuth.objects.select_related("user").get(
+            provider=backend.name, uid=uid
+        )
+
+        logger.info(
+            f"Conta SUAP encontrada - User: {social_user.user.username} "
+            f"(ID: {social_user.user.id})"
+        )
+
+        # Fazer login automático do usuário encontrado
+        request = strategy.request
+        if request:
+            login(request, social_user.user, backend=f"{backend.name}")
+            logger.info(f"Login automático realizado para {social_user.user.username}")
+
+            # Retornar o usuário para continuar o pipeline
+            return {"user": social_user.user, "is_new": False}
+
+    except UserSocialAuth.DoesNotExist:
+        logger.info(f"Conta SUAP com UID {uid} não existe, será criada")
+        # Conta não existe, deixar o fluxo normal criar
+        return
+    except Exception as e:
+        logger.error(f"Erro em auto_login_existing_user: {str(e)}", exc_info=True)
+        # Em caso de erro, deixar o fluxo normal continuar
+        return
 
 
 def apply_suap_user_type(
