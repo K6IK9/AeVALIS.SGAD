@@ -1502,12 +1502,14 @@ def listar_avaliacoes(request):
         ).values_list("turma_id", flat=True)
 
         now = timezone.now()
+        # Filtrar avaliações de ciclos ativos e em andamento
+        # Usa data_inicio e data_fim para garantir que apenas ciclos no período correto apareçam
         avaliacoes_disponiveis = (
             AvaliacaoDocente.objects.filter(
                 ciclo__ativo=True,
                 ciclo__encerrado=False,
                 ciclo__data_inicio__lte=now,
-                ciclo__data_fim__gte=now,
+                ciclo__data_fim__gte=now,  # Garante que o ciclo ainda não passou da data fim
                 turma_id__in=turmas_aluno,
                 status__in=["pendente", "em_andamento"],
             )
@@ -1520,11 +1522,10 @@ def listar_avaliacoes(request):
         titulo = "Avaliações Disponíveis para Responder"
         ciclos = []
     else:
-        # Para administradores e coordenadores: mostrar todas as avaliações ativas
-        avaliacoes = AvaliacaoDocente.objects.filter(ciclo__ativo=True).order_by(
-            "-data_criacao"
-        )
-        titulo = "Avaliações Docentes"
+        # Para administradores e coordenadores: NÃO mostrar avaliações individuais
+        # Eles veem apenas os ciclos de avaliação
+        avaliacoes = []  # Lista vazia - não mostrar seção de avaliações
+        titulo = "Gerenciamento de Ciclos de Avaliação"
         # Ciclos separados por status para facilitar exibição
         now = timezone.now()
         ciclos_queryset = CicloAvaliacao.objects.all().order_by("-data_inicio")
@@ -1541,18 +1542,23 @@ def listar_avaliacoes(request):
             "finalizados": ciclos_finalizados,
         }
 
-    # Remover a linha duplicada de ciclos que estava fora do if/else    # Paginação - 15 avaliações por página
+    # Remover a linha duplicada de ciclos que estava fora do if/else
+    # Paginação - apenas para alunos que têm avaliações
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-    paginator = Paginator(avaliacoes, 10)
-    page_number = request.GET.get("page", 1)
+    if hasattr(request.user, "perfil_aluno") and avaliacoes:
+        paginator = Paginator(avaliacoes, 10)
+        page_number = request.GET.get("page", 1)
 
-    try:
-        page_obj = paginator.page(page_number)
-    except PageNotAnInteger:
-        page_obj = paginator.page(1)
-    except EmptyPage:
-        page_obj = paginator.page(paginator.num_pages)
+        try:
+            page_obj = paginator.page(page_number)
+        except PageNotAnInteger:
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
+    else:
+        # Para coordenadores/admins ou quando não há avaliações
+        page_obj = []
 
     context = {
         "avaliacoes": page_obj,

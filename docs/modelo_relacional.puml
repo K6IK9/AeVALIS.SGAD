@@ -1,0 +1,322 @@
+@startuml
+' Modelo relacional — Avaliação Docente (SUAP)
+' Gera diagrama ER do banco com base nos models Django
+
+!theme plain
+hide circle
+skinparam linetype ortho
+skinparam classFontSize 12
+skinparam ArrowColor #888888
+
+' =====================
+' Entidades
+' =====================
+entity "AUTH_USER" as AUTH_USER {
+  +id : int <<PK>>
+  --
+  username : varchar
+  first_name : varchar
+  last_name : varchar
+  email : varchar
+}
+
+entity "PERFIL_ALUNO" as PERFIL_ALUNO {
+  +id : int <<PK>>
+  user_id : int <<FK>> AUTH_USER.id
+  --
+  situacao : varchar(45)
+}
+
+entity "PERFIL_PROFESSOR" as PERFIL_PROFESSOR {
+  +id : int <<PK>>
+  user_id : int <<FK>> AUTH_USER.id
+  --
+  registro_academico : varchar(45)
+}
+
+entity "CURSO" as CURSO {
+  +id : int <<PK>>
+  --
+  curso_nome : varchar(45)
+  curso_sigla : varchar(10)
+  coordenador_curso_id : int <<FK>> PERFIL_PROFESSOR.id
+  -- herdados (soft delete / timestamps)
+  ativo : bool
+  data_criacao : datetime
+  data_atualizacao : datetime
+  data_exclusao : datetime NULL
+}
+
+entity "PERIODO_LETIVO" as PERIODO_LETIVO {
+  +id : int <<PK>>
+  --
+  nome : varchar(50)
+  ano : int
+  semestre : int
+  -- constraints: UNIQUE(ano, semestre)
+}
+
+entity "DISCIPLINA" as DISCIPLINA {
+  +id : int <<PK>>
+  --
+  disciplina_nome : varchar(100)
+  disciplina_sigla : varchar(45)
+  disciplina_tipo : varchar(45)
+  curso_id : int <<FK>> CURSO.id
+  professor_id : int <<FK>> PERFIL_PROFESSOR.id
+  periodo_letivo_id : int <<FK>> PERIODO_LETIVO.id
+  -- herdados
+  ativo : bool
+  data_criacao : datetime
+  data_atualizacao : datetime
+  data_exclusao : datetime NULL
+}
+
+entity "TURMA" as TURMA {
+  +id : int <<PK>>
+  --
+  codigo_turma : varchar(100) <<UNIQUE>>
+  disciplina_id : int <<FK>> DISCIPLINA.id
+  turno : varchar(15)
+  status : varchar(15)
+  -- herdados
+  ativo : bool
+  data_criacao : datetime
+  data_atualizacao : datetime
+  data_exclusao : datetime NULL
+  -- constraints: UNIQUE(disciplina_id, turno)
+}
+
+entity "HORARIO_TURMA" as HORARIO_TURMA {
+  +id : int <<PK>>
+  --
+  turma_id : int <<FK>> TURMA.id
+  dia_semana : int
+  hora_inicio : time
+  hora_fim : time
+  -- constraints: UNIQUE(turma_id, dia_semana, hora_inicio)
+}
+
+entity "MATRICULA_TURMA" as MATRICULA_TURMA {
+  +id : int <<PK>>
+  --
+  aluno_id : int <<FK>> PERFIL_ALUNO.id
+  turma_id : int <<FK>> TURMA.id
+  data_matricula : datetime
+  status : varchar(15)
+  -- herdados
+  ativo : bool
+  data_criacao : datetime
+  data_atualizacao : datetime
+  data_exclusao : datetime NULL
+  -- constraints: UNIQUE(aluno_id, turma_id)
+}
+
+entity "QUESTIONARIO_AVALIACAO" as QUESTIONARIO_AVALIACAO {
+  +id : int <<PK>>
+  --
+  titulo : varchar(100)
+  descricao : text NULL
+  criado_por_id : int <<FK>> AUTH_USER.id
+  -- herdados
+  ativo : bool
+  data_criacao : datetime
+  data_atualizacao : datetime
+  data_exclusao : datetime NULL
+}
+
+entity "CATEGORIA_PERGUNTA" as CATEGORIA_PERGUNTA {
+  +id : int <<PK>>
+  --
+  nome : varchar(50) <<UNIQUE>>
+  descricao : text NULL
+  ordem : int
+  -- herdados
+  ativo : bool
+  data_criacao : datetime
+  data_atualizacao : datetime
+  data_exclusao : datetime NULL
+}
+
+entity "PERGUNTA_AVALIACAO" as PERGUNTA_AVALIACAO {
+  +id : int <<PK>>
+  --
+  enunciado : text
+  tipo : varchar(20)
+  categoria_id : int <<FK>> CATEGORIA_PERGUNTA.id
+  obrigatoria : bool
+  opcoes_multipla_escolha : json NULL
+  -- herdados
+  ativo : bool
+  data_criacao : datetime
+  data_atualizacao : datetime
+  data_exclusao : datetime NULL
+}
+
+entity "QUESTIONARIO_PERGUNTA" as QUESTIONARIO_PERGUNTA {
+  +id : int <<PK>>
+  --
+  questionario_id : int <<FK>> QUESTIONARIO_AVALIACAO.id
+  pergunta_id : int <<FK>> PERGUNTA_AVALIACAO.id
+  ordem_no_questionario : int
+  -- herdados
+  ativo : bool
+  data_criacao : datetime
+  data_atualizacao : datetime
+  data_exclusao : datetime NULL
+  -- constraints: UNIQUE(questionario_id, pergunta_id)
+}
+
+entity "CICLO_AVALIACAO" as CICLO_AVALIACAO {
+  +id : int <<PK>>
+  --
+  nome : varchar(100)
+  periodo_letivo_id : int <<FK>> PERIODO_LETIVO.id
+  data_inicio : datetime
+  data_fim : datetime
+  questionario_id : int <<FK>> QUESTIONARIO_AVALIACAO.id
+  permite_avaliacao_anonima : bool
+  permite_multiplas_respostas : bool
+  enviar_lembrete_email : bool
+  encerrado : bool
+  data_encerramento : datetime NULL
+  criado_por_id : int <<FK>> AUTH_USER.id
+  -- herdados
+  ativo : bool
+  data_criacao : datetime
+  data_atualizacao : datetime
+  data_exclusao : datetime NULL
+}
+
+entity "AVALIACAO_DOCENTE" as AVALIACAO_DOCENTE {
+  +id : int <<PK>>
+  --
+  ciclo_id : int <<FK>> CICLO_AVALIACAO.id
+  turma_id : int <<FK>> TURMA.id
+  professor_id : int <<FK>> PERFIL_PROFESSOR.id
+  disciplina_id : int <<FK>> DISCIPLINA.id
+  status : varchar(15)
+  -- herdados
+  ativo : bool
+  data_criacao : datetime
+  data_atualizacao : datetime
+  data_exclusao : datetime NULL
+  -- constraints: UNIQUE(ciclo_id, turma_id, professor_id, disciplina_id)
+}
+
+entity "RESPOSTA_AVALIACAO" as RESPOSTA_AVALIACAO {
+  +id : int <<PK>>
+  --
+  avaliacao_id : int <<FK>> AVALIACAO_DOCENTE.id
+  aluno_id : int <<FK>> PERFIL_ALUNO.id NULL
+  pergunta_id : int <<FK>> PERGUNTA_AVALIACAO.id
+  valor_texto : text NULL
+  valor_numerico : int NULL
+  valor_boolean : bool NULL
+  data_resposta : datetime
+  anonima : bool
+  session_key : varchar(40)
+  -- herdados
+  ativo : bool
+  data_criacao : datetime
+  data_atualizacao : datetime
+  data_exclusao : datetime NULL
+  -- constraints: UNIQUE(avaliacao_id, aluno_id, pergunta_id, session_key)
+}
+
+entity "CONFIGURACAO_SITE" as CONFIGURACAO_SITE {
+  +id : int <<PK>>
+  --
+  metodo_envio_email : varchar(10)
+  email_notificacao_erros : varchar(255) NULL
+  limiar_minimo_percentual : decimal(5,2)
+  frequencia_lembrete_horas : int
+  max_lembretes_por_aluno : int
+  -- singleton lógico (enforced via model)
+}
+
+entity "JOB_LEMBRETE_CICLO_TURMA" as JOB_LEMBRETE_CICLO_TURMA {
+  +id : int <<PK>>
+  --
+  ciclo_id : int <<FK>> CICLO_AVALIACAO.id
+  turma_id : int <<FK>> TURMA.id
+  status : varchar(20)
+  proximo_envio_em : datetime NULL
+  total_alunos_aptos : int
+  total_respondentes : int
+  taxa_resposta_atual : decimal(5,2)
+  total_emails_enviados : int
+  total_falhas : int
+  rodadas_executadas : int
+  ultima_execucao : datetime NULL
+  mensagem_erro : text NULL
+  data_criacao : datetime
+  data_atualizacao : datetime
+  -- constraints: UNIQUE(ciclo_id, turma_id)
+}
+
+entity "NOTIFICACAO_LEMBRETE" as NOTIFICACAO_LEMBRETE {
+  +id : int <<PK>>
+  --
+  job_id : int <<FK>> JOB_LEMBRETE_CICLO_TURMA.id
+  aluno_id : int <<FK>> PERFIL_ALUNO.id
+  status : varchar(20)
+  rodada : int
+  tentativas : int
+  enviado_em : datetime NULL
+  mensagem_id : varchar(255) NULL
+  motivo_falha : text NULL
+  data_criacao : datetime
+  data_atualizacao : datetime
+}
+
+entity "LEMBRETE_AVALIACAO" as LEMBRETE_AVALIACAO {
+  +id : int <<PK>>
+  --
+  ciclo_id : int <<FK>> CICLO_AVALIACAO.id
+  tipo : varchar(20)
+  data_envio : datetime
+  total_enviados : int
+  -- constraints: UNIQUE(ciclo_id, tipo)
+}
+
+' =====================
+' Relacionamentos (cardinalidades)
+' =====================
+AUTH_USER ||--|| PERFIL_ALUNO : "perfil"
+AUTH_USER ||--|| PERFIL_PROFESSOR : "perfil"
+
+PERFIL_PROFESSOR ||--o{ CURSO : "coordena"
+CURSO ||--o{ DISCIPLINA : "tem"
+PERFIL_PROFESSOR ||--o{ DISCIPLINA : "leciona"
+PERIODO_LETIVO ||--o{ DISCIPLINA : "abrange"
+DISCIPLINA ||--o{ TURMA : "oferece"
+TURMA ||--o{ HORARIO_TURMA : "horarios"
+
+PERFIL_ALUNO ||--o{ MATRICULA_TURMA : "matriculas"
+TURMA ||--o{ MATRICULA_TURMA : "alunos"
+
+QUESTIONARIO_AVALIACAO ||--o{ CICLO_AVALIACAO : "usado_em"
+PERIODO_LETIVO ||--o{ CICLO_AVALIACAO : "contem"
+CICLO_AVALIACAO }o--o{ TURMA : "turmas_do_ciclo"
+
+CATEGORIA_PERGUNTA ||--o{ PERGUNTA_AVALIACAO : "contem"
+QUESTIONARIO_AVALIACAO ||--o{ QUESTIONARIO_PERGUNTA : "lista"
+PERGUNTA_AVALIACAO ||--o{ QUESTIONARIO_PERGUNTA : "pertence"
+
+CICLO_AVALIACAO ||--o{ AVALIACAO_DOCENTE : "gera"
+TURMA ||--o{ AVALIACAO_DOCENTE : "tem"
+PERFIL_PROFESSOR ||--o{ AVALIACAO_DOCENTE : "avaliado"
+DISCIPLINA ||--o{ AVALIACAO_DOCENTE : "referente"
+
+AVALIACAO_DOCENTE ||--o{ RESPOSTA_AVALIACAO : "respostas"
+PERFIL_ALUNO ||--o{ RESPOSTA_AVALIACAO : "responde"
+PERGUNTA_AVALIACAO ||--o{ RESPOSTA_AVALIACAO : "respondida"
+
+CICLO_AVALIACAO ||--o{ JOB_LEMBRETE_CICLO_TURMA : "jobs"
+TURMA ||--o{ JOB_LEMBRETE_CICLO_TURMA : "jobs"
+JOB_LEMBRETE_CICLO_TURMA ||--o{ NOTIFICACAO_LEMBRETE : "notifica"
+PERFIL_ALUNO ||--o{ NOTIFICACAO_LEMBRETE : "recebe"
+CICLO_AVALIACAO ||--o{ LEMBRETE_AVALIACAO : "lembretes"
+
+@enduml

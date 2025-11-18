@@ -61,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "avaliacao_docente.middleware.ClearMessageMiddleware",  # Limpa mensagens antigas
+    "avaliacao_docente.middleware.SocialAuthExceptionMiddleware",  # Trata erros de autenticação social
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -225,6 +226,7 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.social_auth.social_details",
     "social_core.pipeline.social_auth.social_uid",
     "setup.settings.allow_all_users",  # Permite todos os usuários
+    "avaliacao_docente.auth_pipeline.auto_login_existing_user",  # Login automático para usuários existentes
     "social_core.pipeline.social_auth.social_user",
     "social_core.pipeline.user.get_username",
     "social_core.pipeline.user.create_user",
@@ -240,6 +242,7 @@ SOCIAL_AUTH_SUAP_SCOPE = []  # Deixe vazio para evitar erro de invalid_scope
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/"
 SOCIAL_AUTH_NEW_USER_REDIRECT_URL = "/"
 SOCIAL_AUTH_LOGIN_ERROR_URL = "/accounts/login/"
+# False para não quebrar o fluxo, mostra mensagem amigável ao usuário
 SOCIAL_AUTH_RAISE_EXCEPTIONS = False
 SOCIAL_AUTH_BACKEND_ERROR_URL = "/accounts/login/"
 SOCIAL_AUTH_ALLOWED_REDIRECT_HOSTS = ["127.0.0.1", "localhost"]
