@@ -1,4 +1,4 @@
-# Fase 2: Operacionalizar no Fluxo (EM ANDAMENTO)
+# Fase 2: Operacionalizar no Fluxo
 
 ## Objetivo
 Garantir que o questionário padrão está disponível e funcionando corretamente no fluxo de criação de ciclos e resposta de avaliações.

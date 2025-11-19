@@ -6,21 +6,14 @@ Se você baixou este projeto e as imagens não estão carregando, siga estas ins
 
 ### 📋 Pré-requisitos
 
-1. Python 3.8+
-2. Django 4.2+
+1. Python 3.11.9+
+2. Django 5.2.6+
 3. Todas as dependências do `requirements.txt`
-
-### 🔧 Configuração Rápida
-
-Execute o script de configuração automática:
-
-```bash
-python setup_static_files.py
-```
+4. WhiteNoise instalado e configurado
 
 ### 🔧 Configuração Manual
 
-Se o script automático não funcionar, execute os seguintes comandos:
+Execute os seguintes comandos para configurar os arquivos estáticos:
 
 ```bash
 # 1. Instalar dependências
