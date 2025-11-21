@@ -68,37 +68,6 @@ Para informações detalhadas sobre instalação, configuração, deployment e p
 | **[Estrutura de Testes](./docs/ESTRUTURA_TESTES.md)** | Guia completo sobre testes automatizados |
 | **[Changelog Branding](./docs/CHANGELOG_BRANDING.md)** | Histórico de mudanças na identidade visual |
 
-### 👥 Sistema de Permissões
-
-O sistema utiliza 4 roles baseadas no `django-role-permissions` com permissões específicas:
-
-#### 🔧 **Admin**
-- ✅ Acesso total ao sistema
-- ✅ Gerenciamento completo de usuários e roles
-- ✅ Configuração do site e parâmetros globais
-- ✅ Acesso ao painel administrativo Django
-
-#### 📊 **Coordenador**
-- ✅ Gestão de cursos, disciplinas e turmas
-- ✅ Criação e configuração de ciclos de avaliação
-- ✅ Gerenciamento de questionários
-- ✅ Visualização de relatórios gerais
-- ❌ Sem acesso a gerenciamento de usuários
-
-#### 👨‍🏫 **Professor**
-- ✅ Visualização de suas próprias avaliações
-- ✅ Acesso a relatórios de desempenho pessoal
-- ✅ Gerenciamento de perfil
-- ❌ Sem permissão para editar estrutura acadêmica
-
-#### 🎓 **Aluno**
-- ✅ Responder avaliações dentro dos ciclos ativos
-- ✅ Visualizar turmas em que está matriculado
-- ✅ Gerenciamento de perfil básico
-- ❌ Acesso restrito apenas às próprias avaliações
-
-> **Nota**: As roles são atribuídas automaticamente via SUAP OAuth2 baseadas no campo `tipo_usuario`, mas podem ser gerenciadas manualmente por administradores.
-
 ## 🚀 Como Executar o Projeto
 
 ### 📋 Pré-requisitos
