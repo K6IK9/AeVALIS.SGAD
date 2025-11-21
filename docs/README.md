@@ -17,13 +17,6 @@ Este diretório contém toda a documentação técnica, manuais e práticas de d
 ### 👥 Gerenciamento de Usuários e Roles
 - **[ROLES_MANUAIS.md](./ROLES_MANUAIS.md)** - Manual sobre gerenciamento de roles manuais vs automáticas
 
-### 🎨 Padronização e Desenvolvimento
-- **[PADRONIZACAO_FILTROS.md](./PADRONIZACAO_FILTROS.md)** - Documentação do processo de padronização dos filtros
-- **[PADRONIZACAO_FILTROS_FINAL.md](./PADRONIZACAO_FILTROS_FINAL.md)** - Relatório final da padronização de filtros
-
-### 🔨 Manutenção e Ajustes
-- **[Ajustes.md](./Ajustes.md)** - Lista de ajustes e correções aplicadas no projeto
-
 ### 🧪 Testes e Validação
 
 #### Testes Automatizados
