@@ -6,7 +6,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if brand.enabled %}{{ brand.name_short }}{% else %}{{ brand.name_old }}{% endif %} - Gerenciar Questionários</title>
+    <title>{% if brand.enabled %}{{ brand.name_short }}{% else %}{{ brand.name_old }}{% endif %} - Gerenciar
+        Questionários</title>
 
     <!-- Favicons -->
     {% include 'partials/favicon_meta.html' %}
@@ -70,20 +71,7 @@
                     {% endif %}
                 </div>
 
-                <div class="form-group">
-                    <div class="checkbox-group">
-                        {{ form.ativo }}
-                        <label for="{{ form.ativo.id_for_label }}">Questionário Ativo</label>
-                    </div>
-                    <small class="form-help">Questionários inativos não podem ser usados em novos ciclos</small>
-                    {% if form.ativo.errors %}
-                    <div class="form-error">
-                        {% for error in form.ativo.errors %}
-                        <small>{{ error }}</small>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
+
 
                 {% if form.non_field_errors %}
                 <div class="error-text-bottom">
@@ -145,14 +133,7 @@
                     <input type="text" id="searchQuestionarioTitulo" class="form-control"
                         placeholder="Digite o título do questionário..." autocomplete="off">
                 </div>
-                <div class="filter-group">
-                    <label for="filterStatus">Filtrar por Status:</label>
-                    <select id="filterStatus" class="form-control">
-                        <option value="">Todos os status</option>
-                        <option value="ativo">Ativo</option>
-                        <option value="inativo">Inativo</option>
-                    </select>
-                </div>
+
                 <div class="filter-group">
                     <label for="filterCriador">Filtrar por Criador:</label>
                     <select id="filterCriador" class="form-control">
@@ -180,75 +161,69 @@
             </div>
 
             {% if questionarios %}
-                        <div class="table-scroll-hint">
+            <div class="table-scroll-hint">
                 <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
             </div>
             <div class="table-responsive">
                 <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Título</th>
-                        <th>Descrição</th>
-                        <th>Criado por</th>
-                        <th>Data</th>
-                        <th>Status</th>
-                        <th>Perguntas</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for questionario in questionarios %}
-                    <tr {% if editing and questionario_editando.id == questionario.id %}class="row-highlight" {% endif %}>
-                        <td>
-                            <strong>{{ questionario.titulo }}</strong>
-                        </td>
-                        <td>
-                            {% if questionario.descricao %}
-                            {{ questionario.descricao|truncatechars:50 }}
-                            {% else %}
-                            <em class="text-muted">Sem descrição</em>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {{ questionario.criado_por.get_full_name|default:questionario.criado_por.username }}
-                        </td>
-                        <td>
-                            {{ questionario.data_criacao|date:"d/m/Y" }}
-                        </td>
-                        <td>
-                            {% if questionario.ativo %}
-                            <span class="status-badge status-active">✓ Ativo</span>
-                            {% else %}
-                            <span class="status-badge status-inactive">❌ Inativo</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <span class="counter-badge">{{ questionario.perguntas.count }}</span>
-                        </td>
-                        <td>
-                            <div class="btn-group">
-                                <a href="{% url 'editar_questionario_perguntas' questionario.id %}"
-                                    class="btn btn-sm btn-secondary" title="Gerenciar Perguntas">
-                                    📝 Perguntas
-                                </a>
-                                <a href="{% url 'editar_questionario_simples' questionario.id %}"
-                                    class="btn btn-sm btn-secondary" title="Editar Questionário">
-                                    ✏️ Editar
-                                </a>
-                                <form method="post" action="{% url 'excluir_questionario' questionario.id %}"
-                                    class="inline-form"
-                                    onsubmit="return confirm('Tem certeza que deseja excluir o questionário \'{{ questionario.titulo|escapejs }}\'?\n\nEsta ação não pode ser desfeita e removerá todas as perguntas associadas.')">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-danger" title="Excluir Questionário">
-                                        🗑️ Excluir
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Descrição</th>
+                            <th>Criado por</th>
+                            <th>Data</th>
+
+                            <th>Perguntas</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for questionario in questionarios %}
+                        <tr {% if editing and questionario_editando.id == questionario.id %} class="row-highlight" {% endif %}>
+                            <td>
+                                <strong>{{ questionario.titulo }}</strong>
+                            </td>
+                            <td>
+                                {% if questionario.descricao %}
+                                {{ questionario.descricao|truncatechars:50 }}
+                                {% else %}
+                                <em class="text-muted">Sem descrição</em>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ questionario.criado_por.get_full_name|default:questionario.criado_por.username }}
+                            </td>
+                            <td>
+                                {{ questionario.data_criacao|date:"d/m/Y" }}
+                            </td>
+                            <td>
+                                <span class="counter-badge">{{ questionario.perguntas.count }}</span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'editar_questionario_perguntas' questionario.id %}"
+                                        class="btn btn-sm btn-secondary" title="Gerenciar Perguntas">
+                                        📝 Perguntas
+                                    </a>
+                                    <a href="{% url 'editar_questionario_simples' questionario.id %}"
+                                        class="btn btn-sm btn-secondary" title="Editar Questionário">
+                                        ✏️ Editar
+                                    </a>
+                                    <form method="post" action="{% url 'excluir_questionario' questionario.id %}"
+                                        class="inline-form"
+                                        onsubmit="return confirm('Tem certeza que deseja excluir o questionário \'{{ questionario.titulo|escapejs }}\'?\n\nEsta ação não pode ser desfeita e removerá todas as perguntas associadas.')">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger"
+                                            title="Excluir Questionário">
+                                            🗑️ Excluir
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
 
             <!-- Paginação -->
@@ -265,23 +240,23 @@
 
     <!-- Script global para funcionalidades de gerenciamento -->
     <script src="{% static 'js/gerenciar-global.js' %}"></script>
-    
+
     <script>
         // Configuração específica dos filtros para esta página
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchQuestionarioTitulo');
-            const statusSelect = document.getElementById('filterStatus');
+
             const criadorSelect = document.getElementById('filterCriador');
             const tableRows = document.querySelectorAll('.data-table tbody tr');
 
             function filterQuestionarios() {
-                if (!searchInput || !statusSelect || !criadorSelect) {
+                if (!searchInput || !criadorSelect) {
                     console.error('❌ Elementos de filtro não encontrados');
                     return;
                 }
-                
+
                 const tituloFilter = searchInput.value.toLowerCase().trim();
-                const statusFilter = statusSelect.value.toLowerCase().trim();
+
                 const criadorFilter = criadorSelect.value.toLowerCase().trim();
 
                 let visibleCount = 0;
@@ -293,20 +268,9 @@
                     if (cells.length >= 5) {
                         const questionarioTitulo = cells[0].textContent.toLowerCase().trim();
                         const questionarioCriador = cells[2].textContent.toLowerCase().trim();
-                        const questionarioStatusText = cells[4].textContent.toLowerCase().trim();
 
                         const tituloMatch = !tituloFilter || questionarioTitulo.includes(tituloFilter);
                         const criadorMatch = !criadorFilter || questionarioCriador === criadorFilter;
-                        
-                        // Comparação precisa de status
-                        let statusMatch = true;
-                        if (statusFilter) {
-                            if (statusFilter === 'ativo') {
-                                statusMatch = questionarioStatusText.includes('✓ ativo');
-                            } else if (statusFilter === 'inativo') {
-                                statusMatch = questionarioStatusText.includes('inativo');
-                            }
-                        }
 
                         if (tituloMatch && criadorMatch && statusMatch) {
                             row.style.display = '';
@@ -325,9 +289,9 @@
             }
 
             // Função global para limpar filtros (chamada pelo botão onclick)
-            window.clearFilters = function() {
+            window.clearFilters = function () {
                 if (searchInput) searchInput.value = '';
-                if (statusSelect) statusSelect.value = '';
+
                 if (criadorSelect) criadorSelect.value = '';
                 filterQuestionarios();
             };
@@ -337,10 +301,7 @@
                 searchInput.addEventListener('input', filterQuestionarios);
                 console.log('✅ Busca por título configurada');
             }
-            if (statusSelect) {
-                statusSelect.addEventListener('change', filterQuestionarios);
-                console.log('✅ Filtro de status configurado');
-            }
+
             if (criadorSelect) {
                 criadorSelect.addEventListener('change', filterQuestionarios);
                 console.log('✅ Filtro de criador configurado');

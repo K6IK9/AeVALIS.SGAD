@@ -1607,16 +1607,23 @@ def dashboard_gestao_ciclos(request):
     ciclos_qs = CicloAvaliacao.objects.all()
 
     # Aplicar filtros
+    now = timezone.now()
+
     if filtro_status == "ativos":
-        ciclos_qs = ciclos_qs.filter(ativo=True)
+        # Ativos = Não encerrados E dentro do prazo
+        ciclos_qs = ciclos_qs.filter(encerrado=False, data_fim__gte=now)
     elif filtro_status == "finalizados":
-        ciclos_qs = ciclos_qs.filter(ativo=False)
+        # Finalizados = Encerrados manualmente OU Prazo expirado
+        ciclos_qs = ciclos_qs.filter(Q(encerrado=True) | Q(data_fim__lt=now))
 
     if filtro_periodo_inicio:
         ciclos_qs = ciclos_qs.filter(data_inicio__gte=filtro_periodo_inicio)
 
     if filtro_periodo_fim:
-        ciclos_qs = ciclos_qs.filter(data_fim__lte=filtro_periodo_fim)
+        # Add one day to make the filter inclusive (include cycles ending on this date)
+        from datetime import datetime, timedelta
+        data_fim_inclusiva = datetime.fromisoformat(filtro_periodo_fim) + timedelta(days=1)
+        ciclos_qs = ciclos_qs.filter(data_fim__lt=data_fim_inclusiva)
 
     if filtro_curso:
         ciclos_qs = ciclos_qs.filter(

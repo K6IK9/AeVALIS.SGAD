@@ -311,7 +311,7 @@
         });
 
         // Funções de filtro
-        function filterTable() {
+        function filterQuestionsTable() {
             const searchText = document.getElementById('searchPerguntaTexto').value.toLowerCase();
             const filterTipo = document.getElementById('filterTipo').value;
             const filterObrigatoria = document.getElementById('filterObrigatoria').value;
@@ -372,14 +372,14 @@
             document.getElementById('searchPerguntaTexto').value = '';
             document.getElementById('filterTipo').value = '';
             document.getElementById('filterObrigatoria').value = '';
-            filterTable();
+            filterQuestionsTable();
         }
 
         // Adicionar event listeners para filtros
         document.addEventListener('DOMContentLoaded', function () {
-            document.getElementById('searchPerguntaTexto').addEventListener('input', filterTable);
-            document.getElementById('filterTipo').addEventListener('change', filterTable);
-            document.getElementById('filterObrigatoria').addEventListener('change', filterTable);
+            document.getElementById('searchPerguntaTexto').addEventListener('input', filterQuestionsTable);
+            document.getElementById('filterTipo').addEventListener('change', filterQuestionsTable);
+            document.getElementById('filterObrigatoria').addEventListener('change', filterQuestionsTable);
         });
     </script>
 </body>

@@ -488,7 +488,32 @@ class TurmaForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        # Remove a validação customizada - deixa o Django validar via unique_together
+        disciplina = cleaned_data.get("disciplina")
+        turno = cleaned_data.get("turno")
+
+        if disciplina and turno:
+            # Replica a lógica de geração de código do model Turma.save()
+            # para verificar duplicidade antes de salvar
+            sigla = disciplina.disciplina_sigla[:10]
+            ano = str(disciplina.periodo_letivo.ano)
+            semestre = str(disciplina.periodo_letivo.semestre)
+            turno_map = {"matutino": "MAT", "vespertino": "VES", "noturno": "NOT"}
+            turno_abrev = turno_map.get(turno, turno[:3].upper())
+
+            codigo_previsto = f"{sigla}-{ano}.{semestre}-{turno_abrev}"
+
+            # Verifica se já existe turma com este código (inclusive deletadas)
+            # Usa all_objects para ignorar o filtro de soft delete padrão
+            queryset = Turma.all_objects.filter(codigo_turma=codigo_previsto)
+            if self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+
+            if queryset.exists():
+                raise forms.ValidationError(
+                    f"Já existe uma turma com o código '{codigo_previsto}' ({disciplina.disciplina_nome} - {turno}). "
+                    "Verifique se existe uma turma inativa/excluída com este mesmo código."
+                )
+
         return cleaned_data
 
 
@@ -616,11 +641,10 @@ class QuestionarioAvaliacaoForm(forms.ModelForm):
 
     class Meta:
         model = QuestionarioAvaliacao
-        fields = ["titulo", "descricao", "ativo"]
+        fields = ["titulo", "descricao"]
         labels = {
             "titulo": "Título do Questionário",
             "descricao": "Descrição",
-            "ativo": "Questionário ativo",
         }
         widgets = {
             "titulo": forms.TextInput(
@@ -638,7 +662,6 @@ class QuestionarioAvaliacaoForm(forms.ModelForm):
                     "maxlength": "200",
                 }
             ),
-            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
 
     def clean_titulo(self):
