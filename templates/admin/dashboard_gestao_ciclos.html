@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,6 +14,7 @@
     <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
+
 <body>
     <div class="container">
         <a href="{% url 'admin_hub' %}" class="back-button">← Voltar ao Hub de Administração</a>
@@ -24,11 +26,11 @@
 
         <!-- Mensagens -->
         {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                    <li class="{{ message.tags }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
         {% endif %}
 
         <!-- Cards de Estatísticas -->
@@ -59,12 +61,14 @@
         <div class="form-section">
             <h2>⚠️ Ciclos que Exigem Atenção</h2>
             <div class="alert alert-warning">
-                <strong>Ação necessária:</strong> Os seguintes ciclos estão próximos do fim ou com taxa abaixo do limiar:
+                <strong>Ação necessária:</strong> Os seguintes ciclos estão próximos do fim ou com taxa abaixo do
+                limiar:
                 <ul class="mt-2">
                     {% for ciclo in ciclos_alerta %}
                     <li>
                         <strong>{{ ciclo.nome }}</strong> - Encerra em {{ ciclo.data_fim|date:"d/m/Y" }}
-                        <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" class="btn btn-sm btn-outline-primary btn-detail-link">
+                        <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}"
+                            class="btn btn-sm btn-outline-primary btn-detail-link">
                             <i class="bi bi-eye"></i> Ver Detalhes
                         </a>
                     </li>
@@ -84,20 +88,21 @@
                         <select name="status" id="status" class="form-control">
                             <option value="todos" {% if filtros.status == 'todos' %}selected{% endif %}>Todos</option>
                             <option value="ativos" {% if filtros.status == 'ativos' %}selected{% endif %}>Ativos</option>
-                            <option value="finalizados" {% if filtros.status == 'finalizados' %}selected{% endif %}>Finalizados</option>
+                            <option value="finalizados" {% if filtros.status == 'finalizados' %}selected{% endif %}>
+                                Finalizados</option>
                         </select>
                     </div>
 
                     <div class="form-col">
                         <label for="periodo_inicio">Período Início</label>
-                        <input type="date" name="periodo_inicio" id="periodo_inicio" 
-                               value="{{ filtros.periodo_inicio }}" class="form-control">
+                        <input type="date" name="periodo_inicio" id="periodo_inicio"
+                            value="{{ filtros.periodo_inicio }}" class="form-control">
                     </div>
 
                     <div class="form-col">
                         <label for="periodo_fim">Período Fim</label>
-                        <input type="date" name="periodo_fim" id="periodo_fim" 
-                               value="{{ filtros.periodo_fim }}" class="form-control">
+                        <input type="date" name="periodo_fim" id="periodo_fim" value="{{ filtros.periodo_fim }}"
+                            class="form-control">
                     </div>
 
                     <div class="form-col">
@@ -116,18 +121,23 @@
                         <label for="limiar">Taxa de Resposta</label>
                         <select name="limiar" id="limiar" class="form-control">
                             <option value="" {% if filtros.limiar == '' %}selected{% endif %}>Todos</option>
-                            <option value="abaixo" {% if filtros.limiar == 'abaixo' %}selected{% endif %}>Abaixo do Limiar</option>
-                            <option value="atingido" {% if filtros.limiar == 'atingido' %}selected{% endif %}>Limiar Atingido</option>
+                            <option value="abaixo" {% if filtros.limiar == 'abaixo' %}selected{% endif %}>Abaixo do Limiar
+                            </option>
+                            <option value="atingido" {% if filtros.limiar == 'atingido' %}selected{% endif %}>Limiar
+                                Atingido</option>
                         </select>
                     </div>
 
                     <div class="form-col">
                         <label for="ordenar">Ordenar por</label>
                         <select name="ordenar" id="ordenar" class="form-control">
-                            <option value="-data_inicio" {% if filtros.ordenar == '-data_inicio' %}selected{% endif %}>Mais Recente</option>
-                            <option value="data_inicio" {% if filtros.ordenar == 'data_inicio' %}selected{% endif %}>Mais Antigo</option>
+                            <option value="-data_inicio" {% if filtros.ordenar == '-data_inicio' %}selected{% endif %}>
+                                Mais Recente</option>
+                            <option value="data_inicio" {% if filtros.ordenar == 'data_inicio' %}selected{% endif %}>Mais
+                                Antigo</option>
                             <option value="nome" {% if filtros.ordenar == 'nome' %}selected{% endif %}>Nome (A-Z)</option>
-                            <option value="-data_fim" {% if filtros.ordenar == '-data_fim' %}selected{% endif %}>Fim Mais Próximo</option>
+                            <option value="-data_fim" {% if filtros.ordenar == '-data_fim' %}selected{% endif %}>Fim Mais
+                                Próximo</option>
                         </select>
                     </div>
 
@@ -147,13 +157,13 @@
         <!-- Tabela de Ciclos com KPIs -->
         <div class="form-section">
             <h2>📋 Ciclos e Indicadores</h2>
-            
+
             {% if page_obj %}
 
             <div class="table-scroll-hint">
                 <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
             </div>
-            
+
             <div class="table-responsive">
                 <table class="data-table dashboard-table">
                     <thead>
@@ -173,10 +183,11 @@
                     <tbody>
                         {% for item in page_obj %}
                         {% with ciclo=item.ciclo kpis=item.kpis %}
-                        <tr class="{% if kpis.status_saude == 'erro' %}status-erro{% elif kpis.status_saude == 'alerta' %}status-alerta{% elif not ciclo.encerrado %}status-ativo{% else %}status-encerrado{% endif %}">
+                        <tr
+                            class="{% if kpis.status_saude == 'erro' %}status-erro{% elif kpis.status_saude == 'alerta' %}status-alerta{% elif ciclo.status == 'em_andamento' or ciclo.status == 'agendado' %}status-ativo{% else %}status-encerrado{% endif %}">
                             <td>
                                 <strong class="ciclo-nome">{{ ciclo.nome }}</strong>
-                                {% if ciclo.encerrado %}
+                                {% if ciclo.status == 'encerrado' or ciclo.status == 'finalizado' %}
                                 <span class="badge bg-secondary">Encerrado</span>
                                 {% endif %}
                             </td>
@@ -219,7 +230,7 @@
                             </td>
                             <td class="text-center">
                                 <small>
-                                    ✓ {{ kpis.jobs_completos }} / 
+                                    ✓ {{ kpis.jobs_completos }} /
                                     ⏳ {{ kpis.jobs_pendentes }} /
                                     {% if kpis.jobs_com_erro > 0 %}
                                     <strong class="jobs-erro">❌ {{ kpis.jobs_com_erro }}</strong>
@@ -237,25 +248,20 @@
                             </td>
                             <td class="text-center">
                                 <div class="d-flex gap-1 justify-content-center flex-wrap">
-                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}" 
-                                       class="btn btn-sm btn-outline-primary" 
-                                       title="Ver detalhes">
+                                    <a href="{% url 'detalhe_ciclo_avaliacao' ciclo.id %}"
+                                        class="btn btn-sm btn-outline-primary" title="Ver detalhes">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" 
-                                       class="btn btn-sm btn-warning" 
-                                       title="Editar">
+                                    <a href="{% url 'editar_ciclo_simples' ciclo.id %}" class="btn btn-sm btn-warning"
+                                        title="Editar">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    {% if not ciclo.encerrado %}
-                                    <form method="post" 
-                                          action="{% url 'encerrar_ciclo' ciclo.id %}" 
-                                          onsubmit="return confirm('Encerrar o ciclo {{ ciclo.nome }}?');" 
-                                          class="d-inline">
+                                    {% if ciclo.status != 'encerrado' and ciclo.status != 'finalizado' %}
+                                    <form method="post" action="{% url 'encerrar_ciclo' ciclo.id %}"
+                                        onsubmit="return confirm('Encerrar o ciclo {{ ciclo.nome }}?');"
+                                        class="d-inline">
                                         {% csrf_token %}
-                                        <button type="submit" 
-                                                class="btn btn-sm btn-outline-secondary" 
-                                                title="Encerrar">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Encerrar">
                                             <i class="bi bi-stop-circle"></i>
                                         </button>
                                     </form>
@@ -276,23 +282,27 @@
                     <ul class="pagination">
                         {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Primeira</a>
+                            <a class="page-link"
+                                href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Primeira</a>
                         </li>
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Anterior</a>
+                            <a class="page-link"
+                                href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Anterior</a>
                         </li>
                         {% endif %}
-                        
+
                         <li class="page-item active">
-                            <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                            <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_page }}</span>
                         </li>
-                        
+
                         {% if page_obj.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Próxima</a>
+                            <a class="page-link"
+                                href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Próxima</a>
                         </li>
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Última</a>
+                            <a class="page-link"
+                                href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Última</a>
                         </li>
                         {% endif %}
                     </ul>
@@ -315,4 +325,5 @@
 
     <script src="{% static 'js/gerenciar-global.js' %}"></script>
 </body>
+
 </html>

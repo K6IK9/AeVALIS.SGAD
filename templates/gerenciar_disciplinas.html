@@ -3,176 +3,179 @@
 
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% if brand.enabled %}{{ brand.name_short }}{% else %}{{ brand.name_old }}{% endif %} - Gerenciar Disciplinas</title>
 
-    <!-- Favicons -->
-    {% include 'partials/favicon_meta.html' %}
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% if brand.enabled %}{{ brand.name_short }}{% else %}{{ brand.name_old }}{% endif %} - Gerenciar Disciplinas
+  </title>
 
-    <!-- CSS Global -->
-    <link rel="stylesheet" href="{% static 'css/global.css' %}" />
-    <!-- CSS de Gerenciamento -->
-    <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}" />
-  </head>
+  <!-- Favicons -->
+  {% include 'partials/favicon_meta.html' %}
 
-  <body>
-    <div class="container">
-      <div class="header">
-        <h1>Gerenciamento de Disciplinas</h1>
-        <p>Crie e visualize as disciplinas do sistema</p>
-      </div>
+  <!-- CSS Global -->
+  <link rel="stylesheet" href="{% static 'css/global.css' %}" />
+  <!-- CSS de Gerenciamento -->
+  <link rel="stylesheet" href="{% static 'css/gerenciar.css' %}" />
+</head>
 
-      <!-- Navegação Breadcrumb -->
-      <div class="nav-breadcrumb">
-        <a href="{% url 'inicio' %}">🏠 Início</a>
-        <span>→</span>
-        <a href="{% url 'admin_hub' %}">⚙️ Administração</a>
-        <span>→</span>
-        <span>📖 Disciplinas</span>
-      </div>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Gerenciamento de Disciplinas</h1>
+      <p>Crie e visualize as disciplinas do sistema</p>
+    </div>
 
-      {% include "partials/messages.html" %}
+    <!-- Navegação Breadcrumb -->
+    <div class="nav-breadcrumb">
+      <a href="{% url 'inicio' %}">🏠 Início</a>
+      <span>→</span>
+      <a href="{% url 'admin_hub' %}">⚙️ Administração</a>
+      <span>→</span>
+      <span>📖 Disciplinas</span>
+    </div>
 
-      <div class="form-section">
-        <h2>
-          {% if editing %}Editar Disciplina{% else %}Criar Nova Disciplina{% endif %}
-        </h2>
-        <form method="post">
-          {% csrf_token %}
-          <div class="form-row">
-            <div class="form-group">
-              <label for="{{ form.disciplina_nome.id_for_label }}"
-                >{{ form.disciplina_nome.label }}</label
-              >
-              {{ form.disciplina_nome }} {% if form.disciplina_nome.errors %}
-              <div class="field-error">
-                {% for error in form.disciplina_nome.errors %} {{ error }} {% endfor %}
-              </div>
-              {% endif %}
+    {% include "partials/messages.html" %}
+
+    <div class="form-section">
+      <h2>
+        {% if editing %}Editar Disciplina{% else %}Criar Nova Disciplina{% endif %}
+      </h2>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-row">
+          <div class="form-group">
+            <label for="{{ form.disciplina_nome.id_for_label }}">{{ form.disciplina_nome.label }}</label>
+            {{ form.disciplina_nome }} {% if form.disciplina_nome.errors %}
+            <div class="field-error">
+              {% for error in form.disciplina_nome.errors %} {{ error }} {% endfor %}
             </div>
-
-            <div class="form-group">
-              <label for="{{ form.disciplina_sigla.id_for_label }}">{{ form.disciplina_sigla.label }}</label>
-              {{ form.disciplina_sigla }} {% if form.disciplina_sigla.errors %}
-              <div class="field-error">
-                {% for error in form.disciplina_sigla.errors %} {{ error }} {% endfor %}
-              </div>
-              {% endif %}
-            </div>
+            {% endif %}
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="{{ form.disciplina_tipo.id_for_label }}">{{ form.disciplina_tipo.label }}</label>
-              {{ form.disciplina_tipo }} {% if form.disciplina_tipo.errors %}
-              <div class="field-error">
-                {% for error in form.disciplina_tipo.errors %} {{ error }} {% endfor %}
-              </div>
-              {% endif %}
+          <div class="form-group">
+            <label for="{{ form.disciplina_sigla.id_for_label }}">{{ form.disciplina_sigla.label }}</label>
+            {{ form.disciplina_sigla }} {% if form.disciplina_sigla.errors %}
+            <div class="field-error">
+              {% for error in form.disciplina_sigla.errors %} {{ error }} {% endfor %}
             </div>
-
-            <div class="form-group">
-              <label for="{{ form.curso.id_for_label }}">{{ form.curso.label }}</label>
-              {{ form.curso }} {% if form.curso.errors %}
-              <div class="field-error">
-                {% for error in form.curso.errors %} {{ error }} {% endfor %}
-              </div>
-              {% endif %}
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="{{ form.professor.id_for_label }}">{{ form.professor.label }}</label>
-              {{ form.professor }} {% if form.professor.errors %}
-              <div class="field-error">
-                {% for error in form.professor.errors %} {{ error }} {% endfor %}
-              </div>
-              {% endif %}
-            </div>
-
-            <div class="form-group">
-              <label for="{{ form.periodo_letivo.id_for_label }}">{{ form.periodo_letivo.label }}</label>
-              {{ form.periodo_letivo }} {% if form.periodo_letivo.errors %}
-              <div class="field-error">
-                {% for error in form.periodo_letivo.errors %} {{ error }} {% endfor %}
-              </div>
-              {% endif %}
-            </div>
-          </div>
-
-          <button type="submit" class="btn">
-            {% if editing %}Atualizar Disciplina{% else %}Criar Disciplina{% endif %}
-          </button>
-          {% if editing %}
-          <a href="{% url 'gerenciar_disciplinas' %}" class="btn btn-secondary">Cancelar</a>
-          {% endif %}
-        </form>
-      </div>
-
-      <!-- Seção de Filtros -->
-      {% if not editing %}
-      <form method="get" class="filters-section" id="filter-form">
-        <h3 class="filters-title">🔍 Filtros</h3>
-        <div class="filter-row">
-          <div class="filter-group">
-            <label for="busca">Buscar por Nome ou Sigla:</label>
-            <input type="text" id="busca" name="busca" class="form-control" placeholder="Digite o nome ou sigla da disciplina" value="{{ filtro_busca }}">
+            {% endif %}
           </div>
         </div>
 
-        <div class="filter-row">
-          <div class="filter-group">
-            <label for="curso">Curso:</label>
-            <select id="curso" name="curso" class="form-control">
-              <option value="">Todos os cursos</option>
-              {% for curso in cursos %}
-                <option value="{{ curso.id }}" {% if filtro_curso == curso.id|stringformat:"s" %}selected{% endif %}>{{ curso.curso_nome }}</option>
-              {% endfor %}
-            </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="{{ form.disciplina_tipo.id_for_label }}">{{ form.disciplina_tipo.label }}</label>
+            {{ form.disciplina_tipo }} {% if form.disciplina_tipo.errors %}
+            <div class="field-error">
+              {% for error in form.disciplina_tipo.errors %} {{ error }} {% endfor %}
+            </div>
+            {% endif %}
           </div>
 
-          <div class="filter-group">
-            <label for="tipo">Tipo:</label>
-            <select id="tipo" name="tipo" class="form-control">
-              <option value="">Todos os tipos</option>
-              <option value="obrigatoria" {% if filtro_tipo == "obrigatoria" %}selected{% endif %}>Obrigatória</option>
-              <option value="optativa" {% if filtro_tipo == "optativa" %}selected{% endif %}>Optativa</option>
-            </select>
+          <div class="form-group">
+            <label for="{{ form.curso.id_for_label }}">{{ form.curso.label }}</label>
+            {{ form.curso }} {% if form.curso.errors %}
+            <div class="field-error">
+              {% for error in form.curso.errors %} {{ error }} {% endfor %}
+            </div>
+            {% endif %}
           </div>
         </div>
 
-        <div class="filter-row">
-          <div class="filter-group">
-            <label for="periodo">Período Letivo:</label>
-            <select id="periodo" name="periodo" class="form-control">
-              <option value="">Todos os períodos</option>
-              {% for periodo in periodos %}
-                <option value="{{ periodo.id }}" {% if filtro_periodo == periodo.id|stringformat:"s" %}selected{% endif %}>{{ periodo.nome }}</option>
-              {% endfor %}
-            </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="{{ form.professor.id_for_label }}">{{ form.professor.label }}</label>
+            {{ form.professor }} {% if form.professor.errors %}
+            <div class="field-error">
+              {% for error in form.professor.errors %} {{ error }} {% endfor %}
+            </div>
+            {% endif %}
           </div>
 
-          <div class="filter-group filter-actions">
-            <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
-            <button type="button" onclick="window.location.href='?'" class="btn btn-clear">🔄 Limpar Filtros</button>
+          <div class="form-group">
+            <label for="{{ form.periodo_letivo.id_for_label }}">{{ form.periodo_letivo.label }}</label>
+            {{ form.periodo_letivo }} {% if form.periodo_letivo.errors %}
+            <div class="field-error">
+              {% for error in form.periodo_letivo.errors %} {{ error }} {% endfor %}
+            </div>
+            {% endif %}
           </div>
         </div>
+
+        <button type="submit" class="btn">
+          {% if editing %}Atualizar Disciplina{% else %}Criar Disciplina{% endif %}
+        </button>
+        {% if editing %}
+        <a href="{% url 'gerenciar_disciplinas' %}" class="btn btn-secondary">Cancelar</a>
+        {% endif %}
       </form>
+    </div>
 
-      <!-- Lista de Disciplinas -->
-      <div class="form-section">
-        <div class="section-header">
-          <h2 id="contador-disciplinas">📚 Disciplinas Cadastradas ({{ disciplinas.paginator.count }})</h2>
+    <!-- Seção de Filtros -->
+    {% if not editing %}
+    <form method="get" class="filters-section" id="filter-form">
+      <h3 class="filters-title">🔍 Filtros</h3>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="busca">Buscar por Nome ou Sigla:</label>
+          <input type="text" id="busca" name="busca" class="form-control"
+            placeholder="Digite o nome ou sigla da disciplina" value="{{ filtro_busca }}">
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="curso">Curso:</label>
+          <select id="curso" name="curso" class="form-control">
+            <option value="">Todos os cursos</option>
+            {% for curso in cursos %}
+            <option value="{{ curso.id }}" {% if filtro_curso == curso.id|stringformat:"s" %}selected{% endif %}>{{
+              curso.curso_nome }}</option>
+            {% endfor %}
+          </select>
         </div>
 
-        <div class="table-scroll-hint">
-    <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
-</div>
-        <div class="table-responsive">
-          <table class="data-table">
+        <div class="filter-group">
+          <label for="tipo">Tipo:</label>
+          <select id="tipo" name="tipo" class="form-control">
+            <option value="">Todos os tipos</option>
+            <option value="Obrigatória" {% if filtro_tipo == "Obrigatória" %}selected{% endif %}>Obrigatória</option>
+            <option value="Optativa" {% if filtro_tipo == "Optativa" %}selected{% endif %}>Optativa</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="periodo">Período Letivo:</label>
+          <select id="periodo" name="periodo" class="form-control">
+            <option value="">Todos os períodos</option>
+            {% for periodo in periodos %}
+            <option value="{{ periodo.id }}" {% if filtro_periodo == periodo.id|stringformat:"s" %}selected{% endif %}>{{
+              periodo.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="filter-group filter-actions">
+          <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+          <button type="button" onclick="window.location.href='?'" class="btn btn-clear">🔄 Limpar Filtros</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Lista de Disciplinas -->
+    <div class="form-section">
+      <div class="section-header">
+        <h2 id="contador-disciplinas">📚 Disciplinas Cadastradas ({{ disciplinas.paginator.count }})</h2>
+      </div>
+
+      <div class="table-scroll-hint">
+        <small>💡 Dica: Arraste a tabela lateralmente para ver mais colunas</small>
+      </div>
+      <div class="table-responsive">
+        <table class="data-table">
           <thead>
             <tr>
               <th>Nome da Disciplina</th>
@@ -195,13 +198,12 @@
               <td>{{ disciplina.periodo_letivo }}</td>
               <td>
                 <div class="btn-group">
-                  <a href="{% url 'editar_disciplina' disciplina.id %}"
-                     class="btn btn-sm btn-secondary" title="Editar Disciplina">
+                  <a href="{% url 'editar_disciplina' disciplina.id %}" class="btn btn-sm btn-secondary"
+                    title="Editar Disciplina">
                     ✏️ Editar
                   </a>
-                  <form method="post" action="{% url 'excluir_disciplina' disciplina.id %}" 
-                        class="inline-form"
-                        onsubmit="return confirm('Tem certeza que deseja excluir a disciplina \'{{ disciplina.disciplina_nome|escapejs }}\'?\n\nEsta ação não poderá ser desfeita.')">
+                  <form method="post" action="{% url 'excluir_disciplina' disciplina.id %}" class="inline-form"
+                    onsubmit="return confirm('Tem certeza que deseja excluir a disciplina \'{{ disciplina.disciplina_nome|escapejs }}\'?\n\nEsta ação não poderá ser desfeita.')">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-danger" title="Excluir Disciplina">
                       🗑️ Excluir
@@ -219,16 +221,17 @@
             {% endfor %}
           </tbody>
         </table>
-        </div>
-
-        <!-- Paginação -->
-        {% include 'partials/pagination.html' with page_obj=disciplinas %}
-        
       </div>
-      {% endif %}
 
-      <!-- Script global para funcionalidades de gerenciamento -->
-      <script src="{% static 'js/gerenciar-global.js' %}"></script>
+      <!-- Paginação -->
+      {% include 'partials/pagination.html' with page_obj=disciplinas %}
+
     </div>
-  </body>
+    {% endif %}
+
+    <!-- Script global para funcionalidades de gerenciamento -->
+    <script src="{% static 'js/gerenciar-global.js' %}"></script>
+  </div>
+</body>
+
 </html>

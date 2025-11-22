@@ -31,7 +31,8 @@ def criar_avaliacoes_automaticamente(sender, instance, action, pk_set, **kwargs)
             try:
                 turma = Turma.objects.get(id=turma_id)
 
-                avaliacao, created = AvaliacaoDocente.objects.get_or_create(
+                # Usa all_objects para evitar erro de integridade se já existir uma avaliação deletada
+                avaliacao, created = AvaliacaoDocente.all_objects.get_or_create(
                     ciclo=instance,
                     turma=turma,
                     professor=turma.disciplina.professor,
@@ -105,8 +106,8 @@ def criar_avaliacoes_pos_save(sender, instance, created, **kwargs):
 
     with transaction.atomic():
         for turma in instance.turmas.all():
-            # Verificar se já existe uma avaliação para esta turma neste ciclo
-            if not AvaliacaoDocente.objects.filter(
+            # Verificar se já existe uma avaliação para esta turma neste ciclo (inclusive deletadas)
+            if not AvaliacaoDocente.all_objects.filter(
                 ciclo=instance,
                 turma=turma,
                 professor=turma.disciplina.professor,
