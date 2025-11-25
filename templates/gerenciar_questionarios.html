@@ -272,7 +272,7 @@
                         const tituloMatch = !tituloFilter || questionarioTitulo.includes(tituloFilter);
                         const criadorMatch = !criadorFilter || questionarioCriador === criadorFilter;
 
-                        if (tituloMatch && criadorMatch && statusMatch) {
+                        if (tituloMatch && criadorMatch) {
                             row.style.display = '';
                             visibleCount++;
                         } else {
